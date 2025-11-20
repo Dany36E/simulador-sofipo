@@ -336,23 +336,44 @@ SOFIPOS_DATA = {
     "Stori": {
         "logo": "💙",
         "productos": {
-            "Stori Cuenta+ (Sin tarjeta)": {
+            "Sin plazo": {
                 "tasa_base": 8.00,
                 "liquidez": "Inmediata",
                 "minimo": 0,
                 "tipo": "vista",
-                "requisito": False
+                "plazo_dias": 0
             },
-            "Stori Cuenta+ (Con tarjeta)": {
-                "tasa_base": 13.50,
-                "liquidez": "Inmediata",
+            "30 días": {
+                "tasa_base": 8.05,
+                "liquidez": "30 días",
                 "minimo": 0,
-                "tipo": "vista",
-                "requisito": True
+                "tipo": "plazo",
+                "plazo_dias": 30
+            },
+            "90 días": {
+                "tasa_base": 10.00,
+                "liquidez": "90 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 90
+            },
+            "180 días": {
+                "tasa_base": 7.50,
+                "liquidez": "180 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 180
+            },
+            "360 días": {
+                "tasa_base": 7.00,
+                "liquidez": "360 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 360
             }
         },
         "color": "#0066FF",
-        "descripcion": "Requiere tarjeta de crédito Stori para mejores tasas"
+        "descripcion": "Inversiones con y sin plazo (requiere cuenta Stori)"
     },
     "Klar": {
         "logo": "💚",
@@ -744,14 +765,7 @@ def main():
                     # Requisitos especiales
                     cumple_requisito = True
                     if producto_info.get("requisito") is not None:
-                        if producto_info.get("requisito") == True:
-                            cumple_requisito = st.checkbox(
-                                "¿Tienes tarjeta de crédito Stori?",
-                                value=True,
-                                key=f"req_{sofipo_name}_{producto_seleccionado}",
-                                help="Necesitas la tarjeta para obtener esta tasa"
-                            )
-                        elif producto_info.get("requisito") == "Plus o Platino":
+                        if producto_info.get("requisito") == "Plus o Platino":
                             cumple_requisito = st.checkbox(
                                 "¿Tienes membresía Klar Plus o Platino?",
                                 value=True,
@@ -1180,16 +1194,17 @@ def main():
             - 20% DiDi (hasta $10k) - 16% GAT (después 8.5%)
             - 25% Nu México (Cajita Turbo) - 15% GAT
             - 20% Klar Inversión Max - 15% GAT (requiere Plus/Platino)
-            - 20% Stori Cuenta+ (con tarjeta) - 13.5% GAT
-            - 15% Mercado Pago - 12.5% GAT
+            - 15% Stori 90 días - 10% GAT
+            - 20% Mercado Pago - 12.5% GAT
             
             **Ventajas**:
             - ✅ Excelente diversificación (5 SOFIPOs)
-            - ✅ 100% con liquidez inmediata
-            - ✅ Rendimiento optimizado (~14% ponderado)
+            - ✅ 80% con liquidez inmediata
+            - ✅ Rendimiento optimizado (~13.5% ponderado)
             
             **Consideraciones**:
-            - Requiere tarjeta Stori y membresía Klar Plus/Platino
+            - Requiere membresía Klar Plus/Platino
+            - 15% a plazo fijo de 90 días en Stori
             - Balance perfecto entre liquidez y rendimiento
             - Ideal para la mayoría de inversores
             """)
@@ -1247,14 +1262,14 @@ def main():
                     })
                     saldo_restante -= monto_nu_turbo
             
-            # 4. Stori Cuenta+ (con tarjeta): Al 13.5%
+            # 4. Stori 90 días: Al 10%
             if saldo_restante > 0:
                 distribucion_agresiva.append({
                     "sofipo": "Stori",
-                    "producto": "Stori Cuenta+ (Con tarjeta)",
+                    "producto": "90 días",
                     "monto": saldo_restante,
-                    "tasa": 13.5,
-                    "razon": "🥉 13.5% (requiere tarjeta de crédito Stori)"
+                    "tasa": 10.0,
+                    "razon": "🥉 10% a plazo fijo de 90 días"
                 })
             
             # Mostrar tabla con montos exactos
@@ -1294,7 +1309,7 @@ def main():
             **⚠️ Consideraciones importantes:**
             - Esta estrategia prioriza SOLO rendimiento máximo
             - Parte del capital quedará en plazos fijos (menor liquidez)
-            - Requiere tarjeta de crédito Stori para obtener el 13.5%
+            - Stori 90 días requiere mantener el capital 3 meses
             - No es recomendable para fondos de emergencia
             - Diversificación limitada a favor de mejores tasas
             """)
