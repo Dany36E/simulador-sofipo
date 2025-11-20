@@ -1,96 +1,8 @@
-﻿"""
-    main()
-    },
-    "Finsus": {
-        "logo": "🦁",
-        "productos": {
-            "Finsus+ (A la vista)": {
-                "tasa_base": 8.09,
-                "liquidez": "Inmediata",
-                "minimo": 0,
-                "tipo": "vista"
-            },
-            "Apartados": {
-                "tasa_base": 4.00,
-                "liquidez": "Inmediata",
-                "minimo": 0,
-                "tipo": "vista"
-            },
-            "Plazo Fijo 7 días": {
-                "tasa_base": 8.00,
-                "liquidez": "7 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 7
-            },
-            "Plazo Fijo 30 días": {
-                "tasa_base": 8.09,
-                "liquidez": "30 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 30
-            },
-            "Plazo Fijo 90 días": {
-                "tasa_base": 8.39,
-                "liquidez": "90 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 90
-            },
-            "Plazo Fijo 180 días": {
-                "tasa_base": 8.59,
-                "liquidez": "180 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 180
-            },
-            "Plazo Fijo 360 días": {
-                "tasa_base": 10.09,
-                "liquidez": "360 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 360
-            }
-        },
-        "color": "#4CAF50",
-        "descripcion": "SOFIPO enfocada en inclusión financiera y sustentabilidad"
-    },
-            "Plazo Fijo 30 días": {
-                "tasa_base": 8.09,
-                "liquidez": "30 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 30
-            },
-            "Plazo Fijo 90 días": {
-                "tasa_base": 8.39,
-                "liquidez": "90 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 90
-            },
-            "Plazo Fijo 180 días": {
-                "tasa_base": 8.59,
-                "liquidez": "180 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 180
-            },
-            "Plazo Fijo 360 días": {
-                "tasa_base": 10.09,
-                "liquidez": "360 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 360
-            }
-        },
-        "color": "#4CAF50",
-        "descripcion": "SOFIPO enfocada en inclusión financiera y sustentabilidad"
-    }
-}
+﻿# -*- coding: utf-8 -*-
+"""
 Simulador de Inversiones Multi-SOFIPO Interactivo
 Desarrollado para analizar y comparar rendimientos de SOFIPOs mexicanas
-Autor: Experto Fintech MÃ©xico
+Autor: Experto Fintech México
 Fecha: Noviembre 2025
 """
 
@@ -101,15 +13,15 @@ import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
 
-# ConfiguraciÃ³n de la pÃ¡gina
+# Configuración de la página
 st.set_page_config(
-    page_title="Simulador Multi-SOFIPO MÃ©xico",
-    page_icon="ðŸ’°",
+    page_title="Simulador Multi-SOFIPO México",
+    page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados - DiseÃ±o Premium
+# Estilos CSS personalizados - Diseño Premium
 st.markdown("""
 <style>
     /* Importar fuentes modernas */
@@ -140,7 +52,7 @@ st.markdown("""
         font-weight: 400;
     }
     
-    /* Tarjetas de SOFIPO - DiseÃ±o Fresh y Minimalista */
+    /* Tarjetas de SOFIPO - Diseño Fresh y Minimalista */
     .sofipo-section {
         background: white;
         padding: 2rem;
@@ -177,7 +89,7 @@ st.markdown("""
         opacity: 1;
     }
     
-    /* Cajas de advertencia y Ã©xito - Minimalista */
+    /* Cajas de advertencia y éxito - Minimalista */
     .warning-box {
         background: #fef3c7;
         padding: 1.2rem 1.5rem;
@@ -208,7 +120,7 @@ st.markdown("""
         font-size: 0.95rem;
     }
     
-    /* Tarjetas de mÃ©tricas - Fresh Design */
+    /* Tarjetas de métricas - Fresh Design */
     .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem;
@@ -249,7 +161,7 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Inputs numÃ©ricos */
+    /* Inputs numéricos */
     .stNumberInput>div>div>input {
         border-radius: 10px;
         border: 2px solid #e0e7ff;
@@ -357,8 +269,8 @@ st.markdown("""
 # ============================================================================
 
 SOFIPOS_DATA = {
-    "Nu MÃ©xico": {
-        "logo": "ðŸŸ£",
+    "Nu México": {
+        "logo": "🟣",
         "productos": {
             "Cajita Turbo": {
                 "tasa_base": 15.00,
@@ -374,40 +286,40 @@ SOFIPOS_DATA = {
                 "minimo": 0,
                 "tipo": "vista"
             },
-            "Plazo Fijo 7 dÃ­as": {
+            "Plazo Fijo 7 días": {
                 "tasa_base": 7.55,
-                "liquidez": "7 dÃ­as",
+                "liquidez": "7 días",
                 "minimo": 100,
                 "tipo": "plazo",
                 "plazo_dias": 7
             },
-            "Plazo Fijo 28 dÃ­as": {
+            "Plazo Fijo 28 días": {
                 "tasa_base": 7.60,
-                "liquidez": "28 dÃ­as",
+                "liquidez": "28 días",
                 "minimo": 100,
                 "tipo": "plazo",
                 "plazo_dias": 28
             },
-            "Plazo Fijo 90 dÃ­as": {
+            "Plazo Fijo 90 días": {
                 "tasa_base": 7.70,
-                "liquidez": "90 dÃ­as",
+                "liquidez": "90 días",
                 "minimo": 100,
                 "tipo": "plazo",
                 "plazo_dias": 90
             },
-            "Plazo Fijo 180 dÃ­as": {
+            "Plazo Fijo 180 días": {
                 "tasa_base": 7.80,
-                "liquidez": "180 dÃ­as",
+                "liquidez": "180 días",
                 "minimo": 100,
                 "tipo": "plazo",
                 "plazo_dias": 180
             }
         },
         "color": "#8A05BE",
-        "descripcion": "SOFIPO lÃ­der en MÃ©xico con 13+ millones de clientes"
+        "descripcion": "SOFIPO líder en México con 13+ millones de clientes"
     },
     "DiDi": {
-        "logo": "ðŸ§¡",
+        "logo": "🧡",
         "productos": {
             "DiDi Ahorro": {
                 "tasa_base": 8.50,
@@ -419,10 +331,10 @@ SOFIPOS_DATA = {
             }
         },
         "color": "#FF6600",
-        "descripcion": "Hasta 16% en primeros $10,000, despuÃ©s 8.5%"
+        "descripcion": "Hasta 16% en primeros $10,000, después 8.5%"
     },
     "Stori": {
-        "logo": "ðŸ’™",
+        "logo": "💙",
         "productos": {
             "Stori Cuenta+ (Sin tarjeta)": {
                 "tasa_base": 8.00,
@@ -440,10 +352,10 @@ SOFIPOS_DATA = {
             }
         },
         "color": "#0066FF",
-        "descripcion": "Requiere tarjeta de crÃ©dito Stori para mejores tasas"
+        "descripcion": "Requiere tarjeta de crédito Stori para mejores tasas"
     },
     "Klar": {
-        "logo": "ðŸ’š",
+        "logo": "💚",
         "productos": {
             "Cuenta Klar": {
                 "tasa_base": 8.50,
@@ -451,40 +363,40 @@ SOFIPOS_DATA = {
                 "minimo": 100,
                 "tipo": "vista"
             },
-            "InversiÃ³n Flexible Max": {
+            "Inversión Flexible Max": {
                 "tasa_base": 15.00,
                 "liquidez": "Inmediata",
                 "minimo": 100,
                 "tipo": "vista",
                 "requisito": "Plus o Platino",
-                "descripcion_extra": "Requiere membresÃ­a Plus o Platino"
+                "descripcion_extra": "Requiere membresía Plus o Platino"
             }
         },
         "color": "#00D98C",
-        "descripcion": "SOFIPO regulada por CNBV con mÃ¡s de 2M usuarios"
+        "descripcion": "SOFIPO regulada por CNBV con más de 2M usuarios"
     },
-    "UalÃ¡": {
-        "logo": "ðŸ’³",
+    "Ualá": {
+        "logo": "💳",
         "productos": {
-            "UalÃ¡ Ahorro": {
+            "Ualá Ahorro": {
                 "tasa_base": 10.00,
                 "liquidez": "Inmediata",
                 "minimo": 0,
                 "tipo": "vista"
             },
-            "UalÃ¡ Plazo Fijo 28 dÃ­as": {
+            "Ualá Plazo Fijo 28 días": {
                 "tasa_base": 11.00,
-                "liquidez": "28 dÃ­as",
+                "liquidez": "28 días",
                 "minimo": 100,
                 "tipo": "plazo",
                 "plazo_dias": 28
             }
         },
         "color": "#00D4FF",
-        "descripcion": "Fintech argentina consolidada en MÃ©xico"
+        "descripcion": "Fintech argentina consolidada en México"
     },
     "Mercado Pago": {
-        "logo": "ðŸ’µ",
+        "logo": "💵",
         "productos": {
             "Rendimientos MP": {
                 "tasa_base": 12.50,
@@ -497,68 +409,27 @@ SOFIPOS_DATA = {
         "descripcion": "Respaldo del ecosistema Mercado Libre"
     },
     "Finsus": {
-        "logo": "🦁",
+        "logo": "🏦",
         "productos": {
-            "Finsus+ (A la vista)": {
-                "tasa_base": 8.09,
+            "Finsus Ahorro": {
+                "tasa_base": 11.00,
                 "liquidez": "Inmediata",
                 "minimo": 0,
                 "tipo": "vista"
-            },
-            "Apartados": {
-                "tasa_base": 4.00,
-                "liquidez": "Inmediata",
-                "minimo": 0,
-                "tipo": "vista"
-            },
-            "Plazo Fijo 7 días": {
-                "tasa_base": 8.00,
-                "liquidez": "7 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 7
-            },
-            "Plazo Fijo 30 días": {
-                "tasa_base": 8.09,
-                "liquidez": "30 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 30
-            },
-            "Plazo Fijo 90 días": {
-                "tasa_base": 8.39,
-                "liquidez": "90 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 90
-            },
-            "Plazo Fijo 180 días": {
-                "tasa_base": 8.59,
-                "liquidez": "180 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 180
-            },
-            "Plazo Fijo 360 días": {
-                "tasa_base": 10.09,
-                "liquidez": "360 días",
-                "minimo": 100,
-                "tipo": "plazo",
-                "plazo_dias": 360
             }
         },
         "color": "#4CAF50",
-        "descripcion": "SOFIPO enfocada en inclusión financiera y sustentabilidad"
+        "descripcion": "SOFIPO enfocada en inclusión financiera"
     }
 }
 
 # ============================================================================
-# FUNCIONES DE CÃLCULO
+# FUNCIONES DE CÁLCULO
 # ============================================================================
 
 def calcular_rendimiento_hibrido_didi(monto, tasa_premium, limite_premium, tasa_base, dias):
     """
-    Calcula el rendimiento con estructura hÃ­brida de DiDi
+    Calcula el rendimiento con estructura híbrida de DiDi
     16% sobre primeros $10,000 y tasa base sobre el resto
     """
     if monto <= limite_premium:
@@ -573,7 +444,7 @@ def calcular_rendimiento_hibrido_didi(monto, tasa_premium, limite_premium, tasa_
 
 def calcular_interes_compuesto(capital, tasa_anual, dias, compounding="diario"):
     """
-    Calcula interÃ©s compuesto con diferentes frecuencias
+    Calcula interés compuesto con diferentes frecuencias
     """
     tasa_decimal = tasa_anual / 100
     
@@ -593,7 +464,7 @@ def calcular_interes_compuesto(capital, tasa_anual, dias, compounding="diario"):
 
 def calcular_interes_simple(capital, tasa_anual, dias):
     """
-    Calcula interÃ©s simple para inversiones a plazo fijo
+    Calcula interés simple para inversiones a plazo fijo
     """
     tasa_decimal = tasa_anual / 100
     interes = capital * tasa_decimal * (dias / 365)
@@ -601,7 +472,7 @@ def calcular_interes_simple(capital, tasa_anual, dias):
 
 def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
     """
-    Genera proyecciÃ³n mes a mes del crecimiento de la inversiÃ³n
+    Genera proyección mes a mes del crecimiento de la inversión
     """
     proyeccion = []
     capital_actual = capital
@@ -625,14 +496,14 @@ def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
 
 def analizar_diversificacion(inversiones_dict):
     """
-    Analiza el nivel de diversificaciÃ³n y genera recomendaciones
+    Analiza el nivel de diversificación y genera recomendaciones
     """
     total_invertido = sum([inv["monto"] for inv in inversiones_dict.values()])
     
     if total_invertido == 0:
         return None
     
-    # Calcular concentraciÃ³n
+    # Calcular concentración
     concentraciones = {
         sofipo: (inv["monto"] / total_invertido * 100) 
         for sofipo, inv in inversiones_dict.items()
@@ -660,68 +531,68 @@ def analizar_diversificacion(inversiones_dict):
 
 def generar_recomendaciones(analisis, rendimiento_ponderado):
     """
-    Genera recomendaciones personalizadas basadas en el anÃ¡lisis
+    Genera recomendaciones personalizadas basadas en el análisis
     """
     recomendaciones = []
     
     if analisis is None:
-        return ["âš ï¸ Agrega al menos una inversiÃ³n para recibir recomendaciones"]
+        return ["⚠️ Agrega al menos una inversión para recibir recomendaciones"]
     
-    # Evaluar diversificaciÃ³n
+    # Evaluar diversificación
     if analisis["num_sofipos"] == 1:
         recomendaciones.append(
-            "ðŸŽ¯ **Alta ConcentraciÃ³n**: EstÃ¡s invirtiendo en una sola SOFIPO. "
+            "🎯 **Alta Concentración**: Estás invirtiendo en una sola SOFIPO. "
             "Considera diversificar en al menos 3-4 instituciones para reducir riesgo."
         )
     elif analisis["max_concentracion"] > 70:
         recomendaciones.append(
-            f"âš ï¸ **ConcentraciÃ³n Elevada**: {analisis['max_concentracion']:.1f}% en una sola instituciÃ³n. "
+            f"⚠️ **Concentración Elevada**: {analisis['max_concentracion']:.1f}% en una sola institución. "
             "Lo ideal es no superar el 40-50% por SOFIPO."
         )
     elif analisis["num_sofipos"] >= 3 and analisis["max_concentracion"] < 50:
         recomendaciones.append(
-            "âœ… **Buena DiversificaciÃ³n**: Tu capital estÃ¡ bien distribuido entre mÃºltiples SOFIPOs."
+            "✅ **Buena Diversificación**: Tu capital está bien distribuido entre múltiples SOFIPOs."
         )
     
     # Evaluar liquidez
     if analisis["porcentaje_liquido"] < 20:
         recomendaciones.append(
-            f"ðŸ’§ **Baja Liquidez**: Solo {analisis['porcentaje_liquido']:.1f}% estÃ¡ disponible de forma inmediata. "
-            "Considera mantener al menos 20-30% en inversiones lÃ­quidas para emergencias."
+            f"💧 **Baja Liquidez**: Solo {analisis['porcentaje_liquido']:.1f}% está disponible de forma inmediata. "
+            "Considera mantener al menos 20-30% en inversiones líquidas para emergencias."
         )
     elif analisis["porcentaje_liquido"] > 80:
         recomendaciones.append(
-            f"ðŸ’° **Alta Liquidez**: {analisis['porcentaje_liquido']:.1f}% estÃ¡ disponible inmediatamente. "
-            "PodrÃ­as mejorar rendimientos moviendo parte a plazos fijos."
+            f"💰 **Alta Liquidez**: {analisis['porcentaje_liquido']:.1f}% está disponible inmediatamente. "
+            "Podrías mejorar rendimientos moviendo parte a plazos fijos."
         )
     else:
         recomendaciones.append(
-            f"âœ… **Balance de Liquidez Adecuado**: {analisis['porcentaje_liquido']:.1f}% lÃ­quido "
+            f"✅ **Balance de Liquidez Adecuado**: {analisis['porcentaje_liquido']:.1f}% líquido "
             "es un buen equilibrio entre accesibilidad y rendimiento."
         )
     
     # Evaluar rendimiento
     if rendimiento_ponderado < 10:
         recomendaciones.append(
-            f"ðŸ“Š **Rendimiento Bajo**: Tu GAT ponderado es {rendimiento_ponderado:.2f}%. "
-            "Considera productos como Nu MÃ©xico (15%) o DiDi (16% primeros $10k) para mejorar."
+            f"📊 **Rendimiento Bajo**: Tu GAT ponderado es {rendimiento_ponderado:.2f}%. "
+            "Considera productos como Nu México (15%) o DiDi (16% primeros $10k) para mejorar."
         )
     elif rendimiento_ponderado >= 14:
         recomendaciones.append(
-            f"ðŸš€ **Excelente Rendimiento**: Tu GAT ponderado de {rendimiento_ponderado:.2f}% "
-            "estÃ¡ por encima del promedio del mercado."
+            f"🚀 **Excelente Rendimiento**: Tu GAT ponderado de {rendimiento_ponderado:.2f}% "
+            "está por encima del promedio del mercado."
         )
     
-    # Recomendaciones especÃ­ficas de protecciÃ³n
+    # Recomendaciones específicas de protección
     recomendaciones.append(
-        "ðŸ›¡ï¸ **ProtecciÃ³n IPAB**: Recuerda que cada SOFIPO estÃ¡ protegida hasta 25,000 UDIs (~200,000 MXN) "
-        "por el IPAB. Si inviertes mÃ¡s, distribuye entre varias instituciones."
+        "🛡️ **Protección IPAB**: Recuerda que cada SOFIPO está protegida hasta 25,000 UDIs (~200,000 MXN) "
+        "por el IPAB. Si inviertes más, distribuye entre varias instituciones."
     )
     
-    # Sugerencias de optimizaciÃ³n
-    if "Nu MÃ©xico" not in [k for k, v in analisis["concentraciones"].items() if v > 0]:
+    # Sugerencias de optimización
+    if "Nu México" not in [k for k, v in analisis["concentraciones"].items() if v > 0]:
         recomendaciones.append(
-            "ðŸ’¡ **Sugerencia**: Nu MÃ©xico ofrece 15% anual con liquidez inmediata, "
+            "💡 **Sugerencia**: Nu México ofrece 15% anual con liquidez inmediata, "
             "una de las mejores combinaciones del mercado."
         )
     
@@ -729,7 +600,7 @@ def generar_recomendaciones(analisis, rendimiento_ponderado):
         tiene_didi = any("DiDi" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
         if not tiene_didi:
             recomendaciones.append(
-                "ðŸ’¡ **Sugerencia DiDi**: Con capital suficiente, considera DiDi para aprovechar "
+                "💡 **Sugerencia DiDi**: Con capital suficiente, considera DiDi para aprovechar "
                 "el 16% en los primeros $10,000 MXN."
             )
     
@@ -741,17 +612,17 @@ def generar_recomendaciones(analisis, rendimiento_ponderado):
 
 def main():
     # Header principal
-    st.markdown('<h1 class="main-header">ðŸ’° Simulador de Inversiones</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
     
     # ========================================================================
-    # CONFIGURACIÃ“N RÃPIDA
+    # CONFIGURACIÓN RÁPIDA
     # ========================================================================
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.markdown("### ðŸŽ¯ Â¿CuÃ¡nto quieres invertir?")
+        st.markdown("### 🎯 ¿Cuánto quieres invertir?")
         monto_total = st.number_input(
             "Monto total disponible (MXN)",
             min_value=1000,
@@ -761,7 +632,7 @@ def main():
         )
     
     with col2:
-        st.markdown("### ðŸ“… Plazo")
+        st.markdown("### 📅 Plazo")
         periodo_simulacion = st.selectbox(
             "Simular a:",
             options=[3, 6, 12, 24],
@@ -772,14 +643,14 @@ def main():
     st.divider()
     
     # ========================================================================
-    # SELECCIÃ“N SIMPLE DE SOFIPOS
+    # SELECCIÓN SIMPLE DE SOFIPOS
     # ========================================================================
     
-    st.markdown("### ðŸ’³ Selecciona las SOFIPOs donde invertirÃ¡s")
+    st.markdown("### 💳 Selecciona las SOFIPOs donde invertirás")
     
     inversiones_seleccionadas = {}
     
-    # Placeholder para el indicador de dinero restante (se actualizarÃ¡ al final)
+    # Placeholder para el indicador de dinero restante (se actualizará al final)
     indicador_restante = st.empty()
     
     # Crear tabs para cada SOFIPO
@@ -790,12 +661,12 @@ def main():
         with tab:
             sofipo_data = SOFIPOS_DATA[sofipo_name]
             
-            # DescripciÃ³n breve
+            # Descripción breve
             st.info(f"**{sofipo_data['descripcion']}**")
             
             # Checkbox para incluir esta SOFIPO
             incluir = st.checkbox(
-                f"âœ… Quiero invertir en {sofipo_name}",
+                f"✅ Quiero invertir en {sofipo_name}",
                 key=f"check_{sofipo_name}"
             )
             
@@ -806,52 +677,52 @@ def main():
                     # Selector de producto
                     productos = list(sofipo_data['productos'].keys())
                     producto_seleccionado = st.selectbox(
-                        "ðŸ“¦ Elige el producto:",
+                        "📦 Elige el producto:",
                         options=productos,
                         key=f"prod_{sofipo_name}",
-                        help="Selecciona el tipo de inversiÃ³n"
+                        help="Selecciona el tipo de inversión"
                     )
                     
                     producto_info = sofipo_data['productos'][producto_seleccionado]
                     
                     # Mostrar tasa
                     if producto_info.get("tipo") == "vista_hibrida":
-                        st.success(f"**ðŸ“Š GAT: {producto_info['tasa_premium']}%** (primeros ${producto_info['limite_premium']:,})")
-                        st.caption(f"DespuÃ©s: {producto_info['tasa_base']}%")
+                        st.success(f"**📊 GAT: {producto_info['tasa_premium']}%** (primeros ${producto_info['limite_premium']:,})")
+                        st.caption(f"Después: {producto_info['tasa_base']}%")
                     elif producto_info.get("limite_max"):
-                        st.success(f"**ðŸ“Š GAT: {producto_info['tasa_base']}%** (hasta ${producto_info['limite_max']:,})")
+                        st.success(f"**📊 GAT: {producto_info['tasa_base']}%** (hasta ${producto_info['limite_max']:,})")
                     else:
-                        st.success(f"**ðŸ“Š GAT: {producto_info['tasa_base']}%**")
+                        st.success(f"**📊 GAT: {producto_info['tasa_base']}%**")
                     
-                    st.caption(f"ðŸ’§ Liquidez: {producto_info['liquidez']}")
+                    st.caption(f"💧 Liquidez: {producto_info['liquidez']}")
                 
                 with col2:
                     # Selector de modo: Monto o Porcentaje
                     modo_input = st.radio(
                         "Ingresar como:",
-                        ["ðŸ’µ Monto ($)", "ðŸ“Š Porcentaje (%)"],
+                        ["💵 Monto ($)", "📊 Porcentaje (%)"],
                         key=f"modo_{sofipo_name}",
                         horizontal=True
                     )
                     
-                    if modo_input == "ðŸ’µ Monto ($)":
+                    if modo_input == "💵 Monto ($)":
                         # Monto a invertir
                         monto = st.number_input(
-                            "Â¿CuÃ¡nto invertirÃ¡s aquÃ­?",
+                            "¿Cuánto invertirás aquí?",
                             min_value=producto_info['minimo'],
                             value=min(max(10000, producto_info['minimo']), monto_total),
                             step=1000,
                             key=f"monto_{sofipo_name}_{producto_seleccionado}",
-                            help=f"MÃ­nimo: ${producto_info['minimo']:,} MXN"
+                            help=f"Mínimo: ${producto_info['minimo']:,} MXN"
                         )
                         
                         # Porcentaje del total
                         porcentaje = (monto / monto_total * 100) if monto_total > 0 else 0
-                        st.caption(f"ðŸ“Š Representa el **{porcentaje:.1f}%** de tu capital total")
+                        st.caption(f"📊 Representa el **{porcentaje:.1f}%** de tu capital total")
                     else:
                         # Input de porcentaje
                         porcentaje_input = st.number_input(
-                            "Â¿QuÃ© % de tu capital invertirÃ¡s aquÃ­?",
+                            "¿Qué % de tu capital invertirás aquí?",
                             min_value=0.0,
                             max_value=100.0,
                             value=10.0,
@@ -863,32 +734,32 @@ def main():
                         # Calcular monto desde porcentaje
                         monto = int(monto_total * porcentaje_input / 100)
                         
-                        # Validar mÃ­nimo
+                        # Validar mínimo
                         if monto < producto_info['minimo']:
-                            st.warning(f"âš ï¸ El {porcentaje_input}% equivale a ${monto:,}, pero el mÃ­nimo es ${producto_info['minimo']:,}")
+                            st.warning(f"⚠️ El {porcentaje_input}% equivale a ${monto:,}, pero el mínimo es ${producto_info['minimo']:,}")
                             monto = producto_info['minimo']
                         
-                        st.caption(f"ðŸ’µ InvertirÃ¡s **${monto:,.0f}**")
+                        st.caption(f"💵 Invertirás **${monto:,.0f}**")
                     
                     # Requisitos especiales
                     cumple_requisito = True
                     if producto_info.get("requisito") is not None:
                         if producto_info.get("requisito") == True:
                             cumple_requisito = st.checkbox(
-                                "Â¿Tienes tarjeta de crÃ©dito Stori?",
+                                "¿Tienes tarjeta de crédito Stori?",
                                 value=True,
                                 key=f"req_{sofipo_name}_{producto_seleccionado}",
                                 help="Necesitas la tarjeta para obtener esta tasa"
                             )
                         elif producto_info.get("requisito") == "Plus o Platino":
                             cumple_requisito = st.checkbox(
-                                "Â¿Tienes membresÃ­a Klar Plus o Platino?",
+                                "¿Tienes membresía Klar Plus o Platino?",
                                 value=True,
                                 key=f"req_{sofipo_name}_{producto_seleccionado}",
-                                help="Necesitas membresÃ­a Plus o Platino para obtener el 15%"
+                                help="Necesitas membresía Plus o Platino para obtener el 15%"
                             )
                 
-                # Guardar inversiÃ³n
+                # Guardar inversión
                 inversiones_seleccionadas[f"{sofipo_name} - {producto_seleccionado}"] = {
                     "sofipo": sofipo_name,
                     "producto": producto_seleccionado,
@@ -909,43 +780,43 @@ def main():
     porcentaje_restante = (dinero_restante / monto_total * 100) if monto_total > 0 else 0
     porcentaje_asignado = (total_asignado_actual / monto_total * 100) if monto_total > 0 else 0
     
-    # Mostrar indicador visual con color segÃºn el estado
+    # Mostrar indicador visual con color según el estado
     with indicador_restante.container():
         if dinero_restante > 0:
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("ðŸ’° Dinero asignado", f"${total_asignado_actual:,.0f}", f"{porcentaje_asignado:.1f}%")
+                st.metric("💰 Dinero asignado", f"${total_asignado_actual:,.0f}", f"{porcentaje_asignado:.1f}%")
             with col2:
-                st.metric("ðŸ”“ Dinero disponible", f"${dinero_restante:,.0f}", f"{porcentaje_restante:.1f}%")
+                st.metric("🔓 Dinero disponible", f"${dinero_restante:,.0f}", f"{porcentaje_restante:.1f}%")
             with col3:
-                st.metric("ðŸ“Š Total", f"${monto_total:,.0f}", "100%")
+                st.metric("📊 Total", f"${monto_total:,.0f}", "100%")
         elif dinero_restante == 0:
-            st.success(f"âœ… **Perfecto!** Has distribuido todo tu dinero: ${monto_total:,.0f} (100%)")
+            st.success(f"✅ **Perfecto!** Has distribuido todo tu dinero: ${monto_total:,.0f} (100%)")
         else:
-            st.error(f"âš ï¸ **Â¡Cuidado!** Te has pasado ${abs(dinero_restante):,.0f}. Ajusta los montos.")
+            st.error(f"⚠️ **¡Cuidado!** Te has pasado ${abs(dinero_restante):,.0f}. Ajusta los montos.")
     
     st.divider()
     
     # ========================================================================
-    # CÃLCULOS Y RESULTADOS
+    # CÁLCULOS Y RESULTADOS
     # ========================================================================
     
     if len(inversiones_seleccionadas) > 0:
         st.divider()
-        st.markdown("## ðŸ“Š Tus Resultados")
+        st.markdown("## 📊 Tus Resultados")
         
         # Validar que no exceda el monto total
         total_asignado = sum([inv["monto"] for inv in inversiones_seleccionadas.values()])
         
         if total_asignado > monto_total:
-            st.error(f"âš ï¸ **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
+            st.error(f"⚠️ **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
             return
         
         diferencia = monto_total - total_asignado
         if diferencia > 0:
-            st.warning(f"ðŸ’¡ Tienes **${diferencia:,.0f}** sin asignar. Â¿Quieres agregarlo a alguna SOFIPO?")
+            st.warning(f"💡 Tienes **${diferencia:,.0f}** sin asignar. ¿Quieres agregarlo a alguna SOFIPO?")
         
-        # Calcular rendimientos para cada inversiÃ³n
+        # Calcular rendimientos para cada inversión
         resultados = []
         proyecciones_todas = []
         
@@ -956,7 +827,7 @@ def main():
             
             # Determinar tasa efectiva
             if tipo == "vista_hibrida":
-                # DiDi con estructura hÃ­brida
+                # DiDi con estructura híbrida
                 interes_anual = calcular_rendimiento_hibrido_didi(
                     monto,
                     producto_info['tasa_premium'],
@@ -968,12 +839,12 @@ def main():
                 tipo_interes = "Compuesto (Diario)"
                 
             elif tipo == "vista":
-                # A la vista con interÃ©s compuesto
+                # A la vista con interés compuesto
                 tasa_efectiva = producto_info['tasa_base']
                 tipo_interes = "Compuesto (Diario)"
                 
             elif tipo == "plazo":
-                # Plazo fijo con interÃ©s simple
+                # Plazo fijo con interés simple
                 tasa_efectiva = producto_info['tasa_base']
                 tipo_interes = "Simple"
             
@@ -1002,15 +873,15 @@ def main():
                 "Producto": inversion['producto'],
                 "Monto Invertido": f"${monto:,.2f}",
                 "GAT Efectivo": f"{tasa_efectiva:.2f}%",
-                "Ganancia/DÃ­a": f"${ganancia_dia:.2f}",
+                "Ganancia/Día": f"${ganancia_dia:.2f}",
                 "Ganancia/Mes": f"${ganancia_mes:.2f}",
-                "Ganancia/AÃ±o": f"${ganancia_anio:.2f}",
+                "Ganancia/Año": f"${ganancia_anio:.2f}",
                 f"Total ({periodo_simulacion} meses)": f"${monto + ganancia_periodo:,.2f}",
                 "Ganancia Total": f"${ganancia_periodo:,.2f}",
-                "Tipo InterÃ©s": tipo_interes
+                "Tipo Interés": tipo_interes
             })
             
-            # Generar proyecciÃ³n mensual
+            # Generar proyección mensual
             if tipo == "vista" or tipo_interes == "Compuesto (Diario)":
                 proyeccion = generar_proyeccion_mensual(
                     monto, tasa_efectiva, "compuesto", periodo_simulacion
@@ -1037,8 +908,8 @@ def main():
         
         rendimiento_ponderado = (ganancia_total / total_invertido) * (12 / periodo_simulacion) * 100
         
-        # MÃ©tricas principales en cards grandes
-        st.markdown("### ðŸ’° Resultado de tu inversiÃ³n")
+        # Métricas principales en cards grandes
+        st.markdown("### 💰 Resultado de tu inversión")
         
         col1, col2, col3 = st.columns(3)
         
@@ -1058,19 +929,19 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
         
         # GAT Ponderado destacado
-        st.success(f"ðŸ“Š **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
+        st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
         
         # Tabla detallada en expander
-        with st.expander("ï¿½ Ver desglose detallado por SOFIPO"):
+        with st.expander("� Ver desglose detallado por SOFIPO"):
             df_resultados = pd.DataFrame(resultados)
             st.dataframe(df_resultados, width="stretch", hide_index=True)
         
         # ====================================================================
-        # GRÃFICO PRINCIPAL
+        # GRÁFICO PRINCIPAL
         # ====================================================================
         
         if len(proyecciones_todas) > 0:
-            st.subheader("ðŸ“ˆ ProyecciÃ³n de Crecimiento Total")
+            st.subheader("📈 Proyección de Crecimiento Total")
             
             # Combinar todas las proyecciones
             df_proyecciones_completo = pd.concat(proyecciones_todas, ignore_index=True)
@@ -1082,10 +953,10 @@ def main():
                 'Total Acumulado': 'sum'
             }).reset_index()
             
-            # Crear grÃ¡fico de lÃ­nea Ãºnica con el TOTAL
+            # Crear gráfico de línea única con el TOTAL
             fig = go.Figure()
             
-            # LÃ­nea principal: Total acumulado de TODAS las inversiones
+            # Línea principal: Total acumulado de TODAS las inversiones
             fig.add_trace(go.Scatter(
                 x=df_total['Mes'],
                 y=df_total['Total Acumulado'],
@@ -1101,7 +972,7 @@ def main():
                               '<extra></extra>'
             ))
             
-            # LÃ­nea de referencia: Capital inicial (sin intereses)
+            # Línea de referencia: Capital inicial (sin intereses)
             fig.add_trace(go.Scatter(
                 x=df_total['Mes'],
                 y=[total_invertido] * len(df_total),
@@ -1130,8 +1001,8 @@ def main():
             
             st.plotly_chart(fig, use_container_width=True)
             
-            # GrÃ¡fico de Ã¡rea apilada (Capital vs Intereses)
-            st.subheader("ðŸ’µ Desglose: Capital vs Intereses")
+            # Gráfico de área apilada (Capital vs Intereses)
+            st.subheader("💵 Desglose: Capital vs Intereses")
             
             # Sumar todos los capitales e intereses por mes
             df_agregado = df_proyecciones_completo.groupby('Mes').agg({
@@ -1165,7 +1036,7 @@ def main():
             ))
             
             fig_area.update_layout(
-                title="ComposiciÃ³n del patrimonio total",
+                title="Composición del patrimonio total",
                 xaxis_title="Meses",
                 yaxis_title="Monto (MXN)",
                 hovermode='x unified',
@@ -1174,13 +1045,13 @@ def main():
             )
             
             st.plotly_chart(fig_area, use_container_width=True)
-            st.subheader("ðŸ“‹ Desglose Mensual Detallado")
+            st.subheader("📋 Desglose Mensual Detallado")
             
             for inversion_key, df_proyeccion in zip(
                 df_proyecciones_completo['SOFIPO'].unique(),
                 proyecciones_todas
             ):
-                with st.expander(f"ðŸ“Š {inversion_key}"):
+                with st.expander(f"📊 {inversion_key}"):
                     # Formatear el dataframe
                     df_display = df_proyeccion.copy()
                     df_display['Capital Inicial'] = df_display['Capital Inicial'].apply(lambda x: f"${x:,.2f}")
@@ -1191,44 +1062,44 @@ def main():
                     st.dataframe(df_display, width="stretch", hide_index=True)
         
         # ====================================================================
-        # ANÃLISIS Y RECOMENDACIONES
+        # ANÁLISIS Y RECOMENDACIONES
         # ====================================================================
         
         st.divider()
-        st.header("3ï¸âƒ£ AnÃ¡lisis de Riesgo y Recomendaciones")
+        st.header("3️⃣ Análisis de Riesgo y Recomendaciones")
         
-        # Realizar anÃ¡lisis de diversificaciÃ³n
+        # Realizar análisis de diversificación
         analisis = analizar_diversificacion(inversiones_seleccionadas)
         if analisis:
             recomendaciones = generar_recomendaciones(analisis, rendimiento_ponderado)
             
-            # Mostrar mÃ©tricas de diversificaciÃ³n
+            # Mostrar métricas de diversificación
             col1, col2, col3 = st.columns(3)
             
             with col1:
                 st.metric(
-                    "ðŸŽ¯ SOFIPOs utilizadas",
+                    "🎯 SOFIPOs utilizadas",
                     f"{analisis['num_sofipos']}/6",
-                    help="NÃºmero de SOFIPOs diferentes en tu portafolio"
+                    help="Número de SOFIPOs diferentes en tu portafolio"
                 )
             
             with col2:
                 st.metric(
-                    "âš–ï¸ ConcentraciÃ³n mÃ¡xima",
+                    "⚖️ Concentración máxima",
                     f"{analisis['max_concentracion']:.1f}%",
-                    delta="Ã“ptimo: <50%" if analisis['max_concentracion'] < 50 else "Alto riesgo",
+                    delta="Óptimo: <50%" if analisis['max_concentracion'] < 50 else "Alto riesgo",
                     delta_color="normal" if analisis['max_concentracion'] < 50 else "inverse"
                 )
             
             with col3:
                 st.metric(
-                    "ðŸ’§ Liquidez inmediata",
+                    "💧 Liquidez inmediata",
                     f"{analisis['porcentaje_liquido']:.1f}%",
-                    help="Porcentaje disponible sin penalizaciÃ³n"
+                    help="Porcentaje disponible sin penalización"
                 )
         
-            # GrÃ¡fico de distribuciÃ³n
-            st.subheader("ðŸ“Š DistribuciÃ³n de tu portafolio")
+            # Gráfico de distribución
+            st.subheader("📊 Distribución de tu portafolio")
             
             df_concentracion = pd.DataFrame([
                 {"SOFIPO": k, "Porcentaje": v, "Monto": inversiones_seleccionadas[k]["monto"]}
@@ -1240,7 +1111,7 @@ def main():
                 df_concentracion,
                 values='Porcentaje',
                 names='SOFIPO',
-                title='DistribuciÃ³n por SOFIPO',
+                title='Distribución por SOFIPO',
                 hole=0.4,
                 color_discrete_sequence=px.colors.qualitative.Set3
             )
@@ -1256,12 +1127,12 @@ def main():
             st.plotly_chart(fig_pie, use_container_width=True)
             
             # Mostrar recomendaciones
-            st.subheader("ðŸ’¡ Recomendaciones Personalizadas")
+            st.subheader("💡 Recomendaciones Personalizadas")
             
             for i, recomendacion in enumerate(recomendaciones, 1):
-                if "âœ…" in recomendacion:
+                if "✅" in recomendacion:
                     st.markdown(f'<div class="success-box">{recomendacion}</div>', unsafe_allow_html=True)
-                elif "âš ï¸" in recomendacion or "ðŸŽ¯" in recomendacion:
+                elif "⚠️" in recomendacion or "🎯" in recomendacion:
                     st.markdown(f'<div class="warning-box">{recomendacion}</div>', unsafe_allow_html=True)
                 else:
                     st.info(recomendacion)
@@ -1271,108 +1142,108 @@ def main():
         # ====================================================================
         
         st.divider()
-        st.header("4ï¸âƒ£ Estrategias de OptimizaciÃ³n")
+        st.header("4️⃣ Estrategias de Optimización")
         
-        tab1, tab2, tab3 = st.tabs(["ðŸ›¡ï¸ Conservadora", "âš–ï¸ Balanceada", "ðŸš€ Agresiva"])
+        tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
         
         with tab1:
             st.markdown("""
             ### Estrategia Conservadora (Menor Riesgo)
             
-            **Perfil**: Prioriza seguridad y liquidez sobre rendimiento mÃ¡ximo.
+            **Perfil**: Prioriza seguridad y liquidez sobre rendimiento máximo.
             
-            **DistribuciÃ³n sugerida**:
-            - 30% Nu MÃ©xico (Cajita Turbo) - 15% GAT (hasta $25k)
+            **Distribución sugerida**:
+            - 30% Nu México (Cajita Turbo) - 15% GAT (hasta $25k)
             - 25% Mercado Pago - 12.5% GAT
-            - 20% UalÃ¡ Ahorro - 10% GAT
+            - 20% Ualá Ahorro - 10% GAT
             - 15% Klar Cuenta - 8.5% GAT
-            - 10% Nu MÃ©xico (Dinero en Cajita) - 7.5% GAT (emergencias)
+            - 10% Nu México (Dinero en Cajita) - 7.5% GAT (emergencias)
             
             **Ventajas**:
-            - âœ… MÃ¡xima liquidez inmediata (100%)
-            - âœ… DiversificaciÃ³n en 4 instituciones sÃ³lidas
-            - âœ… Rendimiento promedio ~11% anual
+            - ✅ Máxima liquidez inmediata (100%)
+            - ✅ Diversificación en 4 instituciones sólidas
+            - ✅ Rendimiento promedio ~11% anual
             
             **Consideraciones**:
             - Todas las opciones tienen liquidez inmediata
             - Ideal para fondos de emergencia
-            - Sin requisitos especiales ni membresÃ­as
+            - Sin requisitos especiales ni membresías
             """)
         
         with tab2:
             st.markdown("""
             ### Estrategia Balanceada (Riesgo Moderado)
             
-            **Perfil**: Balance entre rendimiento, liquidez y diversificaciÃ³n.
+            **Perfil**: Balance entre rendimiento, liquidez y diversificación.
             
-            **DistribuciÃ³n sugerida**:
-            - 20% DiDi (hasta $10k) - 16% GAT (despuÃ©s 8.5%)
-            - 25% Nu MÃ©xico (Cajita Turbo) - 15% GAT
-            - 20% Klar InversiÃ³n Max - 15% GAT (requiere Plus/Platino)
+            **Distribución sugerida**:
+            - 20% DiDi (hasta $10k) - 16% GAT (después 8.5%)
+            - 25% Nu México (Cajita Turbo) - 15% GAT
+            - 20% Klar Inversión Max - 15% GAT (requiere Plus/Platino)
             - 20% Stori Cuenta+ (con tarjeta) - 13.5% GAT
             - 15% Mercado Pago - 12.5% GAT
             
             **Ventajas**:
-            - âœ… Excelente diversificaciÃ³n (5 SOFIPOs)
-            - âœ… 100% con liquidez inmediata
-            - âœ… Rendimiento optimizado (~14% ponderado)
+            - ✅ Excelente diversificación (5 SOFIPOs)
+            - ✅ 100% con liquidez inmediata
+            - ✅ Rendimiento optimizado (~14% ponderado)
             
             **Consideraciones**:
-            - Requiere tarjeta Stori y membresÃ­a Klar Plus/Platino
+            - Requiere tarjeta Stori y membresía Klar Plus/Platino
             - Balance perfecto entre liquidez y rendimiento
-            - Ideal para la mayorÃ­a de inversores
+            - Ideal para la mayoría de inversores
             """)
         
         with tab3:
             st.markdown("""
-            ### ðŸš€ Estrategia Agresiva - Maximizar Rendimientos
+            ### 🚀 Estrategia Agresiva - Maximizar Rendimientos
             
-            **Objetivo**: Obtener el **mÃ¡ximo rendimiento posible** sin importar el riesgo ni la liquidez.
+            **Objetivo**: Obtener el **máximo rendimiento posible** sin importar el riesgo ni la liquidez.
             
-            **FilosofÃ­a**: Toda tu inversiÃ³n trabaja al mÃ¡ximo, aprovechando las mejores tasas de mercado.
+            **Filosofía**: Toda tu inversión trabaja al máximo, aprovechando las mejores tasas de mercado.
             """)
             
-            # Calcular distribuciÃ³n agresiva con montos especÃ­ficos
-            st.subheader("ðŸ’° DistribuciÃ³n Recomendada para tu Capital")
+            # Calcular distribución agresiva con montos específicos
+            st.subheader("💰 Distribución Recomendada para tu Capital")
             
             # Estrategia: Maximizar tasas - DiDi (16%), Klar Max (15%), Nu Turbo (15%), Stori (13.5%)
             distribucion_agresiva = []
             
-            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (MÃXIMA PRIORIDAD)
+            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (MÁXIMA PRIORIDAD)
             monto_didi = min(10000, monto_total)
             distribucion_agresiva.append({
                 "sofipo": "DiDi",
                 "producto": "DiDi Ahorro",
                 "monto": monto_didi,
                 "tasa": 16.0,
-                "razon": "ðŸ¥‡ MÃ¡xima tasa del mercado (primeros $10k, despuÃ©s 8.5%)"
+                "razon": "🥇 Máxima tasa del mercado (primeros $10k, después 8.5%)"
             })
             
             saldo_restante = monto_total - monto_didi
             
-            # 2. Klar InversiÃ³n Flexible Max: 15% (requiere Plus/Platino)
+            # 2. Klar Inversión Flexible Max: 15% (requiere Plus/Platino)
             if saldo_restante > 0:
                 monto_klar = int(saldo_restante * 0.40)  # 40% del restante
                 if monto_klar >= 100:
                     distribucion_agresiva.append({
                         "sofipo": "Klar",
-                        "producto": "InversiÃ³n Flexible Max",
+                        "producto": "Inversión Flexible Max",
                         "monto": monto_klar,
                         "tasa": 15.0,
-                        "razon": "ðŸ¥ˆ 15% con liquidez inmediata (requiere Plus/Platino)"
+                        "razon": "🥈 15% con liquidez inmediata (requiere Plus/Platino)"
                     })
                     saldo_restante -= monto_klar
             
-            # 3. Nu MÃ©xico Cajita Turbo: Hasta $25,000 al 15%
+            # 3. Nu México Cajita Turbo: Hasta $25,000 al 15%
             if saldo_restante > 0:
                 monto_nu_turbo = min(25000, saldo_restante)
                 if monto_nu_turbo > 0:
                     distribucion_agresiva.append({
-                        "sofipo": "Nu MÃ©xico",
+                        "sofipo": "Nu México",
                         "producto": "Cajita Turbo",
                         "monto": monto_nu_turbo,
                         "tasa": 15.0,
-                        "razon": "ï¿½ 15% hasta $25k con liquidez inmediata"
+                        "razon": "� 15% hasta $25k con liquidez inmediata"
                     })
                     saldo_restante -= monto_nu_turbo
             
@@ -1383,11 +1254,11 @@ def main():
                     "producto": "Stori Cuenta+ (Con tarjeta)",
                     "monto": saldo_restante,
                     "tasa": 13.5,
-                    "razon": "ðŸ¥‰ 13.5% (requiere tarjeta de crÃ©dito Stori)"
+                    "razon": "🥉 13.5% (requiere tarjeta de crédito Stori)"
                 })
             
             # Mostrar tabla con montos exactos
-            st.markdown("**ðŸ’µ Montos especÃ­ficos sugeridos:**")
+            st.markdown("**💵 Montos específicos sugeridos:**")
             
             for i, dist in enumerate(distribucion_agresiva, 1):
                 porcentaje = (dist['monto'] / monto_total * 100)
@@ -1412,7 +1283,7 @@ def main():
             tasa_ponderada_agresiva = (rendimiento_agresivo / monto_total) * 100
             ganancia_12m = int(rendimiento_agresivo)
             
-            st.success(f"ðŸŽ¯ **Con esta estrategia agresiva obtendrÃ¡s:**")
+            st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Tasa ponderada", f"{tasa_ponderada_agresiva:.2f}%")
@@ -1420,63 +1291,63 @@ def main():
                 st.metric("Ganancia estimada (12 meses)", f"${ganancia_12m:,.0f}")
             
             st.warning("""
-            **âš ï¸ Consideraciones importantes:**
-            - Esta estrategia prioriza SOLO rendimiento mÃ¡ximo
-            - Parte del capital quedarÃ¡ en plazos fijos (menor liquidez)
-            - Requiere tarjeta de crÃ©dito Stori para obtener el 13.5%
+            **⚠️ Consideraciones importantes:**
+            - Esta estrategia prioriza SOLO rendimiento máximo
+            - Parte del capital quedará en plazos fijos (menor liquidez)
+            - Requiere tarjeta de crédito Stori para obtener el 13.5%
             - No es recomendable para fondos de emergencia
-            - DiversificaciÃ³n limitada a favor de mejores tasas
+            - Diversificación limitada a favor de mejores tasas
             """)
         
         # ====================================================================
-        # INFORMACIÃ“N ADICIONAL
+        # INFORMACIÓN ADICIONAL
         # ====================================================================
         
         st.divider()
         
-        with st.expander("ðŸ“– Glosario y Conceptos Clave"):
+        with st.expander("📖 Glosario y Conceptos Clave"):
             st.markdown("""
             **GAT Nominal**: Ganancia Anual Total antes de impuestos. Es la tasa de rendimiento anual.
             
-            **GAT Real**: Ganancia Anual Total despuÃ©s de restar inflaciÃ³n.
+            **GAT Real**: Ganancia Anual Total después de restar inflación.
             
-            **InterÃ©s Simple**: InterÃ©s calculado solo sobre el capital inicial.
+            **Interés Simple**: Interés calculado solo sobre el capital inicial.
             
-            **InterÃ©s Compuesto**: InterÃ©s calculado sobre capital + intereses previos.
+            **Interés Compuesto**: Interés calculado sobre capital + intereses previos.
             
-            **IPAB**: Instituto para la ProtecciÃ³n al Ahorro Bancario. Protege hasta 25,000 UDIs (~$200,000 MXN) por persona por instituciÃ³n.
+            **IPAB**: Instituto para la Protección al Ahorro Bancario. Protege hasta 25,000 UDIs (~$200,000 MXN) por persona por institución.
             
             **SOFIPO**: Sociedad Financiera Popular regulada por CNBV.
             
-            **Liquidez**: Facilidad para convertir la inversiÃ³n en efectivo sin penalizaciÃ³n.
+            **Liquidez**: Facilidad para convertir la inversión en efectivo sin penalización.
             """)
         
-        with st.expander("âš–ï¸ Aspectos Legales y Fiscales"):
+        with st.expander("⚖️ Aspectos Legales y Fiscales"):
             st.markdown("""
-            ### RegulaciÃ³n
-            - Todas las SOFIPOs mostradas estÃ¡n reguladas por CNBV
-            - Supervisadas por Banco de MÃ©xico y CONDUSEF
-            - Sujetas a la Ley de Ahorro y CrÃ©dito Popular
+            ### Regulación
+            - Todas las SOFIPOs mostradas están reguladas por CNBV
+            - Supervisadas por Banco de México y CONDUSEF
+            - Sujetas a la Ley de Ahorro y Crédito Popular
             
-            ### ProtecciÃ³n IPAB
-            - Cobertura: Hasta 25,000 UDIs por persona por instituciÃ³n
-            - Equivalente aproximado: ~$200,000 MXN (varÃ­a con UDI)
-            - Aplica a depÃ³sitos en SOFIPOs reguladas
+            ### Protección IPAB
+            - Cobertura: Hasta 25,000 UDIs por persona por institución
+            - Equivalente aproximado: ~$200,000 MXN (varía con UDI)
+            - Aplica a depósitos en SOFIPOs reguladas
             
             ### Impuestos
-            - Los intereses generados estÃ¡n sujetos a ISR
-            - Las SOFIPOs retienen impuestos automÃ¡ticamente
-            - Tasa de retenciÃ³n: 1.04% mensual (aprox)
-            - DeclaraciÃ³n anual puede generar saldo a favor
+            - Los intereses generados están sujetos a ISR
+            - Las SOFIPOs retienen impuestos automáticamente
+            - Tasa de retención: 1.04% mensual (aprox)
+            - Declaración anual puede generar saldo a favor
             
-            **Nota**: Consulta con un contador para tu situaciÃ³n especÃ­fica.
+            **Nota**: Consulta con un contador para tu situación específica.
             """)
     
     else:
-        st.info("ðŸ‘† Selecciona al menos una SOFIPO arriba para comenzar la simulaciÃ³n")
+        st.info("👆 Selecciona al menos una SOFIPO arriba para comenzar la simulación")
         
         # Mostrar tabla comparativa de tasas
-        st.subheader("ðŸ“Š Tabla Comparativa de Tasas (Referencia)")
+        st.subheader("📊 Tabla Comparativa de Tasas (Referencia)")
         
         tabla_comparativa = []
         for sofipo_name, sofipo_data in SOFIPOS_DATA.items():
@@ -1486,7 +1357,7 @@ def main():
                     "Producto": producto_name,
                     "GAT Nominal": f"{producto_info['tasa_base']}%",
                     "Liquidez": producto_info['liquidez'],
-                    "MÃ­nimo": f"${producto_info['minimo']:,}"
+                    "Mínimo": f"${producto_info['minimo']:,}"
                 })
         
         df_comparativa = pd.DataFrame(tabla_comparativa)
@@ -1498,18 +1369,17 @@ def main():
     ---
     <div style='text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                 padding: 2rem; border-radius: 20px; color: white; margin-top: 2rem;'>
-        <h3 style='margin: 0; font-weight: 700;'>ðŸ’° Simulador de Inversiones Multi-SOFIPO</h3>
-        <p style='margin: 1rem 0; opacity: 0.9;'>âš ï¸ Este simulador es una herramienta educativa. Las tasas pueden variar.<br>
-        Verifica siempre las condiciones vigentes con cada instituciÃ³n.</p>
-        <p style='margin: 0.5rem 0;'><span class="badge">ðŸ“… Tasas actualizadas: Noviembre 2025</span></p>
-        <p style='margin-top: 1rem; font-size: 1.1rem;'>Desarrollado con â¤ï¸ para inversionistas mexicanos ðŸ‡²ðŸ‡½</p>
+        <h3 style='margin: 0; font-weight: 700;'>💰 Simulador de Inversiones Multi-SOFIPO</h3>
+        <p style='margin: 1rem 0; opacity: 0.9;'>⚠️ Este simulador es una herramienta educativa. Las tasas pueden variar.<br>
+        Verifica siempre las condiciones vigentes con cada institución.</p>
+        <p style='margin: 0.5rem 0;'><span class="badge">📅 Tasas actualizadas: Noviembre 2025</span></p>
+        <p style='margin-top: 1rem; font-size: 1.1rem;'>Desarrollado con ❤️ para inversionistas mexicanos 🇲🇽</p>
     </div>
     """, unsafe_allow_html=True)
 
 
-# Mostrar fecha de última actualización al final
-st.markdown("---")
-st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;"> Última actualización de tasas: 20 de Noviembre, 2025</div>', unsafe_allow_html=True)
-
+    # Fecha de última actualización
+    st.markdown("---")
+    st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">📅 Última actualización de tasas: 20 de Noviembre, 2025</div>', unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
