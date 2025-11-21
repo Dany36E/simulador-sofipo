@@ -866,8 +866,11 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
 # ============================================================================
 
 def main():
-    # Toggle de modo oscuro en la parte superior derecha (flotante)
-    modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False, key="dark_mode")
+    # Crear espacio para el toggle en la esquina superior derecha
+    col_spacer, col_toggle = st.columns([6, 1])
+    
+    with col_toggle:
+        modo_oscuro = st.toggle("🌙", value=False, key="dark_mode", help="Modo Oscuro")
     
     # Aplicar estilos según el modo
     if modo_oscuro:
@@ -1272,42 +1275,6 @@ def main():
             /* Mejora visual del toggle de modo oscuro */
             [data-testid="stCheckbox"] input:checked ~ div {
                 background-color: #667eea !important;
-            }
-            
-            /* Posicionar toggle flotante en esquina superior derecha */
-            div[data-testid="stCheckbox"]:has(label:contains("Modo Oscuro")) {
-                position: fixed !important;
-                top: 1rem !important;
-                right: 1rem !important;
-                z-index: 999 !important;
-                background-color: #161b22 !important;
-                padding: 0.5rem 1rem !important;
-                border-radius: 20px !important;
-                border: 1px solid #30363d !important;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-    else:
-        # Estilos para modo claro (solo el toggle flotante)
-        st.markdown("""
-        <style>
-            /* Posicionar toggle flotante en modo claro */
-            div[data-testid="stCheckbox"] {
-                position: fixed !important;
-                top: 1rem !important;
-                right: 1rem !important;
-                z-index: 999 !important;
-                background-color: white !important;
-                padding: 0.5rem 1rem !important;
-                border-radius: 20px !important;
-                border: 1px solid #e0e0e0 !important;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-            }
-            
-            /* Centrar título en modo claro */
-            h1 {
-                text-align: center !important;
             }
         </style>
         """, unsafe_allow_html=True)
