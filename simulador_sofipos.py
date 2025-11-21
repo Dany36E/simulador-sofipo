@@ -1364,10 +1364,225 @@ def main():
     st.divider()
     
     # ========================================================================
+    # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
+    # ========================================================================
+    
+    st.header("💡 Recomendaciones de Inversión")
+    st.markdown("Basadas en tu capital y preferencias, estas son las estrategias optimizadas:")
+    
+    tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
+    
+    with tab1:
+        st.markdown("""
+        ### Estrategia Conservadora (Menor Riesgo)
+        
+        **Perfil**: Prioriza seguridad y liquidez sobre rendimiento máximo.
+        
+        **Distribución sugerida**:
+        - 30% Nu México (Cajita Turbo) - 15% GAT (hasta $25k)
+        - 25% Mercado Pago - 13% GAT (requiere $3k/mes)
+        - 20% Ualá Base - 7.75% GAT (hasta $30k)
+        - 15% Klar Cuenta - 8.5% GAT
+        - 10% Nu México (Dinero en Cajita) - 7.5% GAT (emergencias)
+        
+        **Ventajas**:
+        - ✅ Máxima liquidez inmediata (100%)
+        - ✅ Diversificación en 4 instituciones sólidas
+        - ✅ Rendimiento promedio ~11.3% anual
+        
+        **Consideraciones**:
+        - Todas las opciones tienen liquidez inmediata
+        - Ideal para fondos de emergencia
+        - Mercado Pago requiere $3k/mes, resto sin requisitos especiales
+        """)
+    
+    with tab2:
+        st.markdown("""
+        ### Estrategia Balanceada (Riesgo Moderado)
+        
+        **Perfil**: Balance entre rendimiento, liquidez y diversificación.
+        
+        **Distribución sugerida**:
+        - 20% DiDi (hasta $10k) - 16% GAT (después 8.5%)
+        - 25% Nu México (Cajita Turbo) - 15% GAT
+        - 20% Klar Inversión Max - 15% GAT (requiere Plus/Platino)
+        - 15% Mercado Pago - 13% GAT (requiere $3k/mes)
+        - 20% Stori 90 días - 10% GAT
+        
+        **Ventajas**:
+        - ✅ Excelente diversificación (5 SOFIPOs)
+        - ✅ 80% con liquidez inmediata
+        - ✅ Rendimiento optimizado (~13.8% ponderado)
+        
+        **Consideraciones**:
+        - Requiere membresía Klar Plus/Platino
+        - Mercado Pago requiere depositar al menos $3,000/mes
+        - 20% a plazo fijo de 90 días en Stori
+        - Balance perfecto entre liquidez y rendimiento
+        - Ideal para la mayoría de inversores
+        """)
+    
+    with tab3:
+        st.markdown("""
+        ### 🚀 Estrategia Agresiva - Maximizar Rendimientos
+        
+        **Objetivo**: Obtener el **máximo rendimiento posible** sin importar el riesgo ni la liquidez.
+        
+        **Filosofía**: Toda tu inversión trabaja al máximo, aprovechando las mejores tasas de mercado.
+        """)
+        
+        # Calcular distribución agresiva con montos específicos
+        st.subheader("💰 Distribución Recomendada para tu Capital")
+        
+        # Estrategia: Maximizar tasas según tus preferencias
+        distribucion_agresiva = []
+        
+        # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - sin requisitos)
+        monto_didi = min(10000, monto_total)
+        distribucion_agresiva.append({
+            "sofipo": "DiDi",
+            "producto": "DiDi Ahorro",
+            "monto": monto_didi,
+            "tasa": 16.0,
+            "razon": "🥇 16% primeros $10k (después 8.5%)"
+        })
+        
+        saldo_restante = monto_total - monto_didi
+        
+        # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2)
+        if cumple_uala_plus and saldo_restante > 0:
+            monto_uala = min(50000, saldo_restante)
+            distribucion_agresiva.append({
+                "sofipo": "Ualá",
+                "producto": "Cuenta Plus",
+                "monto": monto_uala,
+                "tasa": 16.0,
+                "razon": "🥇 16% hasta $50k ✅ Cumples requisito de $3k/mes"
+            })
+            saldo_restante -= monto_uala
+        
+        # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3)
+        if cumple_klar_plus and saldo_restante > 0:
+            monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
+            if monto_klar >= 100:
+                distribucion_agresiva.append({
+                    "sofipo": "Klar",
+                    "producto": "Inversión Flexible Max",
+                    "monto": monto_klar,
+                    "tasa": 15.0,
+                    "razon": "🥈 15% liquidez inmediata ✅ Tienes Plus/Platino"
+                })
+                saldo_restante -= monto_klar
+        
+        # 4. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 4)
+        if cumple_mercadopago and saldo_restante > 0:
+            monto_mp = min(25000, saldo_restante)
+            distribucion_agresiva.append({
+                "sofipo": "Mercado Pago",
+                "producto": "Cuenta Remunerada",
+                "monto": monto_mp,
+                "tasa": 13.0,
+                "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
+            })
+            saldo_restante -= monto_mp
+        
+        # 5. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 5)
+        if saldo_restante > 0:
+            monto_nu_turbo = min(25000, saldo_restante)
+            if monto_nu_turbo > 0:
+                distribucion_agresiva.append({
+                    "sofipo": "Nu México",
+                    "producto": "Cajita Turbo",
+                    "monto": monto_nu_turbo,
+                    "tasa": 15.0,
+                    "razon": "🥈 15% hasta $25k liquidez inmediata"
+                })
+                saldo_restante -= monto_nu_turbo
+        
+        # 6. Stori 90 días: Al 10% (lo que reste - ÚLTIMA OPCIÓN)
+        if saldo_restante > 0:
+            distribucion_agresiva.append({
+                "sofipo": "Stori",
+                "producto": "90 días",
+                "monto": saldo_restante,
+                "tasa": 10.0,
+                "razon": "🥉 10% plazo 90 días"
+            })
+        
+        # Mostrar tabla con montos exactos
+        st.markdown("**💵 Montos específicos sugeridos:**")
+        
+        for i, dist in enumerate(distribucion_agresiva, 1):
+            porcentaje = (dist['monto'] / monto_total * 100)
+            col1, col2, col3 = st.columns([2, 2, 1])
+            
+            with col1:
+                st.markdown(f"**{i}. {dist['sofipo']}** - {dist['producto']}")
+                st.caption(dist['razon'])
+            
+            with col2:
+                st.metric(
+                    "Monto",
+                    f"${dist['monto']:,.0f}",
+                    delta=f"{porcentaje:.1f}% del total"
+                )
+            
+            with col3:
+                st.metric("GAT", f"{dist['tasa']}%")
+        
+        # Calcular rendimiento proyectado de esta estrategia
+        rendimiento_agresivo = sum([d['monto'] * d['tasa'] / 100 for d in distribucion_agresiva])
+        tasa_ponderada_agresiva = (rendimiento_agresivo / monto_total) * 100
+        ganancia_12m = int(rendimiento_agresivo)
+        
+        st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Tasa ponderada", f"{tasa_ponderada_agresiva:.2f}%")
+        with col2:
+            st.metric("Ganancia estimada (12 meses)", f"${ganancia_12m:,.0f}")
+        
+        # Botón para aplicar estrategia
+        st.markdown("---")
+        if st.button("✨ Aplicar esta estrategia a mi simulación", key="btn_aplicar_agresiva", type="primary"):
+            # Guardar la distribución en session_state
+            st.session_state['estrategia_aplicada'] = distribucion_agresiva
+            st.session_state['aplicar_estrategia'] = True
+            st.success("✅ Estrategia aplicada! Desplázate hacia abajo para ver los cambios.")
+            st.rerun()
+        
+        # Advertencias dinámicas según preferencias
+        advertencias = ["**⚠️ Consideraciones importantes:**"]
+        advertencias.append(f"- Esta estrategia alcanza un rendimiento ponderado de ~{tasa_ponderada_agresiva:.1f}%")
+        
+        # Advertencias sobre requisitos incluidos
+        if cumple_mercadopago:
+            advertencias.append("- ✅ Incluye Mercado Pago 13% (cumples requisito de $3k/mes)")
+        else:
+            advertencias.append("- ℹ️ Podrías mejorar con Mercado Pago 13% si puedes depositar $3k/mes")
+        
+        if cumple_uala_plus:
+            advertencias.append("- ✅ Incluye Ualá Plus 16% (cumples requisito de $3k/mes)")
+        else:
+            advertencias.append("- ℹ️ Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
+        
+        if cumple_klar_plus:
+            advertencias.append("- ✅ Incluye Klar Max 15% (tienes membresía Plus/Platino)")
+        else:
+            advertencias.append("- ℹ️ Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
+        
+        advertencias.append("- Parte del capital puede quedar en plazos fijos (menor liquidez)")
+        advertencias.append("- No es recomendable para fondos de emergencia")
+        
+        st.warning("\n".join(advertencias))
+    
+    st.divider()
+    
+    # ========================================================================
     # SELECCIÓN SIMPLE DE SOFIPOS
     # ========================================================================
     
-    st.markdown("### 💳 Selecciona las SOFIPOs donde invertirás")
+    st.markdown("### 💳 Selecciona las SOFIPOs donde invertirás (o aplica una estrategia arriba)")
     
     # Verificar si se aplicó una estrategia y pre-cargar valores en session_state
     if 'aplicar_estrategia' in st.session_state and st.session_state['aplicar_estrategia']:
@@ -1939,219 +2154,6 @@ def main():
                     st.markdown(f'<div class="warning-box">{recomendacion}</div>', unsafe_allow_html=True)
                 else:
                     st.info(recomendacion)
-        
-        # ====================================================================
-        # ESTRATEGIAS SUGERIDAS
-        # ====================================================================
-        
-        st.divider()
-        st.header("4️⃣ Estrategias de Optimización")
-        
-        tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
-        
-        with tab1:
-            st.markdown("""
-            ### Estrategia Conservadora (Menor Riesgo)
-            
-            **Perfil**: Prioriza seguridad y liquidez sobre rendimiento máximo.
-            
-            **Distribución sugerida**:
-            - 30% Nu México (Cajita Turbo) - 15% GAT (hasta $25k)
-            - 25% Mercado Pago - 13% GAT (requiere $3k/mes)
-            - 20% Ualá Base - 7.75% GAT (hasta $30k)
-            - 15% Klar Cuenta - 8.5% GAT
-            - 10% Nu México (Dinero en Cajita) - 7.5% GAT (emergencias)
-            
-            **Ventajas**:
-            - ✅ Máxima liquidez inmediata (100%)
-            - ✅ Diversificación en 4 instituciones sólidas
-            - ✅ Rendimiento promedio ~11.3% anual
-            
-            **Consideraciones**:
-            - Todas las opciones tienen liquidez inmediata
-            - Ideal para fondos de emergencia
-            - Mercado Pago requiere $3k/mes, resto sin requisitos especiales
-            """)
-        
-        with tab2:
-            st.markdown("""
-            ### Estrategia Balanceada (Riesgo Moderado)
-            
-            **Perfil**: Balance entre rendimiento, liquidez y diversificación.
-            
-            **Distribución sugerida**:
-            - 20% DiDi (hasta $10k) - 16% GAT (después 8.5%)
-            - 25% Nu México (Cajita Turbo) - 15% GAT
-            - 20% Klar Inversión Max - 15% GAT (requiere Plus/Platino)
-            - 15% Mercado Pago - 13% GAT (requiere $3k/mes)
-            - 20% Stori 90 días - 10% GAT
-            
-            **Ventajas**:
-            - ✅ Excelente diversificación (5 SOFIPOs)
-            - ✅ 80% con liquidez inmediata
-            - ✅ Rendimiento optimizado (~13.8% ponderado)
-            
-            **Consideraciones**:
-            - Requiere membresía Klar Plus/Platino
-            - Mercado Pago requiere depositar al menos $3,000/mes
-            - 20% a plazo fijo de 90 días en Stori
-            - Balance perfecto entre liquidez y rendimiento
-            - Ideal para la mayoría de inversores
-            """)
-        
-        with tab3:
-            st.markdown("""
-            ### 🚀 Estrategia Agresiva - Maximizar Rendimientos
-            
-            **Objetivo**: Obtener el **máximo rendimiento posible** sin importar el riesgo ni la liquidez.
-            
-            **Filosofía**: Toda tu inversión trabaja al máximo, aprovechando las mejores tasas de mercado.
-            """)
-            
-            # Calcular distribución agresiva con montos específicos
-            st.subheader("💰 Distribución Recomendada para tu Capital")
-            
-            # Estrategia: Maximizar tasas según tus preferencias
-            distribucion_agresiva = []
-            
-            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - sin requisitos)
-            monto_didi = min(10000, monto_total)
-            distribucion_agresiva.append({
-                "sofipo": "DiDi",
-                "producto": "DiDi Ahorro",
-                "monto": monto_didi,
-                "tasa": 16.0,
-                "razon": "🥇 16% primeros $10k (después 8.5%)"
-            })
-            
-            saldo_restante = monto_total - monto_didi
-            
-            # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2)
-            if cumple_uala_plus and saldo_restante > 0:
-                monto_uala = min(50000, saldo_restante)
-                distribucion_agresiva.append({
-                    "sofipo": "Ualá",
-                    "producto": "Cuenta Plus",
-                    "monto": monto_uala,
-                    "tasa": 16.0,
-                    "razon": "🥇 16% hasta $50k ✅ Cumples requisito de $3k/mes"
-                })
-                saldo_restante -= monto_uala
-            
-            # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3)
-            if cumple_klar_plus and saldo_restante > 0:
-                monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
-                if monto_klar >= 100:
-                    distribucion_agresiva.append({
-                        "sofipo": "Klar",
-                        "producto": "Inversión Flexible Max",
-                        "monto": monto_klar,
-                        "tasa": 15.0,
-                        "razon": "🥈 15% liquidez inmediata ✅ Tienes Plus/Platino"
-                    })
-                    saldo_restante -= monto_klar
-            
-            # 4. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 4)
-            if cumple_mercadopago and saldo_restante > 0:
-                monto_mp = min(25000, saldo_restante)
-                distribucion_agresiva.append({
-                    "sofipo": "Mercado Pago",
-                    "producto": "Cuenta Remunerada",
-                    "monto": monto_mp,
-                    "tasa": 13.0,
-                    "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
-                })
-                saldo_restante -= monto_mp
-            
-            # 5. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 5)
-            if saldo_restante > 0:
-                monto_nu_turbo = min(25000, saldo_restante)
-                if monto_nu_turbo > 0:
-                    distribucion_agresiva.append({
-                        "sofipo": "Nu México",
-                        "producto": "Cajita Turbo",
-                        "monto": monto_nu_turbo,
-                        "tasa": 15.0,
-                        "razon": "🥈 15% hasta $25k liquidez inmediata"
-                    })
-                    saldo_restante -= monto_nu_turbo
-            
-            # 6. Stori 90 días: Al 10% (lo que reste - ÚLTIMA OPCIÓN)
-            if saldo_restante > 0:
-                distribucion_agresiva.append({
-                    "sofipo": "Stori",
-                    "producto": "90 días",
-                    "monto": saldo_restante,
-                    "tasa": 10.0,
-                    "razon": "🥉 10% plazo 90 días"
-                })
-            
-            # Mostrar tabla con montos exactos
-            st.markdown("**💵 Montos específicos sugeridos:**")
-            
-            for i, dist in enumerate(distribucion_agresiva, 1):
-                porcentaje = (dist['monto'] / monto_total * 100)
-                col1, col2, col3 = st.columns([2, 2, 1])
-                
-                with col1:
-                    st.markdown(f"**{i}. {dist['sofipo']}** - {dist['producto']}")
-                    st.caption(dist['razon'])
-                
-                with col2:
-                    st.metric(
-                        "Monto",
-                        f"${dist['monto']:,.0f}",
-                        delta=f"{porcentaje:.1f}% del total"
-                    )
-                
-                with col3:
-                    st.metric("GAT", f"{dist['tasa']}%")
-            
-            # Calcular rendimiento proyectado de esta estrategia
-            rendimiento_agresivo = sum([d['monto'] * d['tasa'] / 100 for d in distribucion_agresiva])
-            tasa_ponderada_agresiva = (rendimiento_agresivo / monto_total) * 100
-            ganancia_12m = int(rendimiento_agresivo)
-            
-            st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Tasa ponderada", f"{tasa_ponderada_agresiva:.2f}%")
-            with col2:
-                st.metric("Ganancia estimada (12 meses)", f"${ganancia_12m:,.0f}")
-            
-            # Botón para aplicar estrategia
-            st.markdown("---")
-            if st.button("✨ Aplicar esta estrategia a mi simulación", key="btn_aplicar_agresiva", type="primary"):
-                # Guardar la distribución en session_state
-                st.session_state['estrategia_aplicada'] = distribucion_agresiva
-                st.session_state['aplicar_estrategia'] = True
-                st.success("✅ Estrategia aplicada! Desplázate hacia arriba para ver los cambios en la sección de inversión.")
-                st.rerun()
-            
-            # Advertencias dinámicas según preferencias
-            advertencias = ["**⚠️ Consideraciones importantes:**"]
-            advertencias.append(f"- Esta estrategia alcanza un rendimiento ponderado de ~{tasa_ponderada_agresiva:.1f}%")
-            
-            # Advertencias sobre requisitos incluidos
-            if cumple_mercadopago:
-                advertencias.append("- ✅ Incluye Mercado Pago 13% (cumples requisito de $3k/mes)")
-            else:
-                advertencias.append("- ℹ️ Podrías mejorar con Mercado Pago 13% si puedes depositar $3k/mes")
-            
-            if cumple_uala_plus:
-                advertencias.append("- ✅ Incluye Ualá Plus 16% (cumples requisito de $3k/mes)")
-            else:
-                advertencias.append("- ℹ️ Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
-            
-            if cumple_klar_plus:
-                advertencias.append("- ✅ Incluye Klar Max 15% (tienes membresía Plus/Platino)")
-            else:
-                advertencias.append("- ℹ️ Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
-            
-            advertencias.append("- Parte del capital puede quedar en plazos fijos (menor liquidez)")
-            advertencias.append("- No es recomendable para fondos de emergencia")
-            
-            st.warning("\n".join(advertencias))
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
