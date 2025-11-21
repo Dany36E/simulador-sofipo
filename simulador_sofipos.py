@@ -809,194 +809,142 @@ def analizar_diversificacion(inversiones_dict):
 
 def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, cumple_mp=False, cumple_uala=False):
     """
-    Genera recomendaciones personalizadas basadas en el análisis y preferencias del usuario
+    Genera recomendaciones personalizadas estructuradas: alertas críticas y oportunidades
     """
-    recomendaciones = []
-    
     if analisis is None:
-        return ["💡 Agrega al menos una inversión para recibir recomendaciones"]
+        return {"alertas": [], "oportunidades": []}
     
-    # Evaluar diversificación
-    if analisis["num_sofipos"] == 1:
-        recomendaciones.append(
-            "⚠️ **Alta Concentración**: Estás invirtiendo en una sola SOFIPO. "
-            "Considera diversificar en al menos 3-4 instituciones para reducir riesgo."
-        )
-    elif analisis["max_concentracion"] > 70:
-        recomendaciones.append(
-            f"⚠️ **Concentración Elevada**: {analisis['max_concentracion']:.1f}% en una sola institución. "
-            "Lo ideal es no superar el 40-50% por SOFIPO."
-        )
-    elif analisis["num_sofipos"] >= 3 and analisis["max_concentracion"] < 50:
-        recomendaciones.append(
-            "? **Buena Diversificación**: Tu capital está bien distribuido entre múltiples SOFIPOs."
-        )
+    alertas = []
+    oportunidades = []
     
-    # Evaluar liquidez
-    if analisis["porcentaje_liquido"] < 20:
-        recomendaciones.append(
-            f"⚠️ **Baja Liquidez**: Solo {analisis['porcentaje_liquido']:.1f}% está disponible de forma inmediata. "
-            "Considera mantener al menos 20-30% en inversiones líquidas para emergencias."
-        )
-    elif analisis["porcentaje_liquido"] > 80:
-        recomendaciones.append(
-            f"✅ **Alta Liquidez**: {analisis['porcentaje_liquido']:.1f}% está disponible inmediatamente. "
-            "Podrías mejorar rendimientos moviendo parte a plazos fijos."
-        )
-    else:
-        recomendaciones.append(
-            f"? **Balance de Liquidez Adecuado**: {analisis['porcentaje_liquido']:.1f}% líquido "
-            "es un buen equilibrio entre accesibilidad y rendimiento."
-        )
+    # ========================================================================
+    # ALERTAS CRÍTICAS (solo problemas importantes)
+    # ========================================================================
     
-    # Evaluar rendimiento
-    if rendimiento_ponderado < 10:
-        recomendaciones.append(
-            f"⚠️ **Rendimiento Bajo**: Tu GAT ponderado es {rendimiento_ponderado:.2f}%. "
-            "Considera productos como Nu México (15%) o DiDi (16% primeros $10k) para mejorar."
-        )
-    elif rendimiento_ponderado >= 14:
-        recomendaciones.append(
-            f"🎯 **Excelente Rendimiento**: Tu GAT ponderado de {rendimiento_ponderado:.2f}% "
-            "está por encima del promedio del mercado."
-        )
-    
-    # Recomendaciones específicas de protección
-    recomendaciones.append(
-        "🛡️ **Protección IPAB**: Recuerda que cada SOFIPO está protegida hasta 25,000 UDIs (~200,000 MXN) "
-        "por el IPAB. Si inviertes más, distribuye entre varias instituciones."
-    )
-    
-    # Sugerencias de optimización
-    if "Nu México" not in [k for k, v in analisis["concentraciones"].items() if v > 0]:
-        recomendaciones.append(
-            "💡 **Sugerencia**: Nu México ofrece 15% anual con liquidez inmediata, "
-            "una de las mejores combinaciones del mercado."
-        )
-    
-    if analisis["total_invertido"] >= 10000:
-        tiene_didi = any("DiDi" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
-        if not tiene_didi:
-            recomendaciones.append(
-                " **Sugerencia DiDi**: Con capital suficiente, considera DiDi para aprovechar "
-                "el 16% en los primeros $10,000 MXN."
-            )
-    
-    # Recomendaciones basadas en preferencias del usuario
-    st.markdown("---")
-    recomendaciones.append("### 💡 Oportunidades según tus preferencias:")
-    
-    # Lista de opciones disponibles ordenadas por tasa
-    opciones_disponibles = []
-    
-    # DiDi siempre disponible (sin requisitos especiales)
-    if not any("DiDi" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
-        opciones_disponibles.append({
-            "sofipo": "DiDi",
-            "producto": "DiDi Ahorro",
-            "tasa": 16.0,
-            "limite": 10000,
-            "requisito": None,
-            "texto": "**DiDi Ahorro** - 16% primeros $10k, luego 8.5% (sin requisitos especiales)"
+    # Alerta de concentración extrema
+    if analisis["max_concentracion"] > 85:
+        alertas.append({
+            "tipo": "critico",
+            "emoji": "⚠️",
+            "titulo": "**Concentración Elevada**",
+            "mensaje": f"{analisis['max_concentracion']:.1f}% en una sola institución. Lo ideal es no superar el 40-50% por SOFIPO."
         })
     
-    # Ualá - depende de si cumple requisitos
-    tiene_uala = any("Ualá" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
+    # Alerta de liquidez muy baja
+    if analisis["porcentaje_liquido"] < 20:
+        alertas.append({
+            "tipo": "warning",
+            "emoji": "⚠️",
+            "titulo": "**Baja Liquidez**",
+            "mensaje": f"Solo {analisis['porcentaje_liquido']:.1f}% está disponible inmediatamente. Considera mantener al menos 20-30% en inversiones líquidas para emergencias."
+        })
     
-    if not tiene_uala:
-        if cumple_uala:
-            # SÍ cumple requisitos ? recomendar Ualá Plus 16%
-            opciones_disponibles.append({
-                "sofipo": "Ualá",
-                "producto": "Plus",
-                "tasa": 16.0,
-                "limite": 50000,
-                "requisito": "? Ya cumples",
-                "texto": "**Ualá Plus** - 16% hasta $50k ? Cumples requisito de $3k/mes"
-            })
-        else:
-            # NO cumple requisitos ? recomendar Ualá Base 7.75%
-            opciones_disponibles.append({
-                "sofipo": "Ualá",
-                "producto": "Base",
-                "tasa": 7.75,
-                "limite": 30000,
-                "requisito": "? No cumples",
-                "texto": "**Ualá Base** - 7.75% hasta $30k (sin requisitos especiales)"
-            })
+    # Alerta de muy poca diversificación
+    if analisis["num_sofipos"] == 1 and analisis["total_invertido"] > 50000:
+        alertas.append({
+            "tipo": "warning",
+            "emoji": "⚠️",
+            "titulo": "**Alta Concentración**",
+            "mensaje": f"Inviertes en una sola SOFIPO. Considera diversificar en al menos 3-4 instituciones para reducir riesgo."
+        })
     
-    # Klar - depende de si cumple requisitos
-    tiene_klar = any("Klar" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
+    # ========================================================================
+    # OPORTUNIDADES (productos que NO tiene y podrían mejorar rendimiento)
+    # ========================================================================
     
-    if not tiene_klar:
-        if cumple_klar:
-            # SÍ cumple requisitos ? recomendar Klar Max 15%
-            opciones_disponibles.append({
-                "sofipo": "Klar",
-                "producto": "Inversión Max",
-                "tasa": 15.0,
-                "limite": None,
-                "requisito": "? Ya cumples",
-                "texto": "**Klar Inversión Max** - 15% liquidez inmediata ? Tienes Plus/Platino"
-            })
-        else:
-            # NO cumple requisitos ? recomendar Klar Cuenta 8.5%
-            opciones_disponibles.append({
-                "sofipo": "Klar",
-                "producto": "Cuenta",
-                "tasa": 8.5,
-                "limite": None,
-                "requisito": "? No cumples",
-                "texto": "**Klar Cuenta** - 8.5% (sin requisitos especiales)"
-            })
+    sofipos_actuales = [k for k, v in analisis["concentraciones"].items() if v > 0]
     
-    # Nu México siempre disponible
-    if not any("Nu" in k and "Turbo" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
-        opciones_disponibles.append({
+    # 1. Nu México Cajita Turbo - 15% liquidez inmediata (SIEMPRE disponible)
+    if not any("Nu México" in s and "Turbo" in s for s in sofipos_actuales):
+        oportunidades.append({
+            "orden": 1,
+            "tasa": 15.0,
             "sofipo": "Nu México",
             "producto": "Cajita Turbo",
-            "tasa": 15.0,
-            "limite": 25000,
-            "requisito": None,
-            "texto": "**Nu México Cajita Turbo** - 15% hasta $25k con liquidez inmediata"
+            "detalle": "15% hasta $25k con liquidez inmediata",
+            "requisito": None
         })
     
-    # Mercado Pago - solo si cumple requisitos
-    tiene_mp = any("Mercado Pago" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
+    # 2. DiDi Ahorro - 16% primeros $10k (SIEMPRE disponible)
+    if not any("DiDi" in s for s in sofipos_actuales):
+        oportunidades.append({
+            "orden": 2,
+            "tasa": 16.0,
+            "sofipo": "DiDi",
+            "producto": "Ahorro",
+            "detalle": "16% primeros $10k, luego 8.5%",
+            "requisito": None
+        })
     
-    if cumple_mp and not tiene_mp:
-        # SÍ cumple requisitos ? recomendar Mercado Pago 13%
-        opciones_disponibles.append({
+    # 3. Ualá Plus vs Base (depende de si cumple requisitos)
+    if not any("Ualá" in s for s in sofipos_actuales):
+        if cumple_uala:
+            oportunidades.append({
+                "orden": 3,
+                "tasa": 16.0,
+                "sofipo": "Ualá",
+                "producto": "Plus",
+                "detalle": "16% hasta $50k",
+                "requisito": "✅ Cumples requisito de $3k/mes"
+            })
+        else:
+            oportunidades.append({
+                "orden": 7,
+                "tasa": 7.75,
+                "sofipo": "Ualá",
+                "producto": "Base",
+                "detalle": "7.75% hasta $30k",
+                "requisito": None
+            })
+    
+    # 4. Klar Max vs Cuenta (depende de si tiene tarjeta Plus/Platino)
+    if not any("Klar" in s for s in sofipos_actuales):
+        if cumple_klar:
+            oportunidades.append({
+                "orden": 4,
+                "tasa": 15.0,
+                "sofipo": "Klar",
+                "producto": "Inversión Max",
+                "detalle": "15% con liquidez inmediata",
+                "requisito": "✅ Tienes tarjeta Plus/Platino"
+            })
+        else:
+            oportunidades.append({
+                "orden": 8,
+                "tasa": 8.5,
+                "sofipo": "Klar",
+                "producto": "Cuenta",
+                "detalle": "8.5% sin requisitos",
+                "requisito": None
+            })
+    
+    # 5. Mercado Pago - 13% (solo si cumple requisitos)
+    if cumple_mp and not any("Mercado Pago" in s for s in sofipos_actuales):
+        oportunidades.append({
+            "orden": 5,
+            "tasa": 13.0,
             "sofipo": "Mercado Pago",
             "producto": "Rendimientos",
-            "tasa": 13.0,
-            "limite": 25000,
-            "requisito": "? Ya cumples",
-            "texto": "**Mercado Pago** - 13% hasta $25k ? Cumples requisito de $3k/mes"
+            "detalle": "13% hasta $25k",
+            "requisito": "✅ Cumples requisito de $3k/mes"
         })
-    # Si NO cumple, no lo recomendamos (no tiene versión "base" sin requisitos)
     
-    # Stori 90 días (mejor plazo sin requisitos)
-    if not any("Stori" in k and "90" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
-        opciones_disponibles.append({
+    # 6. Stori 90 días - 10% plazo (SIEMPRE disponible)
+    if not any("Stori" in s and "90" in s for s in sofipos_actuales):
+        oportunidades.append({
+            "orden": 6,
+            "tasa": 10.0,
             "sofipo": "Stori",
             "producto": "90 días",
-            "tasa": 10.0,
-            "limite": None,
-            "requisito": None,
-            "texto": "**Stori 90 días** - 10% a plazo fijo (sin requisitos)"
+            "detalle": "10% a plazo fijo (sin requisitos)",
+            "requisito": None
         })
     
-    # Ordenar por tasa descendente
-    opciones_disponibles.sort(key=lambda x: x["tasa"], reverse=True)
+    # Ordenar por tasa descendente y tomar top 3
+    oportunidades.sort(key=lambda x: (-x["tasa"], x["orden"]))
+    oportunidades = oportunidades[:3]
     
-    # Mostrar top 3 opciones
-    if len(opciones_disponibles) > 0:
-        recomendaciones.append("\n**💡 Mejores opciones disponibles para ti:**\n")
-        for i, opcion in enumerate(opciones_disponibles[:3], 1):
-            recomendaciones.append(f"{i}. {opcion['texto']}")
-    
-    return recomendaciones
+    return {"alertas": alertas, "oportunidades": oportunidades}
 
 # ============================================================================
 # INTERFAZ PRINCIPAL
@@ -2988,16 +2936,28 @@ def main():
                     help="Porcentaje disponible sin penalización"
                 )
             
-            # Mostrar recomendaciones
-            st.subheader("💡 Recomendaciones Personalizadas")
+            # Mostrar alertas críticas (si hay)
+            if recomendaciones["alertas"]:
+                st.markdown("### ⚠️ Alertas Importantes")
+                for alerta in recomendaciones["alertas"]:
+                    st.markdown(f'<div class="warning-box">{alerta["emoji"]} {alerta["titulo"]}: {alerta["mensaje"]}</div>', unsafe_allow_html=True)
+                st.markdown("")
             
-            for i, recomendacion in enumerate(recomendaciones, 1):
-                if "✅" in recomendacion:
-                    st.markdown(f'<div class="success-box">{recomendacion}</div>', unsafe_allow_html=True)
-                elif "⚠️" in recomendacion or "💡" in recomendacion:
-                    st.markdown(f'<div class="warning-box">{recomendacion}</div>', unsafe_allow_html=True)
-                else:
-                    st.info(recomendacion)
+            # Mostrar oportunidades (top 3)
+            if recomendaciones["oportunidades"]:
+                st.markdown("### 💡 Oportunidades según tus preferencias:")
+                
+                for i, opp in enumerate(recomendaciones["oportunidades"], 1):
+                    # Card con diseño limpio
+                    with st.container():
+                        col_num, col_content = st.columns([0.5, 9.5])
+                        with col_num:
+                            st.markdown(f"### {i}")
+                        with col_content:
+                            st.markdown(f"**{opp['sofipo']} {opp['producto']}** - {opp['detalle']}")
+                            if opp['requisito']:
+                                st.caption(opp['requisito'])
+                        st.markdown("")
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
