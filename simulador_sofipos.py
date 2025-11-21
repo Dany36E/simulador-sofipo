@@ -890,10 +890,12 @@ def main():
             .main-header {
                 color: #f0f6fc !important;
                 text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+                text-align: center !important;
             }
             
             .subtitle {
                 color: #8b949e !important;
+                text-align: center !important;
             }
             
             h1, h2, h3, h4, h5, h6 {
@@ -1112,13 +1114,13 @@ def main():
                 background-color: #161b22 !important;
             }
             
-            /* Gráficas Plotly - Mejoradas para modo oscuro */
+            /* Gráficas Plotly - Mejoradas para modo oscuro con fondo suave */
             .js-plotly-plot .plotly, .plotly {
-                background-color: #0d1117 !important;
+                background-color: #161b22 !important;
             }
             
             .js-plotly-plot .plotly .bg {
-                fill: #0d1117 !important;
+                fill: #161b22 !important;
             }
             
             .js-plotly-plot .plotly .gridlayer .x, 
