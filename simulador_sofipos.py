@@ -1452,11 +1452,27 @@ def main():
             # Activar el checkbox de la SOFIPO
             st.session_state[f"check_{sofipo_nombre}"] = True
             
-            # Seleccionar el producto
-            st.session_state[f"prod_{sofipo_nombre}"] = producto_nombre
-            
-            # Asignar el monto
-            st.session_state[f"monto_{sofipo_nombre}_{producto_nombre}"] = int(monto)
+            # Validar que el producto existe en esta SOFIPO
+            if sofipo_nombre in SOFIPOS_DATA:
+                productos_disponibles = list(SOFIPOS_DATA[sofipo_nombre]['productos'].keys())
+                
+                # Si el producto existe exactamente, usarlo
+                if producto_nombre in productos_disponibles:
+                    producto_valido = producto_nombre
+                else:
+                    # Si no existe, intentar encontrar uno similar o usar el primero
+                    producto_valido = productos_disponibles[0]
+                    # Buscar por coincidencia parcial
+                    for prod in productos_disponibles:
+                        if producto_nombre.lower() in prod.lower() or prod.lower() in producto_nombre.lower():
+                            producto_valido = prod
+                            break
+                
+                # Seleccionar el producto validado
+                st.session_state[f"prod_{sofipo_nombre}"] = producto_valido
+                
+                # Asignar el monto con el nombre validado
+                st.session_state[f"monto_{sofipo_nombre}_{producto_valido}"] = int(monto)
         
         # Limpiar la estrategia pendiente
         del st.session_state["estrategia_objetivo_pendiente"]
@@ -2127,9 +2143,15 @@ def main():
                     # Selector de producto
                     productos = list(sofipo_data['productos'].keys())
                     
+                    # Validar que el producto guardado existe, si no usar el primero
+                    producto_guardado = st.session_state.get(f"prod_{sofipo_name}", productos[0])
+                    if producto_guardado not in productos:
+                        producto_guardado = productos[0]
+                    
                     producto_seleccionado = st.selectbox(
                         "📦 Elige el producto:",
                         options=productos,
+                        index=productos.index(producto_guardado) if producto_guardado in productos else 0,
                         key=f"prod_{sofipo_name}",
                         help="Selecciona el tipo de inversión"
                     )
