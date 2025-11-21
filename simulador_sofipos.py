@@ -420,14 +420,17 @@ SOFIPOS_DATA = {
         "logo": "💵",
         "productos": {
             "Rendimientos MP": {
-                "tasa_base": 12.50,
+                "tasa_base": 13.00,
                 "liquidez": "Inmediata",
-                "minimo": 0,
-                "tipo": "vista"
+                "minimo": 3000,
+                "tipo": "vista",
+                "limite_max": 25000,
+                "requisito_deposito": 3000,
+                "descripcion_extra": "Requiere depositar $3,000/mes, máximo $25,000"
             }
         },
         "color": "#00AAFF",
-        "descripcion": "Respaldo del ecosistema Mercado Libre"
+        "descripcion": "13% anual (requiere $3k/mes, máx $25k)"
     },
     "Finsus": {
         "logo": "🏦",
@@ -761,10 +764,16 @@ def main():
                             monto = producto_info['minimo']
                         
                         st.caption(f"💵 Invertirás **${monto:,.0f}**")
-                    
-                    # Requisitos especiales
-                    cumple_requisito = True
-                    if producto_info.get("requisito") is not None:
+                
+                # Advertencias especiales por SOFIPO
+                if sofipo_name == "Mercado Pago":
+                    if monto > 25000:
+                        st.warning("⚠️ Mercado Pago tiene un límite de $25,000 para obtener el 13%")
+                    st.info("ℹ️ Requieres depositar al menos $3,000 MXN mensuales para mantener la tasa del 13%")
+                
+                # Requisitos especiales
+                cumple_requisito = True
+                if producto_info.get("requisito") is not None:
                         if producto_info.get("requisito") == "Plus o Platino":
                             cumple_requisito = st.checkbox(
                                 "¿Tienes membresía Klar Plus o Platino?",
@@ -1168,7 +1177,7 @@ def main():
             
             **Distribución sugerida**:
             - 30% Nu México (Cajita Turbo) - 15% GAT (hasta $25k)
-            - 25% Mercado Pago - 12.5% GAT
+            - 25% Mercado Pago - 13% GAT (requiere $3k/mes)
             - 20% Ualá Ahorro - 10% GAT
             - 15% Klar Cuenta - 8.5% GAT
             - 10% Nu México (Dinero en Cajita) - 7.5% GAT (emergencias)
@@ -1176,7 +1185,7 @@ def main():
             **Ventajas**:
             - ✅ Máxima liquidez inmediata (100%)
             - ✅ Diversificación en 4 instituciones sólidas
-            - ✅ Rendimiento promedio ~11% anual
+            - ✅ Rendimiento promedio ~11.7% anual
             
             **Consideraciones**:
             - Todas las opciones tienen liquidez inmediata
@@ -1194,17 +1203,18 @@ def main():
             - 20% DiDi (hasta $10k) - 16% GAT (después 8.5%)
             - 25% Nu México (Cajita Turbo) - 15% GAT
             - 20% Klar Inversión Max - 15% GAT (requiere Plus/Platino)
-            - 15% Stori 90 días - 10% GAT
-            - 20% Mercado Pago - 12.5% GAT
+            - 15% Mercado Pago - 13% GAT (requiere $3k/mes)
+            - 20% Stori 90 días - 10% GAT
             
             **Ventajas**:
             - ✅ Excelente diversificación (5 SOFIPOs)
             - ✅ 80% con liquidez inmediata
-            - ✅ Rendimiento optimizado (~13.5% ponderado)
+            - ✅ Rendimiento optimizado (~13.8% ponderado)
             
             **Consideraciones**:
             - Requiere membresía Klar Plus/Platino
-            - 15% a plazo fijo de 90 días en Stori
+            - Mercado Pago requiere depositar al menos $3,000/mes
+            - 20% a plazo fijo de 90 días en Stori
             - Balance perfecto entre liquidez y rendimiento
             - Ideal para la mayoría de inversores
             """)
@@ -1395,6 +1405,6 @@ def main():
 
     # Fecha de última actualización
     st.markdown("---")
-    st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">📅 Última actualización de tasas: 20 de Noviembre, 2025</div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">📅 Última actualización de tasas: 21 de Noviembre, 2025</div>', unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
