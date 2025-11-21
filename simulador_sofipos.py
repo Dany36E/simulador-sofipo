@@ -1037,33 +1037,42 @@ def main():
                 border-color: #667eea !important;
             }
             
-            /* DataFrames y Tablas - Sin fondo blanco */
+            /* DataFrames y Tablas - Diseño mejorado sin fondos blancos */
             [data-testid="stDataFrame"], .dataframe, 
             [data-testid="stDataFrame"] > div,
             [data-testid="stDataFrame"] > div > div,
+            [data-testid="stDataFrame"] iframe,
             .stDataFrame {
-                background-color: #0d1117 !important;
+                background-color: #161b22 !important;
                 color: #c9d1d9 !important;
+                border-radius: 12px !important;
+                overflow: hidden !important;
+                border: 1px solid #30363d !important;
             }
             
             .dataframe thead tr th {
-                background-color: #161b22 !important;
+                background-color: #1c2128 !important;
                 color: #58a6ff !important;
                 border-bottom: 2px solid #30363d !important;
+                font-weight: 600 !important;
+                padding: 12px !important;
             }
             
             .dataframe tbody tr {
-                background-color: #0d1117 !important;
+                background-color: #161b22 !important;
                 border-bottom: 1px solid #21262d !important;
+                transition: all 0.2s ease !important;
             }
             
             .dataframe tbody tr:hover {
-                background-color: #161b22 !important;
+                background-color: #1c2128 !important;
+                transform: scale(1.005) !important;
             }
             
             .dataframe tbody tr td {
                 color: #c9d1d9 !important;
-                background-color: #0d1117 !important;
+                background-color: transparent !important;
+                padding: 10px 12px !important;
             }
             
             /* Forzar fondo oscuro en todos los elementos del dataframe */
@@ -1072,14 +1081,21 @@ def main():
             [data-testid="stDataFrame"] tbody,
             [data-testid="stDataFrame"] tr,
             [data-testid="stDataFrame"] th,
-            [data-testid="stDataFrame"] td {
-                background-color: #0d1117 !important;
+            [data-testid="stDataFrame"] td,
+            [data-testid="stDataFrame"] div[role="grid"],
+            [data-testid="stDataFrame"] div[role="table"] {
+                background-color: #161b22 !important;
                 color: #c9d1d9 !important;
             }
             
             [data-testid="stDataFrame"] thead th {
-                background-color: #161b22 !important;
+                background-color: #1c2128 !important;
                 color: #58a6ff !important;
+            }
+            
+            /* Scrollbar de la tabla */
+            [data-testid="stDataFrame"] div[data-testid="stDataFrameResizable"] {
+                background-color: #161b22 !important;
             }
             
             /* Alertas y cajas de mensaje */
@@ -1134,13 +1150,26 @@ def main():
                 background-color: #161b22 !important;
             }
             
-            /* Gráficas Plotly - Mejoradas para modo oscuro con fondo suave */
-            .js-plotly-plot .plotly, .plotly {
+            /* Gráficas Plotly - Fondo oscuro completo */
+            .js-plotly-plot, .js-plotly-plot .plotly, .plotly,
+            [data-testid="stPlotlyChart"],
+            [data-testid="stPlotlyChart"] > div,
+            .user-select-none {
                 background-color: #161b22 !important;
             }
             
-            .js-plotly-plot .plotly .bg {
+            .js-plotly-plot .plotly .bg,
+            .js-plotly-plot .plotly .main-svg,
+            .js-plotly-plot .plotly .plot,
+            .js-plotly-plot svg.main-svg {
+                background-color: #161b22 !important;
                 fill: #161b22 !important;
+            }
+            
+            /* Eliminar cualquier fondo blanco de contenedores */
+            .js-plotly-plot > div,
+            .js-plotly-plot .plotly > div {
+                background-color: #161b22 !important;
             }
             
             .js-plotly-plot .plotly .gridlayer .x, 
@@ -1164,6 +1193,11 @@ def main():
             /* Líneas de las gráficas con mejor contraste */
             .js-plotly-plot .plotly .trace {
                 stroke-width: 3px !important;
+            }
+            
+            /* Forzar fondo oscuro en el contenedor modebar */
+            .modebar-container, .modebar {
+                background-color: #161b22 !important;
             }
             
             /* Caption y textos pequeños */
@@ -1695,7 +1729,7 @@ def main():
                 xaxis_title="Meses",
                 yaxis_title="Monto Total (MXN)",
                 hovermode='x unified',
-                template="plotly_white",
+                template="plotly_dark" if modo_oscuro else "plotly_white",
                 height=500,
                 showlegend=True,
                 legend=dict(
@@ -1704,7 +1738,10 @@ def main():
                     y=1.02,
                     xanchor="center",
                     x=0.5
-                )
+                ),
+                paper_bgcolor='#161b22' if modo_oscuro else 'white',
+                plot_bgcolor='#0d1117' if modo_oscuro else '#f8f9fa',
+                font=dict(color='#c9d1d9' if modo_oscuro else '#333333')
             )
             
             st.plotly_chart(fig, use_container_width=True)
@@ -1748,8 +1785,11 @@ def main():
                 xaxis_title="Meses",
                 yaxis_title="Monto (MXN)",
                 hovermode='x unified',
-                template="plotly_white",
-                height=400
+                template="plotly_dark" if modo_oscuro else "plotly_white",
+                height=400,
+                paper_bgcolor='#161b22' if modo_oscuro else 'white',
+                plot_bgcolor='#0d1117' if modo_oscuro else '#f8f9fa',
+                font=dict(color='#c9d1d9' if modo_oscuro else '#333333')
             )
             
             st.plotly_chart(fig_area, use_container_width=True)
@@ -1836,6 +1876,13 @@ def main():
                 hovertemplate='<b>%{label}</b><br>' +
                               'Porcentaje: %{percent}<br>' +
                               '<extra></extra>'
+            )
+            
+            fig_pie.update_layout(
+                template="plotly_dark" if modo_oscuro else "plotly_white",
+                paper_bgcolor='#161b22' if modo_oscuro else 'white',
+                plot_bgcolor='#0d1117' if modo_oscuro else '#f8f9fa',
+                font=dict(color='#c9d1d9' if modo_oscuro else '#333333')
             )
             
             st.plotly_chart(fig_pie, use_container_width=True)
