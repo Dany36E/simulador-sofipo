@@ -641,50 +641,111 @@ SOFIPOS_DATA = {
 }
 
 # ============================================================================
-# FUNCIONES DE CÁLCULO
+# FUNCIONES DE CÁLCULO FINANCIERO
+# ============================================================================
+# 
+# CONVENCIONES FINANCIERAS DEL SISTEMA:
+# -------------------------------------
+# 1. AÑO COMERCIAL: 360 días (12 meses × 30 días)
+#    - Estándar bancario mexicano para cálculos de interés
+#    - Usado en: interés simple, conversión de periodos
+#
+# 2. CAPITALIZACIÓN DIARIA: 365 días/año
+#    - Para productos a la vista (Nu, Klar, DiDi, Stori, Ualá, Mercado Pago)
+#    - Fórmula: M = C * (1 + r/365)^días
+#
+# 3. CAPITALIZACIÓN MENSUAL: 12 periodos/año
+#    - Para algunos productos según especificaciones
+#    - Fórmula: M = C * (1 + r/12)^(n*t) donde t en años
+#
+# 4. INTERÉS SIMPLE: Para plazos fijos
+#    - Fórmula: I = C * r * (días/360)
+#    - Sin capitalización, interés se paga al vencimiento
+#
+# 5. RENDIMIENTO PONDERADO:
+#    - Tasa efectiva anual considerando todas las inversiones
+#    - Para periodos < 12 meses: tasa equivalente anualizada
+#    - Fórmula: r_anual = (1 + r_periodo)^(12/periodo) - 1
+#
 # ============================================================================
 
 def calcular_rendimiento_hibrido_didi(monto, tasa_premium, limite_premium, tasa_base, dias):
     """
-    Calcula el rendimiento con estructura híbrida de DiDi
+    Calcula el rendimiento con estructura híbrida de DiDi con capitalización diaria
     16% sobre primeros $10,000 y tasa base sobre el resto
+    
+    CORRECCIÓN FINANCIERA: DiDi capitaliza diariamente, no usa interés simple
     """
     if monto <= limite_premium:
-        interes_diario = (monto * tasa_premium / 100) / 365
+        # Todo el monto está en tasa premium con capitalización diaria
+        tasa_decimal = tasa_premium / 100
+        monto_final = monto * (1 + tasa_decimal / 365) ** dias
+        return monto_final - monto
     else:
-        interes_premium = (limite_premium * tasa_premium / 100) / 365
+        # Capitalización diaria separada para cada tramo
+        tasa_premium_decimal = tasa_premium / 100
+        tasa_base_decimal = tasa_base / 100
+        
+        # Interés compuesto sobre el límite premium
+        monto_final_premium = limite_premium * (1 + tasa_premium_decimal / 365) ** dias
+        interes_premium = monto_final_premium - limite_premium
+        
+        # Interés compuesto sobre el excedente
         excedente = monto - limite_premium
-        interes_excedente = (excedente * tasa_base / 100) / 365
-        interes_diario = interes_premium + interes_excedente
-    
-    return interes_diario * dias
+        monto_final_excedente = excedente * (1 + tasa_base_decimal / 365) ** dias
+        interes_excedente = monto_final_excedente - excedente
+        
+        return interes_premium + interes_excedente
 
 def calcular_interes_compuesto(capital, tasa_anual, dias, compounding="diario"):
     """
-    Calcula interés compuesto con diferentes frecuencias
+    Calcula interés compuesto con diferentes frecuencias de capitalización
+    
+    Fórmula: M = C * (1 + r/n)^(n*t)
+    Donde:
+    - M = Monto final
+    - C = Capital inicial
+    - r = Tasa anual (decimal)
+    - n = Número de capitalizaciones por año
+    - t = Tiempo en años
+    
+    CORRECCIÓN FINANCIERA: Uso de fórmulas estándar de interés compuesto
     """
     tasa_decimal = tasa_anual / 100
     
     if compounding == "diario":
+        # Capitalización diaria: n=365, periodos en días
         n = 365
-        periodos = dias
-        monto_final = capital * (1 + tasa_decimal / n) ** periodos
+        t = dias / 365  # Tiempo en años
+        monto_final = capital * (1 + tasa_decimal / n) ** (n * t)
     elif compounding == "mensual":
+        # Capitalización mensual: n=12, periodos en meses
         n = 12
-        periodos = dias / 30.42
-        monto_final = capital * (1 + tasa_decimal / n) ** periodos
+        t = dias / 360  # Usar año comercial (360 días) como hace el sistema
+        monto_final = capital * (1 + tasa_decimal / n) ** (n * t)
     else:  # anual
-        periodos = dias / 365
-        monto_final = capital * (1 + tasa_decimal) ** periodos
+        # Capitalización anual
+        t = dias / 365
+        monto_final = capital * (1 + tasa_decimal) ** t
     
     return monto_final - capital
 
 def calcular_interes_simple(capital, tasa_anual, dias):
     """
     Calcula interés simple para inversiones a plazo fijo
+    
+    Fórmula: I = C * r * t
+    Donde:
+    - I = Interés
+    - C = Capital
+    - r = Tasa anual (decimal)
+    - t = Tiempo en años
+    
+    CORRECCIÓN FINANCIERA: Usar año comercial (360 días) para consistencia
+    con el estándar bancario mexicano
     """
     tasa_decimal = tasa_anual / 100
-    interes = capital * tasa_decimal * (dias / 365)
+    interes = capital * tasa_decimal * (dias / 360)  # Año comercial
     return interes
 
 def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
@@ -2392,13 +2453,23 @@ def main():
         
         total_invertido = sum([inv['monto'] for inv in inversiones_seleccionadas.values()])
         
-        # Calcular ganancia total ponderada
+        # Calcular ganancia total y GAT ponderado
         ganancia_total = 0
         for resultado in resultados:
             ganancia_str = resultado["Ganancia Total"].replace("$", "").replace(",", "")
             ganancia_total += float(ganancia_str)
         
-        rendimiento_ponderado = (ganancia_total / total_invertido) * (12 / periodo_simulacion) * 100
+        # CORRECCIÓN FINANCIERA: Calcular la tasa efectiva anualizada correctamente
+        # Si el periodo es < 12 meses, necesitamos calcular la tasa equivalente anual
+        if periodo_simulacion == 12:
+            # Para 12 meses, es directo
+            rendimiento_ponderado = (ganancia_total / total_invertido) * 100
+        else:
+            # Para otros periodos, calcular tasa equivalente anual
+            # (1 + r_periodo) = (1 + r_anual)^(periodo/12)
+            # r_anual = (1 + r_periodo)^(12/periodo) - 1
+            rendimiento_periodo = ganancia_total / total_invertido
+            rendimiento_ponderado = ((1 + rendimiento_periodo) ** (12 / periodo_simulacion) - 1) * 100
         
         # Métricas principales en cards grandes
         st.markdown("### 📈 Resultado de tu inversión")
