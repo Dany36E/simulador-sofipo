@@ -942,22 +942,31 @@ def main():
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             }
             
-            /* Inputs */
+            /* Inputs - Mejorados con brillo en focus */
             input, textarea, select {
                 background-color: #0d1117 !important;
                 color: #c9d1d9 !important;
-                border: 1px solid #30363d !important;
+                border: 2px solid #30363d !important;
+                transition: all 0.3s ease !important;
             }
             
             input:focus, textarea:focus, select:focus {
                 border-color: #58a6ff !important;
-                box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1) !important;
+                box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.15), 0 0 12px rgba(88, 166, 255, 0.3) !important;
+                outline: none !important;
+                transform: translateY(-1px) !important;
             }
             
             .stNumberInput input {
                 background-color: #0d1117 !important;
                 color: #c9d1d9 !important;
-                border: 1px solid #30363d !important;
+                border: 2px solid #30363d !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            .stNumberInput input:focus {
+                border-color: #58a6ff !important;
+                box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.15), 0 0 12px rgba(88, 166, 255, 0.3) !important;
             }
             
             /* Selectbox */
@@ -980,27 +989,34 @@ def main():
                 color: #c9d1d9 !important;
             }
             
-            /* Tabs */
+            /* Tabs - Mejorados con mejor contraste */
             .stTabs [data-baseweb="tab-list"] {
                 background-color: #161b22 !important;
                 border-radius: 12px !important;
                 padding: 0.5rem !important;
+                border: 1px solid #30363d !important;
             }
             
             .stTabs [data-baseweb="tab"] {
                 background-color: transparent !important;
                 color: #8b949e !important;
-                border-radius: 8px !important;
+                border-radius: 10px !important;
+                padding: 0.75rem 1.5rem !important;
+                font-weight: 600 !important;
+                transition: all 0.3s ease !important;
             }
             
             .stTabs [data-baseweb="tab"]:hover {
                 background-color: #21262d !important;
                 color: #c9d1d9 !important;
+                transform: translateY(-2px) !important;
             }
             
             .stTabs [aria-selected="true"] {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
                 color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4), 0 0 20px rgba(102, 126, 234, 0.2) !important;
+                transform: scale(1.02) !important;
             }
             
             /* Expander */
@@ -1096,13 +1112,36 @@ def main():
                 background-color: #161b22 !important;
             }
             
-            /* Gráficas Plotly */
+            /* Gráficas Plotly - Mejoradas para modo oscuro */
             .js-plotly-plot .plotly, .plotly {
                 background-color: #0d1117 !important;
             }
             
             .js-plotly-plot .plotly .bg {
                 fill: #0d1117 !important;
+            }
+            
+            .js-plotly-plot .plotly .gridlayer .x, 
+            .js-plotly-plot .plotly .gridlayer .y {
+                stroke: #30363d !important;
+            }
+            
+            .js-plotly-plot .plotly text {
+                fill: #c9d1d9 !important;
+            }
+            
+            .js-plotly-plot .plotly .xtick text,
+            .js-plotly-plot .plotly .ytick text {
+                fill: #8b949e !important;
+            }
+            
+            .js-plotly-plot .plotly .legendtext {
+                fill: #c9d1d9 !important;
+            }
+            
+            /* Líneas de las gráficas con mejor contraste */
+            .js-plotly-plot .plotly .trace {
+                stroke-width: 3px !important;
             }
             
             /* Caption y textos pequeños */
@@ -1172,6 +1211,48 @@ def main():
             .badge {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
                 color: white !important;
+                box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4) !important;
+            }
+            
+            /* Efectos adicionales de hover para mejor UX */
+            .stButton > button:active {
+                transform: scale(0.98) !important;
+            }
+            
+            /* Scrollbar personalizado para modo oscuro */
+            ::-webkit-scrollbar {
+                width: 12px;
+                height: 12px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: #0d1117 !important;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: #30363d !important;
+                border-radius: 6px !important;
+                border: 2px solid #0d1117 !important;
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: #484f58 !important;
+            }
+            
+            /* Animaciones suaves */
+            * {
+                transition: background-color 0.2s ease, border-color 0.2s ease !important;
+            }
+            
+            /* Selectbox mejorado */
+            [data-baseweb="select"] > div:hover {
+                border-color: #58a6ff !important;
+                box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1) !important;
+            }
+            
+            /* Mejora visual del toggle de modo oscuro */
+            [data-testid="stCheckbox"] input:checked ~ div {
+                background-color: #667eea !important;
             }
         </style>
         """, unsafe_allow_html=True)
