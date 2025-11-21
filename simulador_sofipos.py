@@ -1528,25 +1528,36 @@ def main():
             })
             saldo_restante -= monto_mp
         
-        # 6. Stori 90 días: Al 10% (PRIORIDAD 6 - PLAZO FIJO - solo si NO está en modo vista)
+        # 6. DiDi Ahorro Base: Después de los primeros $10k al 8.5% (PRIORIDAD 6 - A LA VISTA)
+        if usa_didi and saldo_restante > 0:
+            distribucion_agresiva.append({
+                "sofipo": "DiDi",
+                "producto": "DiDi Ahorro",
+                "monto": saldo_restante,
+                "tasa": 8.5,
+                "razon": "🥉 8.5% después de $10k 💧 A LA VISTA"
+            })
+            saldo_restante -= saldo_restante
+        
+        # 7. Stori 90 días: Al 10% (PRIORIDAD 7 - PLAZO FIJO - solo si NO está en modo vista)
         if not solo_vista and usa_stori and saldo_restante > 0:
             distribucion_agresiva.append({
                 "sofipo": "Stori",
                 "producto": "90 días",
                 "monto": saldo_restante,
                 "tasa": 10.0,
-                "razon": " 10% plazo 90 días  PLAZO FIJO"
+                "razon": "🥉 10% plazo 90 días ⏰ PLAZO FIJO"
             })
             saldo_restante -= saldo_restante
         
-        # 7. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO - PLAZO FIJO - solo si NO está en modo vista)
+        # 8. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO - PLAZO FIJO - solo si NO está en modo vista)
         if not solo_vista and usa_finsus and saldo_restante > 0:
             distribucion_agresiva.append({
                 "sofipo": "Finsus",
                 "producto": "Apartado 360 días",
                 "monto": saldo_restante,
                 "tasa": 10.09,
-                "razon": " 10.09% plazo 360 días  PLAZO FIJO"
+                "razon": "🥉 10.09% plazo 360 días ⏰ PLAZO FIJO"
             })
             saldo_restante -= saldo_restante
         
