@@ -1801,6 +1801,247 @@ def main():
     st.divider()
     
     # ========================================================================
+    # SIMULACIÓN DE REINVERSIÓN
+    # ========================================================================
+    
+    with st.expander("📅 Simulación de Reinversión: ¿Qué pasa si reinvierto los intereses?", expanded=False):
+        st.markdown("**Descubre el poder del interés compuesto:** Compara los resultados de retirar vs reinvertir tus ganancias mensualmente.")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("💰 Capital Inicial")
+            capital_reinversion = st.number_input(
+                "Monto a invertir",
+                min_value=1000,
+                max_value=10000000,
+                value=monto_total,
+                step=1000,
+                key="capital_reinversion",
+                help="Capital inicial para la simulación de reinversión"
+            )
+            
+            tasa_anual_reinversion = st.number_input(
+                "Tasa de rendimiento anual (%)",
+                min_value=1.0,
+                max_value=20.0,
+                value=13.0,
+                step=0.5,
+                key="tasa_reinversion",
+                help="Tasa de rendimiento anual esperada"
+            )
+        
+        with col2:
+            st.subheader("📆 Periodo de Simulación")
+            periodo_reinversion = st.selectbox(
+                "Periodo de comparación",
+                ["6 meses", "1 año", "2 años", "3 años", "5 años", "10 años"],
+                index=2,
+                key="periodo_reinversion"
+            )
+            
+            # Convertir periodo a meses
+            meses_map = {
+                "6 meses": 6,
+                "1 año": 12,
+                "2 años": 24,
+                "3 años": 36,
+                "5 años": 60,
+                "10 años": 120
+            }
+            meses_simulacion = meses_map[periodo_reinversion]
+        
+        # Botón para calcular
+        if st.button("🔄 Calcular Comparación", key="btn_calcular_reinversion", type="primary"):
+            st.markdown("---")
+            
+            # Cálculos
+            tasa_mensual = tasa_anual_reinversion / 12 / 100
+            
+            # ESCENARIO 1: SIN REINVERSIÓN (Interés Simple)
+            interes_mensual_fijo = capital_reinversion * tasa_mensual
+            total_intereses_sin_reinversion = interes_mensual_fijo * meses_simulacion
+            capital_final_sin_reinversion = capital_reinversion
+            
+            # ESCENARIO 2: CON REINVERSIÓN (Interés Compuesto)
+            capital_final_con_reinversion = capital_reinversion * ((1 + tasa_mensual) ** meses_simulacion)
+            total_intereses_con_reinversion = capital_final_con_reinversion - capital_reinversion
+            
+            # Diferencia
+            diferencia_absoluta = total_intereses_con_reinversion - total_intereses_sin_reinversion
+            diferencia_porcentual = (diferencia_absoluta / total_intereses_sin_reinversion) * 100
+            
+            # Mostrar resultados
+            st.subheader("📊 Resultados de la Comparación")
+            
+            col_a, col_b, col_c = st.columns(3)
+            
+            with col_a:
+                st.metric(
+                    "🔴 SIN Reinversión",
+                    f"${total_intereses_sin_reinversion:,.0f}",
+                    delta="Interés Simple"
+                )
+                st.caption(f"Capital final: ${capital_final_sin_reinversion:,.0f}")
+                st.caption(f"💸 Retiras **${interes_mensual_fijo:,.0f}/mes**")
+            
+            with col_b:
+                st.metric(
+                    "🟢 CON Reinversión",
+                    f"${total_intereses_con_reinversion:,.0f}",
+                    delta="Interés Compuesto",
+                    delta_color="normal"
+                )
+                st.caption(f"Capital final: ${capital_final_con_reinversion:,.0f}")
+                st.caption(f"🔄 Reinviertes todo automáticamente")
+            
+            with col_c:
+                st.metric(
+                    "💎 Diferencia",
+                    f"${diferencia_absoluta:,.0f}",
+                    delta=f"+{diferencia_porcentual:.1f}% más",
+                    delta_color="normal"
+                )
+                st.caption(f"Ganancia extra por reinvertir")
+            
+            # Gráfica de evolución
+            st.markdown("---")
+            st.subheader("📈 Evolución del Capital en el Tiempo")
+            
+            # Crear datos para la gráfica
+            meses_lista = list(range(0, meses_simulacion + 1))
+            
+            # Evolución SIN reinversión
+            capital_sin_reinversion = [capital_reinversion + (interes_mensual_fijo * m) for m in meses_lista]
+            
+            # Evolución CON reinversión
+            capital_con_reinversion = [capital_reinversion * ((1 + tasa_mensual) ** m) for m in meses_lista]
+            
+            # Crear DataFrame para Plotly
+            import pandas as pd
+            df_reinversion = pd.DataFrame({
+                'Mes': meses_lista,
+                'Sin Reinversión (Interés Simple)': capital_sin_reinversion,
+                'Con Reinversión (Interés Compuesto)': capital_con_reinversion
+            })
+            
+            # Crear gráfica con Plotly
+            import plotly.graph_objects as go
+            
+            fig_reinversion = go.Figure()
+            
+            # Línea SIN reinversión
+            fig_reinversion.add_trace(go.Scatter(
+                x=df_reinversion['Mes'],
+                y=df_reinversion['Sin Reinversión (Interés Simple)'],
+                name='🔴 Sin Reinversión',
+                mode='lines',
+                line=dict(color='#ff4b4b', width=3),
+                hovertemplate='<b>Mes %{x}</b><br>Capital: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            # Línea CON reinversión
+            fig_reinversion.add_trace(go.Scatter(
+                x=df_reinversion['Mes'],
+                y=df_reinversion['Con Reinversión (Interés Compuesto)'],
+                name='🟢 Con Reinversión',
+                mode='lines',
+                line=dict(color='#00cc66', width=3),
+                hovertemplate='<b>Mes %{x}</b><br>Capital: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            # Área entre las líneas (diferencia)
+            fig_reinversion.add_trace(go.Scatter(
+                x=df_reinversion['Mes'].tolist() + df_reinversion['Mes'].tolist()[::-1],
+                y=df_reinversion['Con Reinversión (Interés Compuesto)'].tolist() + 
+                  df_reinversion['Sin Reinversión (Interés Simple)'].tolist()[::-1],
+                fill='toself',
+                fillcolor='rgba(0, 204, 102, 0.1)',
+                line=dict(color='rgba(255,255,255,0)'),
+                showlegend=True,
+                name='💎 Ganancia Extra',
+                hoverinfo='skip'
+            ))
+            
+            fig_reinversion.update_layout(
+                title=f"Comparación de Capital: {periodo_reinversion}",
+                xaxis_title="Meses",
+                yaxis_title="Capital Total ($)",
+                hovermode='x unified',
+                template='plotly_white',
+                height=500,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                )
+            )
+            
+            st.plotly_chart(fig_reinversion, use_container_width=True)
+            
+            # Insights
+            st.markdown("---")
+            st.subheader("💡 Conclusiones")
+            
+            col_i1, col_i2 = st.columns(2)
+            
+            with col_i1:
+                st.info(f"""
+                **🔴 Sin Reinversión (Retiro mensual):**
+                - Recibes **${interes_mensual_fijo:,.0f}** cada mes de forma constante
+                - Total acumulado: **${total_intereses_sin_reinversion:,.0f}** en {periodo_reinversion}
+                - Tu capital inicial **no crece** (siempre ${capital_reinversion:,.0f})
+                - Ideal si necesitas **ingresos pasivos mensuales**
+                """)
+            
+            with col_i2:
+                st.success(f"""
+                **🟢 Con Reinversión (Interés Compuesto):**
+                - No retiras nada, todo se reinvierte automáticamente
+                - Total acumulado: **${total_intereses_con_reinversion:,.0f}** en {periodo_reinversion}
+                - Tu capital crece hasta **${capital_final_con_reinversion:,.0f}**
+                - **${diferencia_absoluta:,.0f} más** que sin reinvertir (+{diferencia_porcentual:.1f}%)
+                """)
+            
+            # Tabla comparativa mensual (primeros 12 meses)
+            st.markdown("---")
+            st.subheader("📅 Detalle Mensual (Primer Año)")
+            
+            meses_tabla = min(12, meses_simulacion)
+            datos_tabla = []
+            
+            for mes in range(1, meses_tabla + 1):
+                sin_reinv = capital_reinversion + (interes_mensual_fijo * mes)
+                con_reinv = capital_reinversion * ((1 + tasa_mensual) ** mes)
+                diferencia = con_reinv - sin_reinv
+                
+                datos_tabla.append({
+                    "Mes": mes,
+                    "Sin Reinversión": f"${sin_reinv:,.0f}",
+                    "Con Reinversión": f"${con_reinv:,.0f}",
+                    "Diferencia": f"${diferencia:,.0f}"
+                })
+            
+            df_tabla = pd.DataFrame(datos_tabla)
+            st.dataframe(df_tabla, use_container_width=True, hide_index=True)
+            
+            # Recomendación final
+            st.warning(f"""
+            **🎯 Recomendación:**
+            
+            Si tu objetivo es **maximizar tu patrimonio** a largo plazo, la reinversión es la estrategia ganadora. 
+            En {periodo_reinversion}, ganarías **${diferencia_absoluta:,.0f} adicionales** ({diferencia_porcentual:.1f}% más) 
+            simplemente dejando que tus intereses trabajen para ti.
+            
+            Sin embargo, si necesitas **ingresos mensuales** para gastos, la opción sin reinversión te garantiza 
+            **${interes_mensual_fijo:,.0f} mensuales** de forma constante y predecible.
+            """)
+    
+    st.divider()
+    
+    # ========================================================================
     # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
     # ========================================================================
     
