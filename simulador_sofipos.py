@@ -2948,16 +2948,14 @@ def main():
                 st.markdown("### 💡 Oportunidades según tus preferencias:")
                 
                 for i, opp in enumerate(recomendaciones["oportunidades"], 1):
-                    # Card con diseño limpio
-                    with st.container():
-                        col_num, col_content = st.columns([0.5, 9.5])
-                        with col_num:
-                            st.markdown(f"### {i}")
-                        with col_content:
+                    col_num, col_content = st.columns([0.3, 9.7])
+                    with col_num:
+                        st.markdown(f"**{i}.**")
+                    with col_content:
+                        if opp['requisito']:
+                            st.markdown(f"**{opp['sofipo']} {opp['producto']}** - {opp['detalle']} · {opp['requisito']}")
+                        else:
                             st.markdown(f"**{opp['sofipo']} {opp['producto']}** - {opp['detalle']}")
-                            if opp['requisito']:
-                                st.caption(opp['requisito'])
-                        st.markdown("")
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
