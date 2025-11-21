@@ -866,8 +866,82 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
 # ============================================================================
 
 def main():
-    # Header principal
-    st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
+    # Toggle de modo oscuro en la parte superior derecha
+    col_header1, col_header2 = st.columns([5, 1])
+    
+    with col_header2:
+        modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False, key="dark_mode")
+    
+    # Aplicar estilos según el modo
+    if modo_oscuro:
+        st.markdown("""
+        <style>
+            /* Modo Oscuro */
+            .main {
+                background: #1a1a2e !important;
+                color: #e0e0e0 !important;
+            }
+            .main-header {
+                color: #ffffff !important;
+            }
+            .subtitle {
+                color: #b0b0b0 !important;
+            }
+            .sofipo-section {
+                background: #2d2d44 !important;
+                border: 1px solid #3a3a52 !important;
+                color: #e0e0e0 !important;
+            }
+            .stMetric {
+                background: #2d2d44 !important;
+            }
+            .metric-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            div[data-testid="stExpander"] {
+                background: #2d2d44 !important;
+                border: 1px solid #3a3a52 !important;
+            }
+            .stTabs [data-baseweb="tab-list"] {
+                background-color: #2d2d44 !important;
+            }
+            .stTabs [data-baseweb="tab"] {
+                color: #b0b0b0 !important;
+            }
+            .stTabs [aria-selected="true"] {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: white !important;
+            }
+            div[data-testid="stDataFrame"] {
+                background: #2d2d44 !important;
+            }
+            .warning-box {
+                background: #3d3d1a !important;
+                border-left: 3px solid #f59e0b !important;
+                color: #fbbf24 !important;
+            }
+            .success-box {
+                background: #1a3d2d !important;
+                border-left: 3px solid #10b981 !important;
+                color: #34d399 !important;
+            }
+            .info-box {
+                background: #1a2d3d !important;
+                border-left: 3px solid #3b82f6 !important;
+                color: #60a5fa !important;
+            }
+            label, p, span, div {
+                color: #e0e0e0 !important;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                color: #ffffff !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    with col_header1:
+        st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
+    
     st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
     
     # ========================================================================
