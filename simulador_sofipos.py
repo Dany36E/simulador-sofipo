@@ -1523,11 +1523,11 @@ def main():
     st.divider()
     
     # ========================================================================
-    # CALCULADORA DE OBJETIVO INVERSO
+    # CALCULADORA DE OBJETIVO INVERSO (CON TASAS REALES)
     # ========================================================================
     
     with st.expander("🎯 Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
-        st.markdown("**Calcula cuánto capital necesitas para alcanzar tu meta de ganancia**")
+        st.markdown("**Calcula cuánto capital necesitas para alcanzar tu meta de ganancia usando tasas reales y tus preferencias**")
         
         col1, col2 = st.columns(2)
         
@@ -1543,48 +1543,114 @@ def main():
             objetivo_ganancia = st.number_input(
                 f"Ganancia deseada ({objetivo_tipo})",
                 min_value=100,
-                value=5000 if objetivo_tipo == "mensual" else 60000,
-                step=500,
+                value=1000 if objetivo_tipo == "mensual" else 12000,
+                step=100 if objetivo_tipo == "mensual" else 1000,
                 help=f"¿Cuánto quieres ganar {'al mes' if objetivo_tipo == 'mensual' else 'al año'}?"
             )
         
         with col2:
-            st.markdown("#### 📊 Tipo de Estrategia")
-            estrategia_objetivo = st.selectbox(
-                "Selecciona tu perfil:",
-                options=[
-                    ("agresiva", "🚀 Agresiva (Máximo rendimiento)", 14.5),
-                    ("balanceada", "⚖️ Balanceada (Equilibrada)", 13.0),
-                    ("conservadora", "🛡️ Conservadora (Segura)", 11.3),
-                    ("personalizada", "🎨 Personalizada", 0)
-                ],
-                format_func=lambda x: x[1]
-            )
-            
-            if estrategia_objetivo[0] == "personalizada":
-                tasa_objetivo = st.number_input(
-                    "Tasa anual esperada (%)",
-                    min_value=1.0,
-                    max_value=20.0,
-                    value=12.0,
-                    step=0.5,
-                    help="Ingresa la tasa anual promedio que esperas obtener"
-                )
-            else:
-                tasa_objetivo = estrategia_objetivo[2]
-                st.metric("Tasa promedio", f"{tasa_objetivo}%")
+            st.markdown("#### 📊 Perfil de Inversión")
+            st.info("💡 La calculadora usará **tus preferencias actuales** (SOFIPOs excluidas, requisitos, liquidez)")
         
-        # Calcular capital necesario
+        # Convertir ganancia a anual
         if objetivo_tipo == "mensual":
-            ganancia_anual = objetivo_ganancia * 12
+            ganancia_anual_objetivo = objetivo_ganancia * 12
         else:
-            ganancia_anual = objetivo_ganancia
+            ganancia_anual_objetivo = objetivo_ganancia
         
-        capital_necesario = (ganancia_anual / tasa_objetivo) * 100
-        ganancia_mensual = ganancia_anual / 12
+        # Función para calcular distribución y tasa ponderada con un monto dado
+        def calcular_tasa_ponderada_real(monto_prueba):
+            """Simula la distribución agresiva y calcula la tasa ponderada real"""
+            distribucion = []
+            saldo = monto_prueba
+            
+            # 1. DiDi 16% hasta $10k
+            if usa_didi and saldo > 0:
+                monto_didi = min(10000, saldo)
+                distribucion.append({"monto": monto_didi, "tasa": 16.0})
+                saldo -= monto_didi
+            
+            # 2. Ualá Plus 16% hasta $50k (si cumple requisitos)
+            if usa_uala and cumple_uala_plus and saldo > 0:
+                monto_uala = min(50000, saldo)
+                distribucion.append({"monto": monto_uala, "tasa": 16.0})
+                saldo -= monto_uala
+            
+            # 3. Klar Max 15% (si cumple requisitos)
+            if usa_klar and cumple_klar_plus and saldo > 0:
+                distribucion.append({"monto": saldo, "tasa": 15.0})
+                saldo = 0
+            
+            # 4. Nu Turbo 15% hasta $25k
+            if usa_nu and saldo > 0:
+                monto_nu = min(25000, saldo)
+                distribucion.append({"monto": monto_nu, "tasa": 15.0})
+                saldo -= monto_nu
+            
+            # 5. Mercado Pago 13% hasta $25k (si cumple requisitos)
+            if usa_mp and cumple_mercadopago and saldo > 0:
+                monto_mp = min(25000, saldo)
+                distribucion.append({"monto": monto_mp, "tasa": 13.0})
+                saldo -= monto_mp
+            
+            # 6. DiDi Base 8.5% (resto)
+            if usa_didi and saldo > 0 and not solo_vista:
+                distribucion.append({"monto": saldo, "tasa": 8.5})
+                saldo = 0
+            
+            # 7. Stori 10% (plazo fijo - solo si NO está en modo vista)
+            if not solo_vista and usa_stori and saldo > 0:
+                distribucion.append({"monto": saldo, "tasa": 10.0})
+                saldo = 0
+            
+            # 8. Finsus 10.09% (plazo fijo - solo si NO está en modo vista)
+            if not solo_vista and usa_finsus and saldo > 0:
+                distribucion.append({"monto": saldo, "tasa": 10.09})
+                saldo = 0
+            
+            # Calcular tasa ponderada
+            if distribucion:
+                rendimiento_total = sum([d["monto"] * d["tasa"] / 100 for d in distribucion])
+                tasa_ponderada = (rendimiento_total / monto_prueba) * 100 if monto_prueba > 0 else 0
+                return tasa_ponderada, distribucion
+            else:
+                return 0, []
+        
+        # Buscar el capital necesario mediante aproximación binaria
+        capital_min = 1000
+        capital_max = 10000000
+        capital_necesario = capital_min
+        iteraciones = 0
+        max_iteraciones = 50
+        
+        while iteraciones < max_iteraciones:
+            capital_prueba = (capital_min + capital_max) / 2
+            tasa_ponderada, dist = calcular_tasa_ponderada_real(capital_prueba)
+            
+            if tasa_ponderada == 0:
+                st.error("❌ No hay SOFIPOs disponibles con tu configuración actual. Activa al menos una SOFIPO.")
+                break
+            
+            ganancia_estimada = capital_prueba * tasa_ponderada / 100
+            
+            if abs(ganancia_estimada - ganancia_anual_objetivo) < 100:  # Precisión de $100
+                capital_necesario = capital_prueba
+                break
+            elif ganancia_estimada < ganancia_anual_objetivo:
+                capital_min = capital_prueba
+            else:
+                capital_max = capital_prueba
+            
+            capital_necesario = capital_prueba
+            iteraciones += 1
+        
+        # Calcular valores finales
+        tasa_real, distribucion_final = calcular_tasa_ponderada_real(capital_necesario)
+        ganancia_anual_real = capital_necesario * tasa_real / 100
+        ganancia_mensual_real = ganancia_anual_real / 12
         
         st.markdown("---")
-        st.markdown("### 🎯 Resultado de tu Objetivo")
+        st.markdown("### 🎯 Resultado de tu Objetivo (Con Tasas Reales)")
         
         col1, col2, col3, col4 = st.columns(4)
         
@@ -1598,23 +1664,34 @@ def main():
         with col2:
             st.metric(
                 "📅 Ganancia Anual",
-                f"${ganancia_anual:,.0f}",
-                delta=f"{tasa_objetivo}%"
+                f"${ganancia_anual_real:,.0f}",
+                delta=f"{tasa_real:.2f}%"
             )
         
         with col3:
             st.metric(
                 "💵 Ganancia Mensual",
-                f"${ganancia_mensual:,.0f}",
-                delta=f"~{ganancia_mensual/capital_necesario*100:.2f}% mensual"
+                f"${ganancia_mensual_real:,.0f}",
+                delta=f"~{ganancia_mensual_real/capital_necesario*100:.2f}% mensual"
             )
         
         with col4:
+            sofipos_count = len(set([d.get("sofipo", "") for d in distribucion_final if d.get("sofipo")]))
+            if sofipos_count == 0:
+                sofipos_count = len(distribucion_final)
             st.metric(
-                "🏦 SOFIPOs sugeridas",
-                f"{3 if capital_necesario < 100000 else 5 if capital_necesario < 500000 else 7}",
-                help="Para diversificar tu riesgo"
+                "🏦 SOFIPOs en distribución",
+                f"{sofipos_count}",
+                help="Según tu configuración"
             )
+        
+        # Mostrar distribución detallada
+        if distribucion_final:
+            st.markdown("#### 📊 Distribución Sugerida")
+            for i, item in enumerate(distribucion_final, 1):
+                porcentaje = (item["monto"] / capital_necesario * 100)
+                ganancia_item = item["monto"] * item["tasa"] / 100
+                st.caption(f"{i}. ${item['monto']:,.0f} al {item['tasa']}% = **${ganancia_item:,.0f}/año** ({porcentaje:.1f}% del total)")
         
         # Mostrar advertencias según el monto
         if capital_necesario > 1000000:
@@ -1622,31 +1699,27 @@ def main():
         elif capital_necesario < 5000:
             st.info("💡 **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
         
-        # Botón para aplicar el objetivo al simulador
+        # Mostrar advertencias de configuración
+        if solo_vista:
+            st.info("💧 **Modo A LA VISTA activado**: Solo se incluyen productos líquidos (sin plazo fijo)")
+        
+        excluidas = []
+        if not usa_nu: excluidas.append("Nu")
+        if not usa_didi: excluidas.append("DiDi")
+        if not usa_stori: excluidas.append("Stori")
+        if not usa_klar: excluidas.append("Klar")
+        if not usa_uala: excluidas.append("Ualá")
+        if not usa_mp: excluidas.append("Mercado Pago")
+        if not usa_finsus: excluidas.append("Finsus")
+        
+        if excluidas:
+            st.warning(f"🚫 **SOFIPOs excluidas**: {', '.join(excluidas)}")
+        
+        # Botón para aplicar el objetivo al simulador (FIJO)
         st.markdown("---")
-        if st.button("📊 Usar este monto en el simulador", use_container_width=True):
-            st.session_state["monto_total_input"] = int(capital_necesario)
-            st.success(f"✅ Monto actualizado a ${capital_necesario:,.0f}. Recarga la página para ver los cambios.")
-            st.rerun()
-        
-        # Tabla de referencia rápida
-        st.markdown("### 📋 Referencia Rápida")
-        st.caption("¿Cuánto necesitas invertir para diferentes objetivos mensuales?")
-        
-        referencias = []
-        for ganancia_ref in [1000, 3000, 5000, 10000, 20000]:
-            for estrategia_ref in [("🚀 Agresiva", 14.5), ("⚖️ Balanceada", 13.0), ("🛡️ Conservadora", 11.3)]:
-                capital_ref = (ganancia_ref * 12 / estrategia_ref[1]) * 100
-                referencias.append({
-                    "Meta Mensual": f"${ganancia_ref:,}",
-                    "Estrategia": estrategia_ref[0],
-                    "Tasa": f"{estrategia_ref[1]}%",
-                    "Capital Necesario": f"${capital_ref:,.0f}",
-                    "Ganancia Anual": f"${ganancia_ref * 12:,}"
-                })
-        
-        df_referencias = pd.DataFrame(referencias)
-        st.dataframe(df_referencias, use_container_width=True, hide_index=True)
+        if st.button("📊 Copiar este monto", use_container_width=True, key="btn_copiar_objetivo"):
+            st.code(f"{int(capital_necesario)}", language=None)
+            st.success(f"✅ **Copia ${capital_necesario:,.0f}** y pégalo arriba en 'Monto total disponible'")
     
     st.divider()
     
