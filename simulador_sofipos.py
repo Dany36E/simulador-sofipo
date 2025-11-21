@@ -1523,6 +1523,134 @@ def main():
     st.divider()
     
     # ========================================================================
+    # CALCULADORA DE OBJETIVO INVERSO
+    # ========================================================================
+    
+    with st.expander("🎯 Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
+        st.markdown("**Calcula cuánto capital necesitas para alcanzar tu meta de ganancia**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 💰 Tu Meta de Ganancia")
+            objetivo_tipo = st.radio(
+                "Quiero ganar:",
+                options=["mensual", "anual"],
+                format_func=lambda x: "💵 Por mes" if x == "mensual" else "📅 Por año",
+                horizontal=True
+            )
+            
+            objetivo_ganancia = st.number_input(
+                f"Ganancia deseada ({objetivo_tipo})",
+                min_value=100,
+                value=5000 if objetivo_tipo == "mensual" else 60000,
+                step=500,
+                help=f"¿Cuánto quieres ganar {'al mes' if objetivo_tipo == 'mensual' else 'al año'}?"
+            )
+        
+        with col2:
+            st.markdown("#### 📊 Tipo de Estrategia")
+            estrategia_objetivo = st.selectbox(
+                "Selecciona tu perfil:",
+                options=[
+                    ("agresiva", "🚀 Agresiva (Máximo rendimiento)", 14.5),
+                    ("balanceada", "⚖️ Balanceada (Equilibrada)", 13.0),
+                    ("conservadora", "🛡️ Conservadora (Segura)", 11.3),
+                    ("personalizada", "🎨 Personalizada", 0)
+                ],
+                format_func=lambda x: x[1]
+            )
+            
+            if estrategia_objetivo[0] == "personalizada":
+                tasa_objetivo = st.number_input(
+                    "Tasa anual esperada (%)",
+                    min_value=1.0,
+                    max_value=20.0,
+                    value=12.0,
+                    step=0.5,
+                    help="Ingresa la tasa anual promedio que esperas obtener"
+                )
+            else:
+                tasa_objetivo = estrategia_objetivo[2]
+                st.metric("Tasa promedio", f"{tasa_objetivo}%")
+        
+        # Calcular capital necesario
+        if objetivo_tipo == "mensual":
+            ganancia_anual = objetivo_ganancia * 12
+        else:
+            ganancia_anual = objetivo_ganancia
+        
+        capital_necesario = (ganancia_anual / tasa_objetivo) * 100
+        ganancia_mensual = ganancia_anual / 12
+        
+        st.markdown("---")
+        st.markdown("### 🎯 Resultado de tu Objetivo")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "💼 Capital Necesario",
+                f"${capital_necesario:,.0f}",
+                help="Monto que necesitas invertir"
+            )
+        
+        with col2:
+            st.metric(
+                "📅 Ganancia Anual",
+                f"${ganancia_anual:,.0f}",
+                delta=f"{tasa_objetivo}%"
+            )
+        
+        with col3:
+            st.metric(
+                "💵 Ganancia Mensual",
+                f"${ganancia_mensual:,.0f}",
+                delta=f"~{ganancia_mensual/capital_necesario*100:.2f}% mensual"
+            )
+        
+        with col4:
+            st.metric(
+                "🏦 SOFIPOs sugeridas",
+                f"{3 if capital_necesario < 100000 else 5 if capital_necesario < 500000 else 7}",
+                help="Para diversificar tu riesgo"
+            )
+        
+        # Mostrar advertencias según el monto
+        if capital_necesario > 1000000:
+            st.warning("⚠️ **Capital alto**: Considera diversificar en múltiples SOFIPOs para no exceder el límite IPAB de $400k por institución.")
+        elif capital_necesario < 5000:
+            st.info("💡 **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
+        
+        # Botón para aplicar el objetivo al simulador
+        st.markdown("---")
+        if st.button("📊 Usar este monto en el simulador", use_container_width=True):
+            st.session_state["monto_total_input"] = int(capital_necesario)
+            st.success(f"✅ Monto actualizado a ${capital_necesario:,.0f}. Recarga la página para ver los cambios.")
+            st.rerun()
+        
+        # Tabla de referencia rápida
+        st.markdown("### 📋 Referencia Rápida")
+        st.caption("¿Cuánto necesitas invertir para diferentes objetivos mensuales?")
+        
+        referencias = []
+        for ganancia_ref in [1000, 3000, 5000, 10000, 20000]:
+            for estrategia_ref in [("🚀 Agresiva", 14.5), ("⚖️ Balanceada", 13.0), ("🛡️ Conservadora", 11.3)]:
+                capital_ref = (ganancia_ref * 12 / estrategia_ref[1]) * 100
+                referencias.append({
+                    "Meta Mensual": f"${ganancia_ref:,}",
+                    "Estrategia": estrategia_ref[0],
+                    "Tasa": f"{estrategia_ref[1]}%",
+                    "Capital Necesario": f"${capital_ref:,.0f}",
+                    "Ganancia Anual": f"${ganancia_ref * 12:,}"
+                })
+        
+        df_referencias = pd.DataFrame(referencias)
+        st.dataframe(df_referencias, use_container_width=True, hide_index=True)
+    
+    st.divider()
+    
+    # ========================================================================
     # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
     # ========================================================================
     
