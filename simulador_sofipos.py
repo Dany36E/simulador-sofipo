@@ -1770,11 +1770,33 @@ def main():
             if excluidas:
                 st.warning(f"🚫 **SOFIPOs excluidas**: {', '.join(excluidas)}")
             
-            # Botón para aplicar el objetivo al simulador (FIJO)
+            # Botón para aplicar toda la estrategia al simulador
             st.markdown("---")
-            if st.button("📊 Copiar este monto", use_container_width=True, key="btn_copiar_objetivo"):
-                st.code(f"{int(capital_necesario)}", language=None)
-                st.success(f"✅ **Copia ${capital_necesario:,.0f}** y pégalo arriba en 'Monto total disponible'")
+            if st.button("� Aplicar esta estrategia a la simulación", use_container_width=True, key="btn_aplicar_estrategia_objetivo", type="primary"):
+                # Actualizar el monto total
+                st.session_state["monto_total_input"] = int(capital_necesario)
+                
+                # Limpiar selecciones previas
+                for sofipo in ["Nu México", "DiDi", "Stori", "Klar", "Ualá", "Mercado Pago", "Finsus"]:
+                    st.session_state[f"check_{sofipo}"] = False
+                
+                # Aplicar cada producto de la distribución
+                for item in distribucion_final:
+                    sofipo_nombre = item["sofipo"]
+                    producto_nombre = item["producto"]
+                    monto = item["monto"]
+                    
+                    # Activar el checkbox de la SOFIPO
+                    st.session_state[f"check_{sofipo_nombre}"] = True
+                    
+                    # Seleccionar el producto
+                    st.session_state[f"prod_{sofipo_nombre}"] = producto_nombre
+                    
+                    # Asignar el monto
+                    st.session_state[f"monto_{sofipo_nombre}_{producto_nombre}"] = int(monto)
+                
+                st.success(f"✅ **Estrategia aplicada:** ${capital_necesario:,.0f} distribuidos en {len(distribucion_final)} productos")
+                st.rerun()
     
     st.divider()
     
