@@ -1377,6 +1377,14 @@ def main():
             usa_mp = st.checkbox("💵 Mercado Pago", value=True, key="usa_mp")
             usa_finsus = st.checkbox("🔵 Finsus", value=True, key="usa_finsus")
     
+    with st.expander("💧 Preferencias de liquidez", expanded=False):
+        st.markdown("**Configura si solo quieres productos con disponibilidad inmediata:**")
+        solo_vista = st.checkbox(
+            "💰 Solo productos A LA VISTA (sin plazo fijo)",
+            value=False,
+            help="Activar para excluir productos con plazos fijos y solo ver rendimientos líquidos disponibles"
+        )
+    
     st.divider()
     
     # ========================================================================
@@ -1450,11 +1458,15 @@ def main():
         # Calcular distribución agresiva con montos específicos
         st.subheader("💰 Distribución Recomendada para tu Capital")
         
+        # Mostrar filtro activo si está en modo solo vista
+        if solo_vista:
+            st.info("💧 **Modo A LA VISTA activado**: Solo se mostrarán productos sin plazo fijo")
+        
         # Estrategia: Maximizar tasas según tus preferencias Y exclusiones
         distribucion_agresiva = []
         saldo_restante = monto_total
         
-        # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - sin requisitos)
+        # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - A LA VISTA)
         if usa_didi and saldo_restante > 0:
             monto_didi = min(10000, saldo_restante)
             distribucion_agresiva.append({
@@ -1462,11 +1474,11 @@ def main():
                 "producto": "DiDi Ahorro",
                 "monto": monto_didi,
                 "tasa": 16.0,
-                "razon": "🥇 16% primeros $10k (después 8.5%)"
+                "razon": "🥇 16% primeros $10k (después 8.5%) 💧 A LA VISTA"
             })
             saldo_restante -= monto_didi
         
-        # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2)
+        # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2 - A LA VISTA)
         if usa_uala and cumple_uala_plus and saldo_restante > 0:
             monto_uala = min(50000, saldo_restante)
             distribucion_agresiva.append({
@@ -1474,11 +1486,11 @@ def main():
                 "producto": "Cuenta Plus",
                 "monto": monto_uala,
                 "tasa": 16.0,
-                "razon": "🥇 16% hasta $50k ✅ Cumples requisito de $3k/mes"
+                "razon": "🥇 16% hasta $50k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
             })
             saldo_restante -= monto_uala
         
-        # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3)
+        # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3 - A LA VISTA)
         if usa_klar and cumple_klar_plus and saldo_restante > 0:
             monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
             if monto_klar >= 100:
@@ -1487,11 +1499,11 @@ def main():
                     "producto": "Inversión Flexible Max",
                     "monto": monto_klar,
                     "tasa": 15.0,
-                    "razon": "🥈 15% liquidez inmediata ✅ Tienes Plus/Platino"
+                    "razon": "🥈 15% liquidez inmediata ✅ Tienes Plus/Platino 💧 A LA VISTA"
                 })
                 saldo_restante -= monto_klar
         
-        # 4. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 4)
+        # 4. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 4 - A LA VISTA)
         if usa_nu and saldo_restante > 0:
             monto_nu_turbo = min(25000, saldo_restante)
             if monto_nu_turbo > 0:
@@ -1500,11 +1512,11 @@ def main():
                     "producto": "Cajita Turbo",
                     "monto": monto_nu_turbo,
                     "tasa": 15.0,
-                    "razon": "🥈 15% hasta $25k liquidez inmediata"
+                    "razon": "🥈 15% hasta $25k liquidez inmediata 💧 A LA VISTA"
                 })
                 saldo_restante -= monto_nu_turbo
         
-        # 5. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 5)
+        # 5. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 5 - A LA VISTA)
         if usa_mp and cumple_mercadopago and saldo_restante > 0:
             monto_mp = min(25000, saldo_restante)
             distribucion_agresiva.append({
@@ -1512,35 +1524,38 @@ def main():
                 "producto": "Cuenta Remunerada",
                 "monto": monto_mp,
                 "tasa": 13.0,
-                "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
+                "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
             })
             saldo_restante -= monto_mp
         
-        # 6. Stori 90 días: Al 10% (PRIORIDAD 6)
-        if usa_stori and saldo_restante > 0:
+        # 6. Stori 90 días: Al 10% (PRIORIDAD 6 - PLAZO FIJO - solo si NO está en modo vista)
+        if not solo_vista and usa_stori and saldo_restante > 0:
             distribucion_agresiva.append({
                 "sofipo": "Stori",
                 "producto": "90 días",
                 "monto": saldo_restante,
                 "tasa": 10.0,
-                "razon": "� 10% plazo 90 días"
+                "razon": " 10% plazo 90 días  PLAZO FIJO"
             })
             saldo_restante -= saldo_restante
         
-        # 7. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO)
-        if usa_finsus and saldo_restante > 0:
+        # 7. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO - PLAZO FIJO - solo si NO está en modo vista)
+        if not solo_vista and usa_finsus and saldo_restante > 0:
             distribucion_agresiva.append({
                 "sofipo": "Finsus",
                 "producto": "Apartado 360 días",
                 "monto": saldo_restante,
                 "tasa": 10.09,
-                "razon": "🥉 10.09% plazo 360 días"
+                "razon": " 10.09% plazo 360 días  PLAZO FIJO"
             })
             saldo_restante -= saldo_restante
         
         # Advertencia si quedan fondos sin asignar
         if saldo_restante > 0:
-            st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. Has excluido demasiadas SOFIPOs. Activa al menos una más para distribuir todo tu capital.")
+            if solo_vista:
+                st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. En modo A LA VISTA, los productos a plazo fijo están excluidos. Desactiva el modo A LA VISTA o activa más SOFIPOs para distribuir todo tu capital.")
+            else:
+                st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. Has excluido demasiadas SOFIPOs. Activa al menos una más para distribuir todo tu capital.")
         
         # Mostrar tabla con montos exactos
         if distribucion_agresiva:
