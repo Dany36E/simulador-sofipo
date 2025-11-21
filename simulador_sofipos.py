@@ -1593,8 +1593,8 @@ def main():
                 distribucion.append({"monto": monto_mp, "tasa": 13.0})
                 saldo -= monto_mp
             
-            # 6. DiDi Base 8.5% (resto)
-            if usa_didi and saldo > 0 and not solo_vista:
+            # 6. DiDi Base 8.5% (resto) - A LA VISTA
+            if usa_didi and saldo > 0:
                 distribucion.append({"monto": saldo, "tasa": 8.5})
                 saldo = 0
             
@@ -1616,110 +1616,124 @@ def main():
             else:
                 return 0, []
         
-        # Buscar el capital necesario mediante aproximación binaria
-        capital_min = 1000
-        capital_max = 10000000
-        capital_necesario = capital_min
-        iteraciones = 0
-        max_iteraciones = 50
+        # Calcular tasa ponderada de referencia con $100k
+        tasa_referencia, _ = calcular_tasa_ponderada_real(100000)
         
-        while iteraciones < max_iteraciones:
-            capital_prueba = (capital_min + capital_max) / 2
-            tasa_ponderada, dist = calcular_tasa_ponderada_real(capital_prueba)
+        if tasa_referencia == 0:
+            st.error("❌ No hay SOFIPOs disponibles con tu configuración actual. Activa al menos una SOFIPO.")
+            capital_necesario = 0
+            tasa_real = 0
+            distribucion_final = []
+            ganancia_anual_real = 0
+            ganancia_mensual_real = 0
+        else:
+            # Estimación inicial simple
+            capital_estimado = (ganancia_anual_objetivo / tasa_referencia) * 100
             
-            if tasa_ponderada == 0:
-                st.error("❌ No hay SOFIPOs disponibles con tu configuración actual. Activa al menos una SOFIPO.")
-                break
+            # Buscar el capital necesario mediante aproximación binaria
+            capital_min = max(1000, capital_estimado * 0.5)
+            capital_max = capital_estimado * 2
+            capital_necesario = capital_estimado
+            iteraciones = 0
+            max_iteraciones = 30
             
-            ganancia_estimada = capital_prueba * tasa_ponderada / 100
-            
-            if abs(ganancia_estimada - ganancia_anual_objetivo) < 100:  # Precisión de $100
+            while iteraciones < max_iteraciones and capital_max - capital_min > 10:
+                capital_prueba = (capital_min + capital_max) / 2
+                tasa_ponderada, dist = calcular_tasa_ponderada_real(capital_prueba)
+                
+                ganancia_estimada = capital_prueba * tasa_ponderada / 100
+                
+                diferencia = abs(ganancia_estimada - ganancia_anual_objetivo)
+                
+                if diferencia < 10:  # Precisión de $10
+                    capital_necesario = capital_prueba
+                    break
+                elif ganancia_estimada < ganancia_anual_objetivo:
+                    capital_min = capital_prueba
+                else:
+                    capital_max = capital_prueba
+                
                 capital_necesario = capital_prueba
-                break
-            elif ganancia_estimada < ganancia_anual_objetivo:
-                capital_min = capital_prueba
-            else:
-                capital_max = capital_prueba
+                iteraciones += 1
             
-            capital_necesario = capital_prueba
-            iteraciones += 1
-        
-        # Calcular valores finales
-        tasa_real, distribucion_final = calcular_tasa_ponderada_real(capital_necesario)
-        ganancia_anual_real = capital_necesario * tasa_real / 100
-        ganancia_mensual_real = ganancia_anual_real / 12
+            # Calcular valores finales
+            tasa_real, distribucion_final = calcular_tasa_ponderada_real(capital_necesario)
+            ganancia_anual_real = capital_necesario * tasa_real / 100
+            ganancia_mensual_real = ganancia_anual_real / 12
         
         st.markdown("---")
-        st.markdown("### 🎯 Resultado de tu Objetivo (Con Tasas Reales)")
         
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                "💼 Capital Necesario",
-                f"${capital_necesario:,.0f}",
-                help="Monto que necesitas invertir"
-            )
-        
-        with col2:
-            st.metric(
-                "📅 Ganancia Anual",
-                f"${ganancia_anual_real:,.0f}",
-                delta=f"{tasa_real:.2f}%"
-            )
-        
-        with col3:
-            st.metric(
-                "💵 Ganancia Mensual",
-                f"${ganancia_mensual_real:,.0f}",
-                delta=f"~{ganancia_mensual_real/capital_necesario*100:.2f}% mensual"
-            )
-        
-        with col4:
-            sofipos_count = len(set([d.get("sofipo", "") for d in distribucion_final if d.get("sofipo")]))
-            if sofipos_count == 0:
-                sofipos_count = len(distribucion_final)
-            st.metric(
-                "🏦 SOFIPOs en distribución",
-                f"{sofipos_count}",
-                help="Según tu configuración"
-            )
-        
-        # Mostrar distribución detallada
-        if distribucion_final:
-            st.markdown("#### 📊 Distribución Sugerida")
-            for i, item in enumerate(distribucion_final, 1):
-                porcentaje = (item["monto"] / capital_necesario * 100)
-                ganancia_item = item["monto"] * item["tasa"] / 100
-                st.markdown(f"{i}. **\${item['monto']:,.0f}** al **{item['tasa']}%** = **\${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
-        
-        # Mostrar advertencias según el monto
-        if capital_necesario > 1000000:
-            st.warning("⚠️ **Capital alto**: Considera diversificar en múltiples SOFIPOs para no exceder el límite IPAB de $400k por institución.")
-        elif capital_necesario < 5000:
-            st.info("💡 **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
-        
-        # Mostrar advertencias de configuración
-        if solo_vista:
-            st.info("💧 **Modo A LA VISTA activado**: Solo se incluyen productos líquidos (sin plazo fijo)")
-        
-        excluidas = []
-        if not usa_nu: excluidas.append("Nu")
-        if not usa_didi: excluidas.append("DiDi")
-        if not usa_stori: excluidas.append("Stori")
-        if not usa_klar: excluidas.append("Klar")
-        if not usa_uala: excluidas.append("Ualá")
-        if not usa_mp: excluidas.append("Mercado Pago")
-        if not usa_finsus: excluidas.append("Finsus")
-        
-        if excluidas:
-            st.warning(f"🚫 **SOFIPOs excluidas**: {', '.join(excluidas)}")
-        
-        # Botón para aplicar el objetivo al simulador (FIJO)
-        st.markdown("---")
-        if st.button("📊 Copiar este monto", use_container_width=True, key="btn_copiar_objetivo"):
-            st.code(f"{int(capital_necesario)}", language=None)
-            st.success(f"✅ **Copia ${capital_necesario:,.0f}** y pégalo arriba en 'Monto total disponible'")
+        if tasa_referencia > 0:
+            st.markdown("### 🎯 Resultado de tu Objetivo (Con Tasas Reales)")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric(
+                    "💼 Capital Necesario",
+                    f"${capital_necesario:,.0f}",
+                    help="Monto que necesitas invertir"
+                )
+            
+            with col2:
+                st.metric(
+                    "📅 Ganancia Anual",
+                    f"${ganancia_anual_real:,.0f}",
+                    delta=f"{tasa_real:.2f}%"
+                )
+            
+            with col3:
+                st.metric(
+                    "💵 Ganancia Mensual",
+                    f"${ganancia_mensual_real:,.0f}",
+                    delta=f"~{ganancia_mensual_real/capital_necesario*100:.2f}% mensual"
+                )
+            
+            with col4:
+                sofipos_count = len(set([d.get("sofipo", "") for d in distribucion_final if d.get("sofipo")]))
+                if sofipos_count == 0:
+                    sofipos_count = len(distribucion_final)
+                st.metric(
+                    "🏦 SOFIPOs en distribución",
+                    f"{sofipos_count}",
+                    help="Según tu configuración"
+                )
+            
+            # Mostrar distribución detallada
+            if distribucion_final:
+                st.markdown("#### 📊 Distribución Sugerida")
+                for i, item in enumerate(distribucion_final, 1):
+                    porcentaje = (item["monto"] / capital_necesario * 100)
+                    ganancia_item = item["monto"] * item["tasa"] / 100
+                    st.markdown(f"{i}. **\${item['monto']:,.0f}** al **{item['tasa']}%** = **\${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
+            
+            # Mostrar advertencias según el monto
+            if capital_necesario > 1000000:
+                st.warning("⚠️ **Capital alto**: Considera diversificar en múltiples SOFIPOs para no exceder el límite IPAB de $400k por institución.")
+            elif capital_necesario < 5000:
+                st.info("💡 **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
+            
+            # Mostrar advertencias de configuración
+            if solo_vista:
+                st.info("💧 **Modo A LA VISTA activado**: Solo se incluyen productos líquidos (sin plazo fijo)")
+            
+            excluidas = []
+            if not usa_nu: excluidas.append("Nu")
+            if not usa_didi: excluidas.append("DiDi")
+            if not usa_stori: excluidas.append("Stori")
+            if not usa_klar: excluidas.append("Klar")
+            if not usa_uala: excluidas.append("Ualá")
+            if not usa_mp: excluidas.append("Mercado Pago")
+            if not usa_finsus: excluidas.append("Finsus")
+            
+            if excluidas:
+                st.warning(f"🚫 **SOFIPOs excluidas**: {', '.join(excluidas)}")
+            
+            # Botón para aplicar el objetivo al simulador (FIJO)
+            st.markdown("---")
+            if st.button("📊 Copiar este monto", use_container_width=True, key="btn_copiar_objetivo"):
+                st.code(f"{int(capital_necesario)}", language=None)
+                st.success(f"✅ **Copia ${capital_necesario:,.0f}** y pégalo arriba en 'Monto total disponible'")
     
     st.divider()
     
