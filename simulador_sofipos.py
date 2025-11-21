@@ -2629,50 +2629,48 @@ def main():
             mensaje_riesgo = "Hay áreas importantes que optimizar"
         
         # ====================================================================
-        # MOSTRAR DASHBOARD EN TARJETA ÚNICA
+        # MOSTRAR DASHBOARD EN TARJETA ÚNICA (VERSIÓN NATIVA STREAMLIT)
         # ====================================================================
         
-        st.markdown(f"""
-        <div style="
-            background: linear-gradient(135deg, {semaforo_color}15 0%, {semaforo_color}05 100%);
-            border: 2px solid {semaforo_color};
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-        ">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                <div>
+        # Contenedor principal con estilo
+        dashboard_container = st.container()
+        
+        with dashboard_container:
+            # Header del dashboard
+            col_score, col_msg = st.columns([1, 2])
+            
+            with col_score:
+                st.markdown(f"""
+                <div style="text-align: center; padding: 20px; background: {semaforo_color}15; border-radius: 10px; border: 2px solid {semaforo_color};">
                     <div style="font-size: 48px; font-weight: bold; color: {semaforo_color};">
                         {score_total}/100
                     </div>
-                    <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 5px;">
+                    <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 10px;">
                         {semaforo} {semaforo_texto}
                     </div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 14px; opacity: 0.8;">Score de Calidad</div>
-                    <div style="font-size: 12px; opacity: 0.6; margin-top: 5px;">{mensaje_riesgo}</div>
-                </div>
-            </div>
+                """, unsafe_allow_html=True)
             
-            <div style="margin-top: 25px;">
-                <div style="font-size: 14px; font-weight: bold; margin-bottom: 15px; opacity: 0.9;">
-                    📋 Desglose del Score:
-                </div>
-                {"".join([f'''
-                <div style="margin-bottom: 12px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="font-size: 13px;">{comp[0]}</span>
-                        <span style="font-size: 13px; font-weight: bold;">{comp[1]}/{comp[2]} pts • {comp[3]}</span>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden;">
-                        <div style="background: {semaforo_color}; width: {(comp[1]/comp[2]*100):.0f}%; height: 100%;"></div>
-                    </div>
-                </div>
-                ''' for comp in componentes_score])}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            with col_msg:
+                st.info(f"**Score de Calidad del Portafolio**\n\n{mensaje_riesgo}")
+            
+            # Desglose del score
+            st.markdown("---")
+            st.markdown("### 📋 Desglose del Score")
+            
+            for comp in componentes_score:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"**{comp[0]}**")
+                    st.progress(comp[1] / comp[2])
+                with col2:
+                    st.metric(
+                        label="Puntos",
+                        value=f"{comp[1]}/{comp[2]}",
+                        delta=comp[3]
+                    )
+                st.caption(f"_{comp[3]}_")
+                st.markdown("")  # Espacio
         
         # ====================================================================
         # KPIs PRINCIPALES EN FORMATO COMPACTO
