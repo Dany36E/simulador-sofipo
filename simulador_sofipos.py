@@ -2709,349 +2709,224 @@ def main():
         st.markdown("---")
         
         # ====================================================================
-        # GRÁFICO PRINCIPAL
+        # VISUALIZACIONES PROFESIONALES
         # ====================================================================
         
         if len(proyecciones_todas) > 0:
-            st.subheader("📈 Proyección de Crecimiento Total")
+            st.markdown("---")
+            st.markdown("## 📊 Visualización de tu Inversión")
             
             # Combinar todas las proyecciones
             df_proyecciones_completo = pd.concat(proyecciones_todas, ignore_index=True)
             
-            # Agrupar por mes y sumar TODO (capital + intereses de todas las SOFIPOs)
+            # Agrupar por mes y sumar TODO
             df_total = df_proyecciones_completo.groupby('Mes').agg({
                 'Capital Inicial': 'sum',
                 'Intereses Generados': 'sum',
                 'Total Acumulado': 'sum'
             }).reset_index()
             
-            # Crear gráfico de línea única con el TOTAL
-            fig = go.Figure()
+            # Dos columnas para las visualizaciones
+            col_viz1, col_viz2 = st.columns([1.5, 1])
             
-            # Línea principal: Total acumulado de TODAS las inversiones
-            fig.add_trace(go.Scatter(
-                x=df_total['Mes'],
-                y=df_total['Total Acumulado'],
-                mode='lines+markers',
-                name='Total Portafolio',
-                line=dict(width=4, color='#667eea'),
-                marker=dict(size=8),
-                fill='tonexty',
-                fillcolor='rgba(102, 126, 234, 0.1)',
-                hovertemplate='<b>Total Acumulado</b><br>' +
-                              'Mes: %{x}<br>' +
-                              'Total: $%{y:,.0f}<br>' +
-                              '<extra></extra>'
-            ))
-            
-            # Línea de referencia: Capital inicial (sin intereses)
-            fig.add_trace(go.Scatter(
-                x=df_total['Mes'],
-                y=[total_invertido] * len(df_total),
-                mode='lines',
-                name='Capital Inicial',
-                line=dict(width=2, color='gray', dash='dash'),
-                hovertemplate='Capital: $%{y:,.0f}<extra></extra>'
-            ))
-            
-            fig.update_layout(
-                title=dict(
-                    text=f"Crecimiento total de tu portafolio a {periodo_simulacion} meses",
-                    font=dict(size=18, color='#c9d1d9' if modo_oscuro else '#333333')
-                ),
-                xaxis_title="Meses",
-                yaxis_title="Monto Total (MXN)",
-                hovermode='x unified',
-                template="plotly_dark" if modo_oscuro else "plotly_white",
-                height=500,
-                showlegend=True,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="center",
-                    x=0.5,
-                    bgcolor='rgba(22, 27, 34, 0.8)' if modo_oscuro else 'rgba(255, 255, 255, 0.8)',
-                    bordercolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    borderwidth=1
-                ),
-                paper_bgcolor='#0d1117' if modo_oscuro else 'white',
-                plot_bgcolor='#161b22' if modo_oscuro else '#f8f9fa',
-                font=dict(color='#c9d1d9' if modo_oscuro else '#333333'),
-                xaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
-                ),
-                yaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
+            with col_viz1:
+                st.markdown("### 📈 Proyección de Crecimiento")
+                
+                # Crear gráfico profesional con gradiente
+                fig = go.Figure()
+                
+                # Área de relleno con gradiente
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=df_total['Total Acumulado'],
+                    mode='lines',
+                    name='Crecimiento',
+                    line=dict(width=0),
+                    fillcolor='rgba(102, 126, 234, 0.3)',
+                    fill='tozeroy',
+                    showlegend=False,
+                    hoverinfo='skip'
+                ))
+                
+                # Línea principal con gradiente profesional
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=df_total['Total Acumulado'],
+                    mode='lines+markers',
+                    name='Total del Portafolio',
+                    line=dict(
+                        width=3.5,
+                        color='#667eea',
+                        shape='spline',  # Línea suavizada
+                    ),
+                    marker=dict(
+                        size=9,
+                        color='#667eea',
+                        symbol='circle',
+                        line=dict(color='white', width=2)
+                    ),
+                    hovertemplate=(
+                        '<b style="color:#667eea;">Total Acumulado</b><br>' +
+                        '<b>Mes %{x}</b><br>' +
+                        'Monto: <b>$%{y:,.0f}</b><br>' +
+                        '<extra></extra>'
+                    )
+                ))
+                
+                # Línea de capital inicial (más sutil)
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=[total_invertido] * len(df_total),
+                    mode='lines',
+                    name='Capital Inicial',
+                    line=dict(
+                        width=2,
+                        color='rgba(150, 150, 150, 0.4)',
+                        dash='dot'
+                    ),
+                    hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
+                ))
+                
+                # Calcular ganancia final
+                ganancia_final = df_total['Total Acumulado'].iloc[-1] - total_invertido
+                
+                # Anotación profesional al final
+                fig.add_annotation(
+                    x=df_total['Mes'].iloc[-1],
+                    y=df_total['Total Acumulado'].iloc[-1],
+                    text=f"<b>${df_total['Total Acumulado'].iloc[-1]:,.0f}</b><br>+${ganancia_final:,.0f}",
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowsize=1,
+                    arrowwidth=2,
+                    arrowcolor="#667eea",
+                    ax=40,
+                    ay=-40,
+                    font=dict(size=12, color="#667eea", family="Arial"),
+                    bgcolor="rgba(255,255,255,0.9)",
+                    bordercolor="#667eea",
+                    borderwidth=2,
+                    borderpad=4
                 )
-            )
-            
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Gráfico de área apilada (Capital vs Intereses)
-            st.subheader("📊 Desglose: Capital vs Intereses")
-            
-            # Sumar todos los capitales e intereses por mes
-            df_agregado = df_proyecciones_completo.groupby('Mes').agg({
-                'Capital Inicial': 'sum',
-                'Intereses Generados': 'sum',
-                'Total Acumulado': 'sum'
-            }).reset_index()
-            
-            fig_area = go.Figure()
-            
-            fig_area.add_trace(go.Scatter(
-                x=df_agregado['Mes'],
-                y=df_agregado['Capital Inicial'],
-                mode='lines',
-                name='Capital Inicial',
-                line=dict(width=0),
-                fillcolor='rgba(102, 126, 234, 0.5)',
-                fill='tozeroy',
-                hovertemplate='Capital: $%{y:,.2f}<extra></extra>'
-            ))
-            
-            fig_area.add_trace(go.Scatter(
-                x=df_agregado['Mes'],
-                y=df_agregado['Intereses Generados'],
-                mode='lines',
-                name='Intereses Generados',
-                line=dict(width=0),
-                fillcolor='rgba(118, 75, 162, 0.5)',
-                fill='tonexty',
-                hovertemplate='Intereses: $%{y:,.2f}<extra></extra>'
-            ))
-            
-            fig_area.update_layout(
-                title=dict(
-                    text="Composición del patrimonio total",
-                    font=dict(size=18, color='#c9d1d9' if modo_oscuro else '#333333')
-                ),
-                xaxis_title="Meses",
-                yaxis_title="Monto (MXN)",
-                hovermode='x unified',
-                template="plotly_dark" if modo_oscuro else "plotly_white",
-                height=400,
-                paper_bgcolor='#0d1117' if modo_oscuro else 'white',
-                plot_bgcolor='#161b22' if modo_oscuro else '#f8f9fa',
-                font=dict(color='#c9d1d9' if modo_oscuro else '#333333'),
-                xaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
-                ),
-                yaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
+                
+                fig.update_layout(
+                    height=450,
+                    margin=dict(l=20, r=20, t=40, b=20),
+                    hovermode='x unified',
+                    template="plotly_white" if not modo_oscuro else "plotly_dark",
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(
+                        size=12,
+                        color='#333333' if not modo_oscuro else '#c9d1d9',
+                        family="Arial"
+                    ),
+                    xaxis=dict(
+                        title="<b>Periodo (Meses)</b>",
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(200,200,200,0.2)',
+                        zeroline=False,
+                        showline=True,
+                        linewidth=2,
+                        linecolor='rgba(200,200,200,0.3)'
+                    ),
+                    yaxis=dict(
+                        title="<b>Monto Total (MXN)</b>",
+                        showgrid=True,
+                        gridwidth=1,
+                        gridcolor='rgba(200,200,200,0.2)',
+                        zeroline=False,
+                        showline=True,
+                        linewidth=2,
+                        linecolor='rgba(200,200,200,0.3)',
+                        tickformat="$,.0f"
+                    ),
+                    showlegend=True,
+                    legend=dict(
+                        orientation="h",
+                        yanchor="top",
+                        y=-0.15,
+                        xanchor="center",
+                        x=0.5,
+                        bgcolor='rgba(255,255,255,0.8)' if not modo_oscuro else 'rgba(30,30,30,0.8)',
+                        bordercolor='rgba(200,200,200,0.3)',
+                        borderwidth=1,
+                        font=dict(size=11)
+                    )
                 )
-            )
+                
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             
-            st.plotly_chart(fig_area, use_container_width=True)
+            with col_viz2:
+                st.markdown("### 🎯 Distribución del Portafolio")
+                
+                # Calcular distribución por SOFIPO
+                distribucion_sofipos = {}
+                for inv_key, inv_data in inversiones_seleccionadas.items():
+                    sofipo = inv_data['sofipo']
+                    monto = inv_data['monto']
+                    if sofipo not in distribucion_sofipos:
+                        distribucion_sofipos[sofipo] = 0
+                    distribucion_sofipos[sofipo] += monto
+                
+                # Crear pie chart profesional
+                colores_profesionales = [
+                    '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                    '#43e97b', '#fa709a', '#fee140', '#30cfd0'
+                ]
+                
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=list(distribucion_sofipos.keys()),
+                    values=list(distribucion_sofipos.values()),
+                    hole=0.5,  # Donut chart
+                    marker=dict(
+                        colors=colores_profesionales[:len(distribucion_sofipos)],
+                        line=dict(color='white', width=3)
+                    ),
+                    textinfo='label+percent',
+                    textfont=dict(size=13, color='white', family="Arial"),
+                    hovertemplate=(
+                        '<b>%{label}</b><br>' +
+                        'Monto: $%{value:,.0f}<br>' +
+                        'Porcentaje: %{percent}<br>' +
+                        '<extra></extra>'
+                    ),
+                    pull=[0.05] * len(distribucion_sofipos)  # Separar ligeramente
+                )])
+                
+                # Anotación central del donut
+                fig_pie.add_annotation(
+                    text=f"<b>${total_invertido:,.0f}</b><br><span style='font-size:11px;'>Total Invertido</span>",
+                    x=0.5, y=0.5,
+                    font=dict(size=16, color='#667eea', family="Arial"),
+                    showarrow=False
+                )
+                
+                fig_pie.update_layout(
+                    height=450,
+                    margin=dict(l=20, r=20, t=20, b=20),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(size=12, family="Arial"),
+                    showlegend=True,
+                    legend=dict(
+                        orientation="v",
+                        yanchor="middle",
+                        y=0.5,
+                        xanchor="left",
+                        x=1.05,
+                        bgcolor='rgba(255,255,255,0.8)' if not modo_oscuro else 'rgba(30,30,30,0.8)',
+                        bordercolor='rgba(200,200,200,0.3)',
+                        borderwidth=1,
+                        font=dict(size=11)
+                    )
+                )
+                
+                st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
             
             # ====================================================================
-            # 🔮 PROYECCIÓN AVANZADA CON ESCENARIOS
+            # DESGLOSE DETALLADO (OPCIONAL - EN EXPANDER)
             # ====================================================================
-            
-            st.markdown("---")
-            st.subheader("🔮 Proyección Avanzada con Escenarios")
-            st.caption("Análisis de sensibilidad: ¿Qué pasaría si las tasas cambian?")
-            
-            # Calcular escenarios
-            escenarios_data = {}
-            
-            for escenario_nombre, factor in [("Mejor caso (+20%)", 1.20), ("Caso base", 1.0), ("Peor caso (-20%)", 0.80)]:
-                proyeccion_escenario = []
-                
-                for mes in range(periodo_simulacion + 1):
-                    total_mes = total_invertido
-                    intereses_mes = 0
-                    
-                    for inv_key, inv_data in inversiones_seleccionadas.items():
-                        monto = inv_data['monto']
-                        tasa_base = inv_data['producto_info']['tasa_base']
-                        tasa_ajustada = tasa_base * factor  # Ajustar tasa según escenario
-                        tipo = inv_data['producto_info']['tipo']
-                        
-                        dias = mes * 30
-                        
-                        # Calcular interés según tipo
-                        if tipo == "vista_hibrida":
-                            # DiDi Ahorro híbrido
-                            interes = calcular_rendimiento_hibrido_didi(
-                                monto,
-                                inv_data['producto_info']['tasa_premium'] * factor,
-                                inv_data['producto_info']['limite_premium'],
-                                tasa_ajustada,
-                                dias
-                            )
-                        elif tipo == "vista":
-                            # A la vista con capitalización diaria
-                            interes = calcular_interes_compuesto(monto, tasa_ajustada, dias, "diario")
-                        else:
-                            # Plazo fijo con interés simple
-                            interes = calcular_interes_simple(monto, tasa_ajustada, dias)
-                        
-                        intereses_mes += interes
-                    
-                    total_mes += intereses_mes
-                    proyeccion_escenario.append({
-                        'Mes': mes,
-                        'Total': total_mes,
-                        'Intereses': intereses_mes
-                    })
-                
-                escenarios_data[escenario_nombre] = pd.DataFrame(proyeccion_escenario)
-            
-            # Crear gráfico de abanico
-            fig_escenarios = go.Figure()
-            
-            # Mejor caso (área superior)
-            fig_escenarios.add_trace(go.Scatter(
-                x=escenarios_data["Mejor caso (+20%)"]["Mes"],
-                y=escenarios_data["Mejor caso (+20%)"]["Total"],
-                mode='lines',
-                name='Mejor caso (+20%)',
-                line=dict(color='#22c55e', width=2, dash='dash'),
-                hovertemplate='Mejor caso<br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
-            ))
-            
-            # Caso base (línea principal)
-            fig_escenarios.add_trace(go.Scatter(
-                x=escenarios_data["Caso base"]["Mes"],
-                y=escenarios_data["Caso base"]["Total"],
-                mode='lines+markers',
-                name='Caso base (actual)',
-                line=dict(color='#667eea', width=4),
-                marker=dict(size=8),
-                fill='tonexty',
-                fillcolor='rgba(34, 197, 94, 0.1)',
-                hovertemplate='<b>Caso base</b><br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
-            ))
-            
-            # Peor caso (área inferior)
-            fig_escenarios.add_trace(go.Scatter(
-                x=escenarios_data["Peor caso (-20%)"]["Mes"],
-                y=escenarios_data["Peor caso (-20%)"]["Total"],
-                mode='lines',
-                name='Peor caso (-20%)',
-                line=dict(color='#ef4444', width=2, dash='dash'),
-                fill='tonexty',
-                fillcolor='rgba(239, 68, 68, 0.1)',
-                hovertemplate='Peor caso<br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
-            ))
-            
-            # Capital inicial (referencia)
-            fig_escenarios.add_trace(go.Scatter(
-                x=escenarios_data["Caso base"]["Mes"],
-                y=[total_invertido] * len(escenarios_data["Caso base"]),
-                mode='lines',
-                name='Capital Inicial',
-                line=dict(color='gray', width=2, dash='dot'),
-                hovertemplate='Capital: $%{y:,.0f}<extra></extra>'
-            ))
-            
-            fig_escenarios.update_layout(
-                title=dict(
-                    text=f"Análisis de sensibilidad: Escenarios a {periodo_simulacion} meses",
-                    font=dict(size=18, color='#c9d1d9' if modo_oscuro else '#333333')
-                ),
-                xaxis_title="Meses",
-                yaxis_title="Monto Total (MXN)",
-                hovermode='x unified',
-                template="plotly_dark" if modo_oscuro else "plotly_white",
-                height=500,
-                showlegend=True,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="center",
-                    x=0.5,
-                    bgcolor='rgba(22, 27, 34, 0.8)' if modo_oscuro else 'rgba(255, 255, 255, 0.8)',
-                    bordercolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    borderwidth=1
-                ),
-                paper_bgcolor='#0d1117' if modo_oscuro else 'white',
-                plot_bgcolor='#161b22' if modo_oscuro else '#f8f9fa',
-                font=dict(color='#c9d1d9' if modo_oscuro else '#333333'),
-                xaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
-                ),
-                yaxis=dict(
-                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    color='#8b949e' if modo_oscuro else '#666666'
-                )
-            )
-            
-            st.plotly_chart(fig_escenarios, use_container_width=True)
-            
-            # Tabla comparativa de escenarios al final del periodo
-            st.markdown("#### 📊 Comparativa de Escenarios al Final del Periodo")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            mejor_caso_final = escenarios_data["Mejor caso (+20%)"].iloc[-1]
-            caso_base_final = escenarios_data["Caso base"].iloc[-1]
-            peor_caso_final = escenarios_data["Peor caso (-20%)"].iloc[-1]
-            
-            with col1:
-                st.success(f"**🟢 Mejor Caso (+20%)**")
-                st.metric(
-                    "Total acumulado",
-                    f"${mejor_caso_final['Total']:,.0f}",
-                    delta=f"+${mejor_caso_final['Intereses']:,.0f}"
-                )
-                ganancia_mejor = mejor_caso_final['Total'] - total_invertido
-                roi_mejor = (ganancia_mejor / total_invertido) * 100
-                st.caption(f"ROI: {roi_mejor:.2f}%")
-            
-            with col2:
-                st.info(f"**🔵 Caso Base (Actual)**")
-                st.metric(
-                    "Total acumulado",
-                    f"${caso_base_final['Total']:,.0f}",
-                    delta=f"+${caso_base_final['Intereses']:,.0f}"
-                )
-                ganancia_base = caso_base_final['Total'] - total_invertido
-                roi_base = (ganancia_base / total_invertido) * 100
-                st.caption(f"ROI: {roi_base:.2f}%")
-            
-            with col3:
-                st.error(f"**🔴 Peor Caso (-20%)**")
-                st.metric(
-                    "Total acumulado",
-                    f"${peor_caso_final['Total']:,.0f}",
-                    delta=f"+${peor_caso_final['Intereses']:,.0f}"
-                )
-                ganancia_peor = peor_caso_final['Total'] - total_invertido
-                roi_peor = (ganancia_peor / total_invertido) * 100
-                st.caption(f"ROI: {roi_peor:.2f}%")
-            
-            # Análisis de volatilidad
-            st.markdown("---")
-            st.markdown("#### 🎲 Análisis de Volatilidad")
-            
-            diferencia_mejor_peor = mejor_caso_final['Total'] - peor_caso_final['Total']
-            volatilidad_porcentaje = (diferencia_mejor_peor / caso_base_final['Total']) * 100
-            
-            col_vol1, col_vol2 = st.columns(2)
-            
-            with col_vol1:
-                st.metric(
-                    "Rango de variación",
-                    f"${diferencia_mejor_peor:,.0f}",
-                    delta=f"{volatilidad_porcentaje:.1f}% del caso base"
-                )
-            
-            with col_vol2:
-                if volatilidad_porcentaje < 15:
-                    st.success("✅ **Volatilidad Baja**: Tu portafolio es relativamente estable ante cambios en tasas")
-                elif volatilidad_porcentaje < 30:
-                    st.warning("⚠️ **Volatilidad Moderada**: Considera diversificar más para reducir sensibilidad")
-                else:
-                    st.error("🔴 **Volatilidad Alta**: Tu portafolio es muy sensible a cambios en tasas de interés")
             
             st.markdown("---")
             st.subheader("📋 Desglose Mensual Detallado")
