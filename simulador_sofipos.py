@@ -2052,11 +2052,11 @@ def main():
             
             # Botón para aplicar estrategia
             st.markdown("---")
-            if st.button("? Aplicar esta estrategia a mi simulación", key="btn_aplicar_agresiva", type="primary"):
+            if st.button("🚀 Aplicar esta estrategia a mi simulación", key="btn_aplicar_agresiva", type="primary"):
                 # Guardar la distribución en session_state
                 st.session_state['estrategia_aplicada'] = distribucion_agresiva
                 st.session_state['aplicar_estrategia'] = True
-                st.success("? Estrategia aplicada! Desplázate hacia abajo para ver los cambios.")
+                st.success("✅ Estrategia aplicada! Desplázate hacia abajo para ver los cambios.")
                 st.rerun()
             
             # Advertencias dinámicas según preferencias
