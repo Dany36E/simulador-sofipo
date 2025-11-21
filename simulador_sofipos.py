@@ -1369,13 +1369,25 @@ def main():
     
     st.markdown("### 💳 Selecciona las SOFIPOs donde invertirás")
     
-    # Verificar si se aplicó una estrategia
-    estrategia_a_aplicar = None
+    # Verificar si se aplicó una estrategia y pre-cargar valores en session_state
     if 'aplicar_estrategia' in st.session_state and st.session_state['aplicar_estrategia']:
-        estrategia_a_aplicar = st.session_state.get('estrategia_aplicada', [])
-        st.info("📋 **Estrategia aplicada automáticamente.** Puedes ajustar los valores manualmente si lo deseas.")
+        estrategia_aplicada = st.session_state.get('estrategia_aplicada', [])
+        
+        # Pre-cargar todos los valores en session_state
+        for item in estrategia_aplicada:
+            sofipo_name = item['sofipo']
+            # Marcar checkbox
+            st.session_state[f"check_{sofipo_name}"] = True
+            # Seleccionar producto
+            st.session_state[f"prod_{sofipo_name}"] = item['producto']
+            # Establecer monto
+            st.session_state[f"monto_{sofipo_name}_{item['producto']}"] = item['monto']
+        
         # Limpiar el flag
         st.session_state['aplicar_estrategia'] = False
+        st.info("📋 **Estrategia aplicada automáticamente.** Los valores han sido cargados en las pestañas de cada SOFIPO.")
+    
+    estrategia_a_aplicar = None
     
     inversiones_seleccionadas = {}
     
@@ -1393,26 +1405,13 @@ def main():
             # Descripción breve
             st.info(f"**{sofipo_data['descripcion']}**")
             
-            # Verificar si esta SOFIPO está en la estrategia a aplicar
-            valor_default_checkbox = False
-            if estrategia_a_aplicar:
-                valor_default_checkbox = any(d['sofipo'] == sofipo_name for d in estrategia_a_aplicar)
-            
             # Checkbox para incluir esta SOFIPO
             incluir = st.checkbox(
                 f"✅ Quiero invertir en {sofipo_name}",
-                value=valor_default_checkbox,
                 key=f"check_{sofipo_name}"
             )
             
             if incluir:
-                # Buscar si hay valores de la estrategia para esta SOFIPO
-                valores_estrategia = None
-                if estrategia_a_aplicar:
-                    for item in estrategia_a_aplicar:
-                        if item['sofipo'] == sofipo_name:
-                            valores_estrategia = item
-                            break
                 
                 col1, col2 = st.columns(2)
                 
@@ -1420,18 +1419,9 @@ def main():
                     # Selector de producto
                     productos = list(sofipo_data['productos'].keys())
                     
-                    # Determinar índice del producto a seleccionar
-                    indice_default = 0
-                    if valores_estrategia:
-                        try:
-                            indice_default = productos.index(valores_estrategia['producto'])
-                        except ValueError:
-                            indice_default = 0
-                    
                     producto_seleccionado = st.selectbox(
                         "📦 Elige el producto:",
                         options=productos,
-                        index=indice_default,
                         key=f"prod_{sofipo_name}",
                         help="Selecciona el tipo de inversión"
                     )
@@ -1459,16 +1449,11 @@ def main():
                     )
                     
                     if modo_input == "💵 Monto ($)":
-                        # Determinar valor por defecto
-                        valor_default_monto = min(max(10000, producto_info['minimo']), monto_total)
-                        if valores_estrategia and valores_estrategia['producto'] == producto_seleccionado:
-                            valor_default_monto = max(valores_estrategia['monto'], producto_info['minimo'])
-                        
                         # Monto a invertir
                         monto = st.number_input(
                             "¿Cuánto invertirás aquí?",
                             min_value=producto_info['minimo'],
-                            value=valor_default_monto,
+                            value=min(max(10000, producto_info['minimo']), monto_total),
                             step=1000,
                             key=f"monto_{sofipo_name}_{producto_seleccionado}",
                             help=f"Mínimo: ${producto_info['minimo']:,} MXN"
