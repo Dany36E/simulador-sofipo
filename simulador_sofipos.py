@@ -2001,9 +2001,9 @@ def main():
             
             # Mostrar tabla con montos exactos
             if distribucion_agresiva:
-                st.markdown("**?? Montos específicos sugeridos:**")
+                st.markdown("**💰 Montos específicos sugeridos:**")
             else:
-                st.error("? No hay recomendaciones disponibles. Has excluido todas las SOFIPOs. Activa al menos una para ver recomendaciones.")
+                st.error("⚠️ No hay recomendaciones disponibles. Has excluido todas las SOFIPOs. Activa al menos una para ver recomendaciones.")
             
             for i, dist in enumerate(distribucion_agresiva, 1):
                 porcentaje = (dist['monto'] / monto_total * 100)
@@ -2028,7 +2028,7 @@ def main():
             tasa_ponderada_agresiva = (rendimiento_agresivo / monto_total) * 100
             ganancia_12m = int(rendimiento_agresivo)
             
-            st.success(f"?? **Con esta estrategia agresiva obtendrás:**")
+            st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Tasa ponderada", f"{tasa_ponderada_agresiva:.2f}%")
@@ -2045,24 +2045,24 @@ def main():
                 st.rerun()
             
             # Advertencias dinámicas según preferencias
-            advertencias = ["**?? Consideraciones importantes:**"]
+            advertencias = ["**⚠️ Consideraciones importantes:**"]
             advertencias.append(f"- Esta estrategia alcanza un rendimiento ponderado de ~{tasa_ponderada_agresiva:.1f}%")
             
             # Advertencias sobre requisitos incluidos
             if cumple_mercadopago:
-                advertencias.append("- ? Incluye Mercado Pago 13% (cumples requisito de $3k/mes)")
+                advertencias.append("- ✅ Incluye Mercado Pago 13% (cumples requisito de $3k/mes)")
             else:
-                advertencias.append("- ?? Podrías mejorar con Mercado Pago 13% si puedes depositar $3k/mes")
+                advertencias.append("- 💡 Podrías mejorar con Mercado Pago 13% si puedes depositar $3k/mes")
             
             if cumple_uala_plus:
-                advertencias.append("- ? Incluye Ualá Plus 16% (cumples requisito de $3k/mes)")
+                advertencias.append("- ✅ Incluye Ualá Plus 16% (cumples requisito de $3k/mes)")
             else:
-                advertencias.append("- ?? Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
+                advertencias.append("- 💡 Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
             
             if cumple_klar_plus:
-                advertencias.append("- ? Incluye Klar Max 15% (tienes membresía Plus/Platino)")
+                advertencias.append("- ✅ Incluye Klar Max 15% (tienes membresía Plus/Platino)")
             else:
-                advertencias.append("- ?? Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
+                advertencias.append("- 💡 Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
             
             advertencias.append("- Parte del capital puede quedar en plazos fijos (menor liquidez)")
             advertencias.append("- No es recomendable para fondos de emergencia")
@@ -2075,7 +2075,7 @@ def main():
     # SELECCIÓN SIMPLE DE SOFIPOS
     # ========================================================================
     
-    st.markdown("### ?? Selecciona las SOFIPOs donde invertirás (o aplica una estrategia arriba)")
+    st.markdown("### 🏦 Selecciona las SOFIPOs donde invertirás (o aplica una estrategia arriba)")
     
     # Verificar si se aplicó una estrategia y pre-cargar valores en session_state
     if 'aplicar_estrategia' in st.session_state and st.session_state['aplicar_estrategia']:
@@ -2093,7 +2093,7 @@ def main():
         
         # Limpiar el flag
         st.session_state['aplicar_estrategia'] = False
-        st.info("?? **Estrategia aplicada automáticamente.** Los valores han sido cargados en las pestañas de cada SOFIPO.")
+        st.info("✅ **Estrategia aplicada automáticamente.** Los valores han sido cargados en las pestañas de cada SOFIPO.")
     
     estrategia_a_aplicar = None
     
@@ -2128,7 +2128,7 @@ def main():
                     productos = list(sofipo_data['productos'].keys())
                     
                     producto_seleccionado = st.selectbox(
-                        "?? Elige el producto:",
+                        "📦 Elige el producto:",
                         options=productos,
                         key=f"prod_{sofipo_name}",
                         help="Selecciona el tipo de inversión"
@@ -2138,25 +2138,25 @@ def main():
                     
                     # Mostrar tasa
                     if producto_info.get("tipo") == "vista_hibrida":
-                        st.success(f"**?? GAT: {producto_info['tasa_premium']}%** (primeros ${producto_info['limite_premium']:,})")
+                        st.success(f"**📈 GAT: {producto_info['tasa_premium']}%** (primeros ${producto_info['limite_premium']:,})")
                         st.caption(f"Después: {producto_info['tasa_base']}%")
                     elif producto_info.get("limite_max"):
-                        st.success(f"**?? GAT: {producto_info['tasa_base']}%** (hasta ${producto_info['limite_max']:,})")
+                        st.success(f"**📈 GAT: {producto_info['tasa_base']}%** (hasta ${producto_info['limite_max']:,})")
                     else:
-                        st.success(f"**?? GAT: {producto_info['tasa_base']}%**")
+                        st.success(f"**📈 GAT: {producto_info['tasa_base']}%**")
                     
-                    st.caption(f"?? Liquidez: {producto_info['liquidez']}")
+                    st.caption(f"💧 Liquidez: {producto_info['liquidez']}")
                 
                 with col2:
                     # Selector de modo: Monto o Porcentaje
                     modo_input = st.radio(
                         "Ingresar como:",
-                        ["?? Monto ($)", "?? Porcentaje (%)"],
+                        ["💵 Monto ($)", "📊 Porcentaje (%)"],
                         key=f"modo_{sofipo_name}",
                         horizontal=True
                     )
                     
-                    if modo_input == "?? Monto ($)":
+                    if modo_input == "💵 Monto ($)":
                         # Monto a invertir
                         monto = st.number_input(
                             "¿Cuánto invertirás aquí?",
@@ -2169,7 +2169,7 @@ def main():
                         
                         # Porcentaje del total
                         porcentaje = (monto / monto_total * 100) if monto_total > 0 else 0
-                        st.caption(f"?? Representa el **{porcentaje:.1f}%** de tu capital total")
+                        st.caption(f"📊 Representa el **{porcentaje:.1f}%** de tu capital total")
                     else:
                         # Input de porcentaje
                         porcentaje_input = st.number_input(
@@ -2187,24 +2187,24 @@ def main():
                         
                         # Validar mínimo
                         if monto < producto_info['minimo']:
-                            st.warning(f"?? El {porcentaje_input}% equivale a ${monto:,}, pero el mínimo es ${producto_info['minimo']:,}")
+                            st.warning(f"⚠️ El {porcentaje_input}% equivale a ${monto:,}, pero el mínimo es ${producto_info['minimo']:,}")
                             monto = producto_info['minimo']
                         
-                        st.caption(f"?? Invertirás **${monto:,.0f}**")
+                        st.caption(f"💵 Invertirás **${monto:,.0f}**")
                 
                 # Advertencias especiales por SOFIPO
                 if sofipo_name == "Mercado Pago":
                     if monto > 25000:
-                        st.warning("?? Mercado Pago tiene un límite de $25,000 para obtener el 13%")
-                    st.info("?? Requieres depositar al menos $3,000 MXN mensuales para mantener la tasa del 13%")
+                        st.warning("⚠️ Mercado Pago tiene un límite de $25,000 para obtener el 13%")
+                    st.info("ℹ️ Requieres depositar al menos $3,000 MXN mensuales para mantener la tasa del 13%")
                 
                 if sofipo_name == "Ualá":
                     if "Plus" in producto_seleccionado:
                         if monto > 50000:
-                            st.warning("?? Ualá Plus tiene un límite de $50,000 para obtener el 16%")
-                        st.info("?? Requieres consumir $3,000/mes con tarjetas Ualá o domiciliar tu nómina")
+                            st.warning("⚠️ Ualá Plus tiene un límite de $50,000 para obtener el 16%")
+                        st.info("ℹ️ Requieres consumir $3,000/mes con tarjetas Ualá o domiciliar tu nómina")
                     elif "Base" in producto_seleccionado and monto > 30000:
-                        st.warning("?? La tasa base del 7.75% aplica solo hasta $30,000")
+                        st.warning("⚠️ La tasa base del 7.75% aplica solo hasta $30,000")
                 
                 # Requisitos especiales
                 cumple_requisito = True
@@ -2243,15 +2243,15 @@ def main():
         if dinero_restante > 0:
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("?? Dinero asignado", f"${total_asignado_actual:,.0f}", f"{porcentaje_asignado:.1f}%")
+                st.metric("💵 Dinero asignado", f"${total_asignado_actual:,.0f}", f"{porcentaje_asignado:.1f}%")
             with col2:
-                st.metric("?? Dinero disponible", f"${dinero_restante:,.0f}", f"{porcentaje_restante:.1f}%")
+                st.metric("💰 Dinero disponible", f"${dinero_restante:,.0f}", f"{porcentaje_restante:.1f}%")
             with col3:
-                st.metric("?? Total", f"${monto_total:,.0f}", "100%")
+                st.metric("💯 Total", f"${monto_total:,.0f}", "100%")
         elif dinero_restante == 0:
-            st.success(f"? **Perfecto!** Has distribuido todo tu dinero: ${monto_total:,.0f} (100%)")
+            st.success(f"✅ **Perfecto!** Has distribuido todo tu dinero: ${monto_total:,.0f} (100%)")
         else:
-            st.error(f"?? **¡Cuidado!** Te has pasado ${abs(dinero_restante):,.0f}. Ajusta los montos.")
+            st.error(f"⚠️ **¡Cuidado!** Te has pasado ${abs(dinero_restante):,.0f}. Ajusta los montos.")
     
     st.divider()
     
@@ -2261,18 +2261,18 @@ def main():
     
     if len(inversiones_seleccionadas) > 0:
         st.divider()
-        st.markdown("## ?? Tus Resultados")
+        st.markdown("## 📊 Tus Resultados")
         
         # Validar que no exceda el monto total
         total_asignado = sum([inv["monto"] for inv in inversiones_seleccionadas.values()])
         
         if total_asignado > monto_total:
-            st.error(f"?? **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
+            st.error(f"⚠️ **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
             return
         
         diferencia = monto_total - total_asignado
         if diferencia > 0:
-            st.warning(f"?? Tienes **${diferencia:,.0f}** sin asignar. ¿Quieres agregarlo a alguna SOFIPO?")
+            st.warning(f"ℹ️ Tienes **${diferencia:,.0f}** sin asignar. ¿Quieres agregarlo a alguna SOFIPO?")
         
         # Calcular rendimientos para cada inversión
         resultados = []
@@ -2367,7 +2367,7 @@ def main():
         rendimiento_ponderado = (ganancia_total / total_invertido) * (12 / periodo_simulacion) * 100
         
         # Métricas principales en cards grandes
-        st.markdown("### ?? Resultado de tu inversión")
+        st.markdown("### 📈 Resultado de tu inversión")
         
         col1, col2, col3 = st.columns(3)
         
@@ -2387,7 +2387,7 @@ def main():
             st.markdown('</div>', unsafe_allow_html=True)
         
         # GAT Ponderado destacado
-        st.success(f"?? **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
+        st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
         
         # Tabla detallada en expander
         with st.expander("? Ver desglose detallado por SOFIPO"):
@@ -2399,7 +2399,7 @@ def main():
         # ====================================================================
         
         if len(proyecciones_todas) > 0:
-            st.subheader("?? Proyección de Crecimiento Total")
+            st.subheader("📈 Proyección de Crecimiento Total")
             
             # Combinar todas las proyecciones
             df_proyecciones_completo = pd.concat(proyecciones_todas, ignore_index=True)
@@ -2477,7 +2477,7 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
             
             # Gráfico de área apilada (Capital vs Intereses)
-            st.subheader("?? Desglose: Capital vs Intereses")
+            st.subheader("📊 Desglose: Capital vs Intereses")
             
             # Sumar todos los capitales e intereses por mes
             df_agregado = df_proyecciones_completo.groupby('Mes').agg({
@@ -2534,13 +2534,13 @@ def main():
             )
             
             st.plotly_chart(fig_area, use_container_width=True)
-            st.subheader("?? Desglose Mensual Detallado")
+            st.subheader("📋 Desglose Mensual Detallado")
             
             for inversion_key, df_proyeccion in zip(
                 df_proyecciones_completo['SOFIPO'].unique(),
                 proyecciones_todas
             ):
-                with st.expander(f"?? {inversion_key}"):
+                with st.expander(f"📊 {inversion_key}"):
                     # Formatear el dataframe
                     df_display = df_proyeccion.copy()
                     df_display['Capital Inicial'] = df_display['Capital Inicial'].apply(lambda x: f"${x:,.2f}")
@@ -2555,7 +2555,7 @@ def main():
         # ====================================================================
         
         st.divider()
-        st.header("3?? Análisis de Riesgo y Recomendaciones")
+        st.header("3️⃣ Análisis de Riesgo y Recomendaciones")
         
         # Realizar análisis de diversificación
         analisis = analizar_diversificacion(inversiones_seleccionadas)
@@ -2573,14 +2573,14 @@ def main():
             
             with col1:
                 st.metric(
-                    "?? SOFIPOs utilizadas",
+                    "🏦 SOFIPOs utilizadas",
                     f"{analisis['num_sofipos']}/7",
                     help="Número de SOFIPOs diferentes en tu portafolio"
                 )
             
             with col2:
                 st.metric(
-                    "?? Concentración máxima",
+                    "📊 Concentración máxima",
                     f"{analisis['max_concentracion']:.1f}%",
                     delta="Óptimo: <50%" if analisis['max_concentracion'] < 50 else "Alto riesgo",
                     delta_color="normal" if analisis['max_concentracion'] < 50 else "inverse"
@@ -2588,13 +2588,13 @@ def main():
             
             with col3:
                 st.metric(
-                    "?? Liquidez inmediata",
+                    "💧 Liquidez inmediata",
                     f"{analisis['porcentaje_liquido']:.1f}%",
                     help="Porcentaje disponible sin penalización"
                 )
         
             # Gráfico de distribución
-            st.subheader("?? Distribución de tu portafolio")
+            st.subheader("📊 Distribución de tu portafolio")
             
             df_concentracion = pd.DataFrame([
                 {"SOFIPO": k, "Porcentaje": v, "Monto": inversiones_seleccionadas[k]["monto"]}
@@ -2642,7 +2642,7 @@ def main():
             # ====================================================================
             
             st.markdown("---")
-            st.subheader("?? Logros de tu Portafolio")
+            st.subheader("🏆 Logros de tu Portafolio")
             
             # Calcular métricas para logros
             num_sofipos = len(inversiones_seleccionadas)
@@ -2672,7 +2672,7 @@ def main():
             # LOGRO 1: Diversificador Experto
             if num_sofipos >= 5:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🥇",
                     "titulo": "Diversificador Experto",
                     "descripcion": f"Inviertes en {num_sofipos} SOFIPOs diferentes",
                     "puntos": 25,
@@ -2681,7 +2681,7 @@ def main():
                 puntos += 25
             elif num_sofipos >= 3:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🥉",
                     "titulo": "Diversificador Intermedio",
                     "descripcion": f"Inviertes en {num_sofipos} SOFIPOs diferentes",
                     "puntos": 15,
@@ -2690,7 +2690,7 @@ def main():
                 puntos += 15
             else:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🔒",
                     "titulo": "Diversificador Experto",
                     "descripcion": f"Invierte en 5+ SOFIPOs (actualmente: {num_sofipos})",
                     "puntos": 25,
@@ -2700,7 +2700,7 @@ def main():
             # LOGRO 2: Alto Rendimiento
             if rendimiento_ponderado >= 15:
                 logros.append({
-                    "badge": "??",
+                    "badge": "💎",
                     "titulo": "Alto Rendimiento Premium",
                     "descripcion": f"GAT ponderado de {rendimiento_ponderado:.2f}% (=15%)",
                     "puntos": 30,
@@ -2709,7 +2709,7 @@ def main():
                 puntos += 30
             elif rendimiento_ponderado >= 14:
                 logros.append({
-                    "badge": "??",
+                    "badge": "💎",
                     "titulo": "Alto Rendimiento",
                     "descripcion": f"GAT ponderado de {rendimiento_ponderado:.2f}% (=14%)",
                     "puntos": 20,
@@ -2718,7 +2718,7 @@ def main():
                 puntos += 20
             elif rendimiento_ponderado >= 12:
                 logros.append({
-                    "badge": "??",
+                    "badge": "💎",
                     "titulo": "Buen Rendimiento",
                     "descripcion": f"GAT ponderado de {rendimiento_ponderado:.2f}% (=12%)",
                     "puntos": 10,
@@ -2727,7 +2727,7 @@ def main():
                 puntos += 10
             else:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🔒",
                     "titulo": "Alto Rendimiento",
                     "descripcion": f"Alcanza 14%+ (actual: {rendimiento_ponderado:.2f}%)",
                     "puntos": 20,
@@ -2737,7 +2737,7 @@ def main():
             # LOGRO 3: Protección IPAB Completa
             if proteccion_ipab_completa:
                 logros.append({
-                    "badge": "???",
+                    "badge": "🛡️",
                     "titulo": "Protección IPAB Completa",
                     "descripcion": "Todos tus fondos están bajo el límite de $200k por SOFIPO",
                     "puntos": 20,
@@ -2747,7 +2747,7 @@ def main():
             else:
                 exceden = [f"{sofipo}: ${monto:,.0f}" for sofipo, monto in montos_por_sofipo.items() if monto > 200000]
                 logros.append({
-                    "badge": "??",
+                    "badge": "🔒",
                     "titulo": "Protección IPAB Completa",
                     "descripcion": f"Mantén =$200k por SOFIPO (exceden: {', '.join(exceden)})",
                     "puntos": 20,
@@ -2757,7 +2757,7 @@ def main():
             # LOGRO 4: Maestro de la Liquidez
             if porcentaje_liquidez >= 80:
                 logros.append({
-                    "badge": "??",
+                    "badge": "💧",
                     "titulo": "Maestro de la Liquidez",
                     "descripcion": f"{porcentaje_liquidez:.1f}% de tu capital es líquido (=80%)",
                     "puntos": 15,
@@ -2766,7 +2766,7 @@ def main():
                 puntos += 15
             elif porcentaje_liquidez >= 50:
                 logros.append({
-                    "badge": "??",
+                    "badge": "💧",
                     "titulo": "Liquidez Balanceada",
                     "descripcion": f"{porcentaje_liquidez:.1f}% de tu capital es líquido",
                     "puntos": 10,
@@ -2775,7 +2775,7 @@ def main():
                 puntos += 10
             else:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🔒",
                     "titulo": "Maestro de la Liquidez",
                     "descripcion": f"Mantén 80%+ en productos líquidos (actual: {porcentaje_liquidez:.1f}%)",
                     "puntos": 15,
@@ -2785,7 +2785,7 @@ def main():
             # LOGRO 5: Inversionista de Élite (Capital alto)
             if total_invertido >= 500000:
                 logros.append({
-                    "badge": "??",
+                    "badge": "👑",
                     "titulo": "Inversionista de Élite",
                     "descripcion": f"Capital total de ${total_invertido:,.0f} (=$500k)",
                     "puntos": 25,
@@ -2794,7 +2794,7 @@ def main():
                 puntos += 25
             elif total_invertido >= 200000:
                 logros.append({
-                    "badge": "??",
+                    "badge": "👑",
                     "titulo": "Inversionista Avanzado",
                     "descripcion": f"Capital total de ${total_invertido:,.0f} (=$200k)",
                     "puntos": 15,
@@ -2803,7 +2803,7 @@ def main():
                 puntos += 15
             elif total_invertido >= 50000:
                 logros.append({
-                    "badge": "??",
+                    "badge": "👑",
                     "titulo": "Inversionista Comprometido",
                     "descripcion": f"Capital total de ${total_invertido:,.0f} (=$50k)",
                     "puntos": 10,
@@ -2812,7 +2812,7 @@ def main():
                 puntos += 10
             else:
                 logros.append({
-                    "badge": "??",
+                    "badge": "🔒",
                     "titulo": "Inversionista Avanzado",
                     "descripcion": f"Alcanza $200k+ (actual: ${total_invertido:,.0f})",
                     "puntos": 15,
@@ -2825,36 +2825,36 @@ def main():
             
             # Determinar nivel
             if porcentaje_completado >= 90:
-                nivel = "?? MAESTRO"
+                nivel = "🌟 MAESTRO"
                 color_nivel = "#FFD700"
             elif porcentaje_completado >= 70:
-                nivel = "?? EXPERTO"
+                nivel = "💎 EXPERTO"
                 color_nivel = "#00D4FF"
             elif porcentaje_completado >= 50:
-                nivel = "?? AVANZADO"
+                nivel = "🥈 AVANZADO"
                 color_nivel = "#C0C0C0"
             elif porcentaje_completado >= 30:
-                nivel = "?? INTERMEDIO"
+                nivel = "🥉 INTERMEDIO"
                 color_nivel = "#CD7F32"
             else:
-                nivel = "?? PRINCIPIANTE"
+                nivel = "🌱 PRINCIPIANTE"
                 color_nivel = "#90EE90"
             
             # Mostrar score y nivel
             col_score1, col_score2, col_score3 = st.columns([1, 1, 1])
             
             with col_score1:
-                st.metric("?? Score Total", f"{puntos}/{puntos_maximos}")
+                st.metric("🏆 Score Total", f"{puntos}/{puntos_maximos}")
             
             with col_score2:
-                st.metric("?? Progreso", f"{porcentaje_completado:.1f}%")
+                st.metric("📊 Progreso", f"{porcentaje_completado:.1f}%")
             
             with col_score3:
                 st.markdown(f"### {nivel}")
                 st.progress(porcentaje_completado / 100)
             
             # Mostrar logros en formato de cards
-            st.markdown("#### ??? Tus Logros")
+            st.markdown("#### 🏅 Tus Logros")
             
             cols_logros = st.columns(3)
             for idx, logro in enumerate(logros):
@@ -2895,19 +2895,19 @@ def main():
             # Consejos para desbloquear más logros
             logros_bloqueados = [l for l in logros if not l["desbloqueado"]]
             if logros_bloqueados:
-                st.info(f"?? **Desbloquea {len(logros_bloqueados)} logros más** para aumentar tu score y alcanzar el nivel MAESTRO")
+                st.info(f"💡 **Desbloquea {len(logros_bloqueados)} logros más** para aumentar tu score y alcanzar el nivel MAESTRO")
             else:
-                st.success("?? **¡FELICIDADES!** Has desbloqueado todos los logros disponibles. ¡Eres un inversionista MAESTRO!")
+                st.success("🎉 **¡FELICIDADES!** Has desbloqueado todos los logros disponibles. ¡Eres un inversionista MAESTRO!")
             
             st.markdown("---")
             
             # Mostrar recomendaciones
-            st.subheader("?? Recomendaciones Personalizadas")
+            st.subheader("💡 Recomendaciones Personalizadas")
             
             for i, recomendacion in enumerate(recomendaciones, 1):
-                if "?" in recomendacion:
+                if "✅" in recomendacion:
                     st.markdown(f'<div class="success-box">{recomendacion}</div>', unsafe_allow_html=True)
-                elif "??" in recomendacion or "??" in recomendacion:
+                elif "⚠️" in recomendacion or "💡" in recomendacion:
                     st.markdown(f'<div class="warning-box">{recomendacion}</div>', unsafe_allow_html=True)
                 else:
                     st.info(recomendacion)
@@ -2918,7 +2918,7 @@ def main():
         
         st.divider()
         
-        with st.expander("?? Glosario y Conceptos Clave"):
+        with st.expander("📚 Glosario y Conceptos Clave"):
             st.markdown("""
             **GAT Nominal**: Ganancia Anual Total antes de impuestos. Es la tasa de rendimiento anual.
             
@@ -2935,7 +2935,7 @@ def main():
             **Liquidez**: Facilidad para convertir la inversión en efectivo sin penalización.
             """)
         
-        with st.expander("?? Aspectos Legales y Fiscales"):
+        with st.expander("⚖️ Aspectos Legales y Fiscales"):
             st.markdown("""
             ### Regulación
             - Todas las SOFIPOs mostradas están reguladas por CNBV
@@ -2957,10 +2957,10 @@ def main():
             """)
     
     else:
-        st.info("?? Selecciona al menos una SOFIPO arriba para comenzar la simulación")
+        st.info("ℹ️ Selecciona al menos una SOFIPO arriba para comenzar la simulación")
         
         # Mostrar tabla comparativa de tasas
-        st.subheader("?? Tabla Comparativa de Tasas (Referencia)")
+        st.subheader("📊 Tabla Comparativa de Tasas (Referencia)")
         
         tabla_comparativa = []
         for sofipo_name, sofipo_data in SOFIPOS_DATA.items():
@@ -2985,15 +2985,15 @@ def main():
         <h3 style='margin: 0; font-weight: 700;'>💰 Simulador de Inversiones Multi-SOFIPO</h3>
         <p style='margin: 1rem 0; opacity: 0.9;'>ℹ️ Este simulador es una herramienta educativa. Las tasas pueden variar.<br>
         Verifica siempre las condiciones vigentes con cada institución.</p>
-        <p style='margin: 0.5rem 0;'><span class="badge">?? Tasas actualizadas: Noviembre 2025</span></p>
-        <p style='margin-top: 1rem; font-size: 1.1rem;'>Desarrollado con ?? para inversionistas mexicanos ????</p>
+        <p style='margin: 0.5rem 0;'><span class="badge">📅 Tasas actualizadas: Noviembre 2025</span></p>
+        <p style='margin-top: 1rem; font-size: 1.1rem;'>Desarrollado con 💚 para inversionistas mexicanos 🇲🇽</p>
     </div>
     """, unsafe_allow_html=True)
 
 
     # Fecha de última actualización
     st.markdown("---")
-    st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">?? Última actualización de tasas: 21 de Noviembre, 2025</div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">📅 Última actualización de tasas: 21 de Noviembre, 2025</div>', unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
 
