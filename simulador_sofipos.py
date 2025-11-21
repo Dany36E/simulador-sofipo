@@ -866,11 +866,8 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
 # ============================================================================
 
 def main():
-    # Toggle de modo oscuro en la parte superior derecha
-    col_header1, col_header2 = st.columns([5, 1])
-    
-    with col_header2:
-        modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False, key="dark_mode")
+    # Toggle de modo oscuro en la parte superior derecha (flotante)
+    modo_oscuro = st.toggle("🌙 Modo Oscuro", value=False, key="dark_mode")
     
     # Aplicar estilos según el modo
     if modo_oscuro:
@@ -1037,8 +1034,11 @@ def main():
                 border-color: #667eea !important;
             }
             
-            /* DataFrames y Tablas */
-            [data-testid="stDataFrame"], .dataframe {
+            /* DataFrames y Tablas - Sin fondo blanco */
+            [data-testid="stDataFrame"], .dataframe, 
+            [data-testid="stDataFrame"] > div,
+            [data-testid="stDataFrame"] > div > div,
+            .stDataFrame {
                 background-color: #0d1117 !important;
                 color: #c9d1d9 !important;
             }
@@ -1060,6 +1060,23 @@ def main():
             
             .dataframe tbody tr td {
                 color: #c9d1d9 !important;
+                background-color: #0d1117 !important;
+            }
+            
+            /* Forzar fondo oscuro en todos los elementos del dataframe */
+            [data-testid="stDataFrame"] table,
+            [data-testid="stDataFrame"] thead,
+            [data-testid="stDataFrame"] tbody,
+            [data-testid="stDataFrame"] tr,
+            [data-testid="stDataFrame"] th,
+            [data-testid="stDataFrame"] td {
+                background-color: #0d1117 !important;
+                color: #c9d1d9 !important;
+            }
+            
+            [data-testid="stDataFrame"] thead th {
+                background-color: #161b22 !important;
+                color: #58a6ff !important;
             }
             
             /* Alertas y cajas de mensaje */
@@ -1256,12 +1273,47 @@ def main():
             [data-testid="stCheckbox"] input:checked ~ div {
                 background-color: #667eea !important;
             }
+            
+            /* Posicionar toggle flotante en esquina superior derecha */
+            div[data-testid="stCheckbox"]:has(label:contains("Modo Oscuro")) {
+                position: fixed !important;
+                top: 1rem !important;
+                right: 1rem !important;
+                z-index: 999 !important;
+                background-color: #161b22 !important;
+                padding: 0.5rem 1rem !important;
+                border-radius: 20px !important;
+                border: 1px solid #30363d !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        # Estilos para modo claro (solo el toggle flotante)
+        st.markdown("""
+        <style>
+            /* Posicionar toggle flotante en modo claro */
+            div[data-testid="stCheckbox"] {
+                position: fixed !important;
+                top: 1rem !important;
+                right: 1rem !important;
+                z-index: 999 !important;
+                background-color: white !important;
+                padding: 0.5rem 1rem !important;
+                border-radius: 20px !important;
+                border: 1px solid #e0e0e0 !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            /* Centrar título en modo claro */
+            h1 {
+                text-align: center !important;
+            }
         </style>
         """, unsafe_allow_html=True)
     
-    with col_header1:
-        st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
-    
+    # Encabezado centrado
+    st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
     
     # ========================================================================
