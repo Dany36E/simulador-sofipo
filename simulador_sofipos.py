@@ -2787,14 +2787,14 @@ def main():
                     hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
                 ))
                 
-                # Calcular ganancia final
-                ganancia_final = df_total['Total Acumulado'].iloc[-1] - total_invertido
+                # Usar la ganancia_total calculada correctamente (la misma que las métricas)
+                total_final_correcto = total_invertido + ganancia_total
                 
                 # Anotación profesional al final
                 fig.add_annotation(
                     x=df_total['Mes'].iloc[-1],
                     y=df_total['Total Acumulado'].iloc[-1],
-                    text=f"<b>${df_total['Total Acumulado'].iloc[-1]:,.0f}</b><br>+${ganancia_final:,.0f}",
+                    text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
                     showarrow=True,
                     arrowhead=2,
                     arrowsize=1,
