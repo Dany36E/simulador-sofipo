@@ -1955,7 +1955,7 @@ def main():
                     "producto": "Cuenta Remunerada",
                     "monto": monto_mp,
                     "tasa": 13.0,
-                    "razon": "?? 13% hasta $25k ? Cumples requisito de $3k/mes ?? A LA VISTA"
+                    "razon": "💙 13% hasta $25k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
                 })
                 saldo_restante -= monto_mp
             
@@ -1966,7 +1966,7 @@ def main():
                     "producto": "DiDi Ahorro",
                     "monto": saldo_restante,
                     "tasa": 8.5,
-                    "razon": "?? 8.5% después de $10k ?? A LA VISTA"
+                    "razon": "🚗 8.5% después de $10k 💧 A LA VISTA"
                 })
                 saldo_restante -= saldo_restante
             
