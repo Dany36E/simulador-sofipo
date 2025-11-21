@@ -763,45 +763,55 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
             "texto": "**DiDi Ahorro** - 16% primeros $10k, luego 8.5% (sin requisitos especiales)"
         })
     
-    # Ualá Plus solo si cumple requisitos
-    if cumple_uala and not any("Ualá" in k and "Plus" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
-        opciones_disponibles.append({
-            "sofipo": "Ualá",
-            "producto": "Plus",
-            "tasa": 16.0,
-            "limite": 50000,
-            "requisito": "✅ Ya cumples",
-            "texto": "**Ualá Plus** - 16% hasta $50k ✅ Cumples requisito de $3k/mes"
-        })
-    elif not cumple_uala:
-        opciones_disponibles.append({
-            "sofipo": "Ualá",
-            "producto": "Base",
-            "tasa": 7.75,
-            "limite": 30000,
-            "requisito": None,
-            "texto": "**Ualá Base** - 7.75% hasta $30k (sin requisitos, o 16% si puedes cumplir con $3k/mes)"
-        })
+    # Ualá - depende de si cumple requisitos
+    tiene_uala = any("Ualá" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
     
-    # Klar Max solo si cumple requisitos
-    if cumple_klar and not any("Klar" in k and "Max" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
-        opciones_disponibles.append({
-            "sofipo": "Klar",
-            "producto": "Inversión Max",
-            "tasa": 15.0,
-            "limite": None,
-            "requisito": "✅ Ya cumples",
-            "texto": "**Klar Inversión Max** - 15% liquidez inmediata ✅ Tienes Plus/Platino"
-        })
-    elif not cumple_klar:
-        opciones_disponibles.append({
-            "sofipo": "Klar",
-            "producto": "Cuenta",
-            "tasa": 8.5,
-            "limite": None,
-            "requisito": None,
-            "texto": "**Klar Cuenta** - 8.5% (sin requisitos, o 15% con Plus/Platino)"
-        })
+    if not tiene_uala:
+        if cumple_uala:
+            # SÍ cumple requisitos → recomendar Ualá Plus 16%
+            opciones_disponibles.append({
+                "sofipo": "Ualá",
+                "producto": "Plus",
+                "tasa": 16.0,
+                "limite": 50000,
+                "requisito": "✅ Ya cumples",
+                "texto": "**Ualá Plus** - 16% hasta $50k ✅ Cumples requisito de $3k/mes"
+            })
+        else:
+            # NO cumple requisitos → recomendar Ualá Base 7.75%
+            opciones_disponibles.append({
+                "sofipo": "Ualá",
+                "producto": "Base",
+                "tasa": 7.75,
+                "limite": 30000,
+                "requisito": "❌ No cumples",
+                "texto": "**Ualá Base** - 7.75% hasta $30k (sin requisitos especiales)"
+            })
+    
+    # Klar - depende de si cumple requisitos
+    tiene_klar = any("Klar" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
+    
+    if not tiene_klar:
+        if cumple_klar:
+            # SÍ cumple requisitos → recomendar Klar Max 15%
+            opciones_disponibles.append({
+                "sofipo": "Klar",
+                "producto": "Inversión Max",
+                "tasa": 15.0,
+                "limite": None,
+                "requisito": "✅ Ya cumples",
+                "texto": "**Klar Inversión Max** - 15% liquidez inmediata ✅ Tienes Plus/Platino"
+            })
+        else:
+            # NO cumple requisitos → recomendar Klar Cuenta 8.5%
+            opciones_disponibles.append({
+                "sofipo": "Klar",
+                "producto": "Cuenta",
+                "tasa": 8.5,
+                "limite": None,
+                "requisito": "❌ No cumples",
+                "texto": "**Klar Cuenta** - 8.5% (sin requisitos especiales)"
+            })
     
     # Nu México siempre disponible
     if not any("Nu" in k and "Turbo" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
@@ -814,8 +824,11 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
             "texto": "**Nu México Cajita Turbo** - 15% hasta $25k con liquidez inmediata"
         })
     
-    # Mercado Pago
-    if cumple_mp and not any("Mercado Pago" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+    # Mercado Pago - solo si cumple requisitos
+    tiene_mp = any("Mercado Pago" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
+    
+    if cumple_mp and not tiene_mp:
+        # SÍ cumple requisitos → recomendar Mercado Pago 13%
         opciones_disponibles.append({
             "sofipo": "Mercado Pago",
             "producto": "Rendimientos",
@@ -824,6 +837,7 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
             "requisito": "✅ Ya cumples",
             "texto": "**Mercado Pago** - 13% hasta $25k ✅ Cumples requisito de $3k/mes"
         })
+    # Si NO cumple, no lo recomendamos (no tiene versión "base" sin requisitos)
     
     # Stori 90 días (mejor plazo sin requisitos)
     if not any("Stori" in k and "90" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
