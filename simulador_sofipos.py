@@ -1227,7 +1227,7 @@ def main():
             with col1:
                 st.metric(
                     "🎯 SOFIPOs utilizadas",
-                    f"{analisis['num_sofipos']}/6",
+                    f"{analisis['num_sofipos']}/7",
                     help="Número de SOFIPOs diferentes en tu portafolio"
                 )
             
