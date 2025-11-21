@@ -2555,52 +2555,6 @@ def main():
         # GAT Ponderado destacado
         st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
         
-        # Mostrar impacto de aportaciones si están activas
-        if aportaciones_activas and aportacion_monto > 0:
-            st.markdown("---")
-            st.markdown("### 💰 Impacto de Aportaciones Recurrentes")
-            
-            # Calcular datos finales
-            total_final_sin_aport = total_invertido + ganancia_total
-            total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
-            aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
-            intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
-            ganancia_extra_por_aportaciones = total_final_con_aport - total_final_sin_aport
-            
-            col_a1, col_a2, col_a3, col_a4 = st.columns(4)
-            
-            with col_a1:
-                st.metric(
-                    "Total Aportado",
-                    f"${aportaciones_totales:,.0f}",
-                    help=f"Suma de todas tus aportaciones {frecuencia_aportacion.lower()}es"
-                )
-            
-            with col_a2:
-                st.metric(
-                    "Intereses Generados",
-                    f"${intereses_con_aport:,.0f}",
-                    help="Intereses sobre capital inicial + aportaciones"
-                )
-            
-            with col_a3:
-                st.metric(
-                    "Total Final",
-                    f"${total_final_con_aport:,.0f}",
-                    delta=f"+${ganancia_extra_por_aportaciones:,.0f} vs sin aportaciones",
-                    delta_color="normal"
-                )
-            
-            with col_a4:
-                porcentaje_extra = (ganancia_extra_por_aportaciones / total_final_sin_aport * 100) if total_final_sin_aport > 0 else 0
-                st.metric(
-                    "Crecimiento Extra",
-                    f"{porcentaje_extra:.1f}%",
-                    help="Cuánto más ganas con aportaciones vs solo capital inicial"
-                )
-            
-            st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
-        
         # Tabla detallada en expander
         with st.expander("? Ver desglose detallado por SOFIPO"):
             df_resultados = pd.DataFrame(resultados)
@@ -3183,6 +3137,56 @@ def main():
                     df_display = df_display.drop('SOFIPO', axis=1)
                     
                     st.dataframe(df_display, width="stretch", hide_index=True)
+            
+            # ====================================================================
+            # IMPACTO DE APORTACIONES RECURRENTES
+            # ====================================================================
+            
+            # Mostrar impacto de aportaciones si están activas
+            if aportaciones_activas and aportacion_monto > 0:
+                st.markdown("---")
+                st.markdown("### 💰 Impacto de Aportaciones Recurrentes")
+                
+                # Calcular datos finales
+                total_final_sin_aport = total_invertido + ganancia_total
+                total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
+                aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
+                intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
+                ganancia_extra_por_aportaciones = total_final_con_aport - total_final_sin_aport
+                
+                col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+                
+                with col_a1:
+                    st.metric(
+                        "Total Aportado",
+                        f"${aportaciones_totales:,.0f}",
+                        help=f"Suma de todas tus aportaciones {frecuencia_aportacion.lower()}es"
+                    )
+                
+                with col_a2:
+                    st.metric(
+                        "Intereses Generados",
+                        f"${intereses_con_aport:,.0f}",
+                        help="Intereses sobre capital inicial + aportaciones"
+                    )
+                
+                with col_a3:
+                    st.metric(
+                        "Total Final",
+                        f"${total_final_con_aport:,.0f}",
+                        delta=f"+${ganancia_extra_por_aportaciones:,.0f} vs sin aportaciones",
+                        delta_color="normal"
+                    )
+                
+                with col_a4:
+                    porcentaje_extra = (ganancia_extra_por_aportaciones / total_final_sin_aport * 100) if total_final_sin_aport > 0 else 0
+                    st.metric(
+                        "Crecimiento Extra",
+                        f"{porcentaje_extra:.1f}%",
+                        help="Cuánto más ganas con aportaciones vs solo capital inicial"
+                    )
+                
+                st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
         
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES
