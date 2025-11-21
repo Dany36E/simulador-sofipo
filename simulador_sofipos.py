@@ -2029,7 +2029,19 @@ def main():
                     })
                     saldo_restante -= monto_klar
             
-            # 4. Nu México Cajita Turbo: Hasta $25,000 al 15%
+            # 4. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 4)
+            if cumple_mercadopago and saldo_restante > 0:
+                monto_mp = min(25000, saldo_restante)
+                distribucion_agresiva.append({
+                    "sofipo": "Mercado Pago",
+                    "producto": "Cuenta Remunerada",
+                    "monto": monto_mp,
+                    "tasa": 13.0,
+                    "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
+                })
+                saldo_restante -= monto_mp
+            
+            # 5. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 5)
             if saldo_restante > 0:
                 monto_nu_turbo = min(25000, saldo_restante)
                 if monto_nu_turbo > 0:
@@ -2042,7 +2054,7 @@ def main():
                     })
                     saldo_restante -= monto_nu_turbo
             
-            # 5. Stori 90 días: Al 10% (lo que reste)
+            # 6. Stori 90 días: Al 10% (lo que reste - ÚLTIMA OPCIÓN)
             if saldo_restante > 0:
                 distribucion_agresiva.append({
                     "sofipo": "Stori",
@@ -2089,19 +2101,21 @@ def main():
             advertencias = ["**⚠️ Consideraciones importantes:**"]
             advertencias.append(f"- Esta estrategia alcanza un rendimiento ponderado de ~{tasa_ponderada_agresiva:.1f}%")
             
-            # Advertencias sobre requisitos
+            # Advertencias sobre requisitos incluidos
+            if cumple_mercadopago:
+                advertencias.append("- ✅ Incluye Mercado Pago 13% (cumples requisito de $3k/mes)")
+            else:
+                advertencias.append("- ℹ️ Podrías mejorar con Mercado Pago 13% si puedes depositar $3k/mes")
+            
             if cumple_uala_plus:
-                advertencias.append("- ✅ Incluye Ualá Plus (cumples requisito de $3k/mes)")
+                advertencias.append("- ✅ Incluye Ualá Plus 16% (cumples requisito de $3k/mes)")
             else:
                 advertencias.append("- ℹ️ Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
             
             if cumple_klar_plus:
-                advertencias.append("- ✅ Incluye Klar Max (tienes membresía Plus/Platino)")
+                advertencias.append("- ✅ Incluye Klar Max 15% (tienes membresía Plus/Platino)")
             else:
                 advertencias.append("- ℹ️ Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
-            
-            if cumple_mercadopago:
-                advertencias.append("- ℹ️ Considera Mercado Pago 13% (cumples requisito de $3k/mes)")
             
             advertencias.append("- Parte del capital puede quedar en plazos fijos (menor liquidez)")
             advertencias.append("- No es recomendable para fondos de emergencia")
