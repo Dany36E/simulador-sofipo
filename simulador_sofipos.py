@@ -1692,12 +1692,13 @@ def main():
                     if producto["maximo"] is None:
                         break
             
-            # Calcular tasa ponderada usando interés compuesto como en la simulación
+            # Calcular tasa ponderada usando el MISMO método que los resultados
             if distribucion:
                 rendimiento_total = 0
+                dias_simulacion = 12 * 30  # 360 días (igual que en los resultados)
                 for d in distribucion:
-                    # Usar interés compuesto mensual consistente con el resto del sistema
-                    interes = calcular_interes_compuesto(d["monto"], d["tasa"], 365, 'mensual')
+                    # Usar el mismo cálculo que en la simulación principal
+                    interes = calcular_interes_compuesto(d["monto"], d["tasa"], dias_simulacion)
                     rendimiento_total += interes
                 tasa_ponderada = (rendimiento_total / monto_prueba) * 100 if monto_prueba > 0 else 0
                 return tasa_ponderada, distribucion
@@ -1792,8 +1793,9 @@ def main():
                 st.markdown("#### 📊 Distribución Sugerida")
                 for i, item in enumerate(distribucion_final, 1):
                     porcentaje = (item["monto"] / capital_necesario * 100)
-                    # Calcular ganancia con interés compuesto
-                    ganancia_item = calcular_interes_compuesto(item["monto"], item["tasa"], 365, 'mensual')
+                    # Calcular ganancia con el mismo método que los resultados (360 días)
+                    dias_simulacion = 12 * 30
+                    ganancia_item = calcular_interes_compuesto(item["monto"], item["tasa"], dias_simulacion)
                     
                     # Construir descripción
                     nombre_completo = f"{item['sofipo']} - {item['producto']}"
@@ -2043,11 +2045,12 @@ def main():
                 with col3:
                     st.metric("GAT", f"{dist['tasa']}%")
             
-            # Calcular rendimiento proyectado de esta estrategia usando interés compuesto
+            # Calcular rendimiento proyectado de esta estrategia usando el MISMO método que los resultados
             ganancia_12m = 0
+            dias_simulacion = 12 * 30  # 360 días (igual que en los resultados)
             for d in distribucion_agresiva:
-                # Usar interés compuesto mensual como en la simulación principal
-                interes = calcular_interes_compuesto(d['monto'], d['tasa'], 365, 'mensual')
+                # Usar el mismo cálculo que en la simulación principal
+                interes = calcular_interes_compuesto(d['monto'], d['tasa'], dias_simulacion)
                 ganancia_12m += interes
             
             ganancia_12m = int(ganancia_12m)
