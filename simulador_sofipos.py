@@ -1435,9 +1435,8 @@ def main():
     if "estrategia_objetivo_pendiente" in st.session_state:
         estrategia = st.session_state["estrategia_objetivo_pendiente"]
         
-        # Aplicar el capital (esto se reflejará en el widget)
-        if "monto_total_input" not in st.session_state:
-            st.session_state["monto_total_input"] = estrategia["capital"]
+        # SIEMPRE actualizar el capital cuando se aplica una estrategia
+        st.session_state["monto_total_input"] = estrategia["capital"]
         
         # Limpiar selecciones previas
         for sofipo in ["Nu México", "DiDi", "Stori", "Klar", "Ualá", "Mercado Pago", "Finsus"]:
