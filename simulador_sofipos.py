@@ -2848,6 +2848,212 @@ def main():
             )
             
             st.plotly_chart(fig_area, use_container_width=True)
+            
+            # ====================================================================
+            # 🔮 PROYECCIÓN AVANZADA CON ESCENARIOS
+            # ====================================================================
+            
+            st.markdown("---")
+            st.subheader("🔮 Proyección Avanzada con Escenarios")
+            st.caption("Análisis de sensibilidad: ¿Qué pasaría si las tasas cambian?")
+            
+            # Calcular escenarios
+            escenarios_data = {}
+            
+            for escenario_nombre, factor in [("Mejor caso (+20%)", 1.20), ("Caso base", 1.0), ("Peor caso (-20%)", 0.80)]:
+                proyeccion_escenario = []
+                
+                for mes in range(periodo_simulacion + 1):
+                    total_mes = total_invertido
+                    intereses_mes = 0
+                    
+                    for inv_key, inv_data in inversiones_seleccionadas.items():
+                        monto = inv_data['monto']
+                        tasa_base = inv_data['producto_info']['tasa_base']
+                        tasa_ajustada = tasa_base * factor  # Ajustar tasa según escenario
+                        tipo = inv_data['producto_info']['tipo']
+                        
+                        dias = mes * 30
+                        
+                        # Calcular interés según tipo
+                        if tipo == "vista_hibrida":
+                            # DiDi Ahorro híbrido
+                            interes = calcular_rendimiento_hibrido_didi(
+                                monto,
+                                inv_data['producto_info']['tasa_premium'] * factor,
+                                inv_data['producto_info']['limite_premium'],
+                                tasa_ajustada,
+                                dias
+                            )
+                        elif tipo == "vista":
+                            # A la vista con capitalización diaria
+                            interes = calcular_interes_compuesto(monto, tasa_ajustada, dias, "diario")
+                        else:
+                            # Plazo fijo con interés simple
+                            interes = calcular_interes_simple(monto, tasa_ajustada, dias)
+                        
+                        intereses_mes += interes
+                    
+                    total_mes += intereses_mes
+                    proyeccion_escenario.append({
+                        'Mes': mes,
+                        'Total': total_mes,
+                        'Intereses': intereses_mes
+                    })
+                
+                escenarios_data[escenario_nombre] = pd.DataFrame(proyeccion_escenario)
+            
+            # Crear gráfico de abanico
+            fig_escenarios = go.Figure()
+            
+            # Mejor caso (área superior)
+            fig_escenarios.add_trace(go.Scatter(
+                x=escenarios_data["Mejor caso (+20%)"]["Mes"],
+                y=escenarios_data["Mejor caso (+20%)"]["Total"],
+                mode='lines',
+                name='Mejor caso (+20%)',
+                line=dict(color='#22c55e', width=2, dash='dash'),
+                hovertemplate='Mejor caso<br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            # Caso base (línea principal)
+            fig_escenarios.add_trace(go.Scatter(
+                x=escenarios_data["Caso base"]["Mes"],
+                y=escenarios_data["Caso base"]["Total"],
+                mode='lines+markers',
+                name='Caso base (actual)',
+                line=dict(color='#667eea', width=4),
+                marker=dict(size=8),
+                fill='tonexty',
+                fillcolor='rgba(34, 197, 94, 0.1)',
+                hovertemplate='<b>Caso base</b><br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            # Peor caso (área inferior)
+            fig_escenarios.add_trace(go.Scatter(
+                x=escenarios_data["Peor caso (-20%)"]["Mes"],
+                y=escenarios_data["Peor caso (-20%)"]["Total"],
+                mode='lines',
+                name='Peor caso (-20%)',
+                line=dict(color='#ef4444', width=2, dash='dash'),
+                fill='tonexty',
+                fillcolor='rgba(239, 68, 68, 0.1)',
+                hovertemplate='Peor caso<br>Mes: %{x}<br>Total: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            # Capital inicial (referencia)
+            fig_escenarios.add_trace(go.Scatter(
+                x=escenarios_data["Caso base"]["Mes"],
+                y=[total_invertido] * len(escenarios_data["Caso base"]),
+                mode='lines',
+                name='Capital Inicial',
+                line=dict(color='gray', width=2, dash='dot'),
+                hovertemplate='Capital: $%{y:,.0f}<extra></extra>'
+            ))
+            
+            fig_escenarios.update_layout(
+                title=dict(
+                    text=f"Análisis de sensibilidad: Escenarios a {periodo_simulacion} meses",
+                    font=dict(size=18, color='#c9d1d9' if modo_oscuro else '#333333')
+                ),
+                xaxis_title="Meses",
+                yaxis_title="Monto Total (MXN)",
+                hovermode='x unified',
+                template="plotly_dark" if modo_oscuro else "plotly_white",
+                height=500,
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="center",
+                    x=0.5,
+                    bgcolor='rgba(22, 27, 34, 0.8)' if modo_oscuro else 'rgba(255, 255, 255, 0.8)',
+                    bordercolor='#30363d' if modo_oscuro else '#e0e0e0',
+                    borderwidth=1
+                ),
+                paper_bgcolor='#0d1117' if modo_oscuro else 'white',
+                plot_bgcolor='#161b22' if modo_oscuro else '#f8f9fa',
+                font=dict(color='#c9d1d9' if modo_oscuro else '#333333'),
+                xaxis=dict(
+                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
+                    color='#8b949e' if modo_oscuro else '#666666'
+                ),
+                yaxis=dict(
+                    gridcolor='#30363d' if modo_oscuro else '#e0e0e0',
+                    color='#8b949e' if modo_oscuro else '#666666'
+                )
+            )
+            
+            st.plotly_chart(fig_escenarios, use_container_width=True)
+            
+            # Tabla comparativa de escenarios al final del periodo
+            st.markdown("#### 📊 Comparativa de Escenarios al Final del Periodo")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            mejor_caso_final = escenarios_data["Mejor caso (+20%)"].iloc[-1]
+            caso_base_final = escenarios_data["Caso base"].iloc[-1]
+            peor_caso_final = escenarios_data["Peor caso (-20%)"].iloc[-1]
+            
+            with col1:
+                st.success(f"**🟢 Mejor Caso (+20%)**")
+                st.metric(
+                    "Total acumulado",
+                    f"${mejor_caso_final['Total']:,.0f}",
+                    delta=f"+${mejor_caso_final['Intereses']:,.0f}"
+                )
+                ganancia_mejor = mejor_caso_final['Total'] - total_invertido
+                roi_mejor = (ganancia_mejor / total_invertido) * 100
+                st.caption(f"ROI: {roi_mejor:.2f}%")
+            
+            with col2:
+                st.info(f"**🔵 Caso Base (Actual)**")
+                st.metric(
+                    "Total acumulado",
+                    f"${caso_base_final['Total']:,.0f}",
+                    delta=f"+${caso_base_final['Intereses']:,.0f}"
+                )
+                ganancia_base = caso_base_final['Total'] - total_invertido
+                roi_base = (ganancia_base / total_invertido) * 100
+                st.caption(f"ROI: {roi_base:.2f}%")
+            
+            with col3:
+                st.error(f"**🔴 Peor Caso (-20%)**")
+                st.metric(
+                    "Total acumulado",
+                    f"${peor_caso_final['Total']:,.0f}",
+                    delta=f"+${peor_caso_final['Intereses']:,.0f}"
+                )
+                ganancia_peor = peor_caso_final['Total'] - total_invertido
+                roi_peor = (ganancia_peor / total_invertido) * 100
+                st.caption(f"ROI: {roi_peor:.2f}%")
+            
+            # Análisis de volatilidad
+            st.markdown("---")
+            st.markdown("#### 🎲 Análisis de Volatilidad")
+            
+            diferencia_mejor_peor = mejor_caso_final['Total'] - peor_caso_final['Total']
+            volatilidad_porcentaje = (diferencia_mejor_peor / caso_base_final['Total']) * 100
+            
+            col_vol1, col_vol2 = st.columns(2)
+            
+            with col_vol1:
+                st.metric(
+                    "Rango de variación",
+                    f"${diferencia_mejor_peor:,.0f}",
+                    delta=f"{volatilidad_porcentaje:.1f}% del caso base"
+                )
+            
+            with col_vol2:
+                if volatilidad_porcentaje < 15:
+                    st.success("✅ **Volatilidad Baja**: Tu portafolio es relativamente estable ante cambios en tasas")
+                elif volatilidad_porcentaje < 30:
+                    st.warning("⚠️ **Volatilidad Moderada**: Considera diversificar más para reducir sensibilidad")
+                else:
+                    st.error("🔴 **Volatilidad Alta**: Tu portafolio es muy sensible a cambios en tasas de interés")
+            
+            st.markdown("---")
             st.subheader("📋 Desglose Mensual Detallado")
             
             for inversion_key, df_proyeccion in zip(
