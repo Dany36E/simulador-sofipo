@@ -2987,52 +2987,6 @@ def main():
                     f"{analisis['porcentaje_liquido']:.1f}%",
                     help="Porcentaje disponible sin penalización"
                 )
-        
-            # Gráfico de distribución
-            st.subheader("📊 Distribución de tu portafolio")
-            
-            df_concentracion = pd.DataFrame([
-                {"SOFIPO": k, "Porcentaje": v, "Monto": inversiones_seleccionadas[k]["monto"]}
-                for k, v in analisis["concentraciones"].items()
-                if v > 0
-            ])
-            
-            fig_pie = px.pie(
-                df_concentracion,
-                values='Porcentaje',
-                names='SOFIPO',
-                title='Distribución por SOFIPO',
-                hole=0.4,
-                color_discrete_sequence=px.colors.qualitative.Set3
-            )
-            
-            fig_pie.update_traces(
-                textposition='inside',
-                textinfo='percent+label',
-                hovertemplate='<b>%{label}</b><br>' +
-                              'Porcentaje: %{percent}<br>' +
-                              '<extra></extra>'
-            )
-            
-            fig_pie.update_layout(
-                title=dict(
-                    text='Distribución por SOFIPO',
-                    font=dict(size=18, color='#c9d1d9' if modo_oscuro else '#333333')
-                ),
-                template="plotly_dark" if modo_oscuro else "plotly_white",
-                paper_bgcolor='#0d1117' if modo_oscuro else 'white',
-                plot_bgcolor='#161b22' if modo_oscuro else '#f8f9fa',
-                font=dict(color='#c9d1d9' if modo_oscuro else '#333333'),
-                legend=dict(
-                    bgcolor='rgba(22, 27, 34, 0.8)' if modo_oscuro else 'rgba(255, 255, 255, 0.8)',
-                    bordercolor='#30363d' if modo_oscuro else '#e0e0e0',
-                    borderwidth=1
-                )
-            )
-            
-            st.plotly_chart(fig_pie, use_container_width=True)
-            
-            st.markdown("---")
             
             # Mostrar recomendaciones
             st.subheader("💡 Recomendaciones Personalizadas")
