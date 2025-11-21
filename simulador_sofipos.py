@@ -670,9 +670,9 @@ def analizar_diversificacion(inversiones_dict):
         "porcentaje_liquido": porcentaje_liquido
     }
 
-def generar_recomendaciones(analisis, rendimiento_ponderado):
+def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, cumple_mp=False, cumple_uala=False):
     """
-    Genera recomendaciones personalizadas basadas en el análisis
+    Genera recomendaciones personalizadas basadas en el análisis y preferencias del usuario
     """
     recomendaciones = []
     
@@ -745,6 +745,106 @@ def generar_recomendaciones(analisis, rendimiento_ponderado):
                 "el 16% en los primeros $10,000 MXN."
             )
     
+    # Recomendaciones basadas en preferencias del usuario
+    st.markdown("---")
+    recomendaciones.append("### 🎯 Oportunidades según tus preferencias:")
+    
+    # Lista de opciones disponibles ordenadas por tasa
+    opciones_disponibles = []
+    
+    # DiDi siempre disponible (sin requisitos especiales)
+    if not any("DiDi" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "DiDi",
+            "producto": "DiDi Ahorro",
+            "tasa": 16.0,
+            "limite": 10000,
+            "requisito": None,
+            "texto": "**DiDi Ahorro** - 16% primeros $10k, luego 8.5% (sin requisitos especiales)"
+        })
+    
+    # Ualá Plus solo si cumple requisitos
+    if cumple_uala and not any("Ualá" in k and "Plus" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "Ualá",
+            "producto": "Plus",
+            "tasa": 16.0,
+            "limite": 50000,
+            "requisito": "✅ Ya cumples",
+            "texto": "**Ualá Plus** - 16% hasta $50k ✅ Cumples requisito de $3k/mes"
+        })
+    elif not cumple_uala:
+        opciones_disponibles.append({
+            "sofipo": "Ualá",
+            "producto": "Base",
+            "tasa": 7.75,
+            "limite": 30000,
+            "requisito": None,
+            "texto": "**Ualá Base** - 7.75% hasta $30k (sin requisitos, o 16% si puedes cumplir con $3k/mes)"
+        })
+    
+    # Klar Max solo si cumple requisitos
+    if cumple_klar and not any("Klar" in k and "Max" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "Klar",
+            "producto": "Inversión Max",
+            "tasa": 15.0,
+            "limite": None,
+            "requisito": "✅ Ya cumples",
+            "texto": "**Klar Inversión Max** - 15% liquidez inmediata ✅ Tienes Plus/Platino"
+        })
+    elif not cumple_klar:
+        opciones_disponibles.append({
+            "sofipo": "Klar",
+            "producto": "Cuenta",
+            "tasa": 8.5,
+            "limite": None,
+            "requisito": None,
+            "texto": "**Klar Cuenta** - 8.5% (sin requisitos, o 15% con Plus/Platino)"
+        })
+    
+    # Nu México siempre disponible
+    if not any("Nu" in k and "Turbo" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "Nu México",
+            "producto": "Cajita Turbo",
+            "tasa": 15.0,
+            "limite": 25000,
+            "requisito": None,
+            "texto": "**Nu México Cajita Turbo** - 15% hasta $25k con liquidez inmediata"
+        })
+    
+    # Mercado Pago
+    if cumple_mp and not any("Mercado Pago" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "Mercado Pago",
+            "producto": "Rendimientos",
+            "tasa": 13.0,
+            "limite": 25000,
+            "requisito": "✅ Ya cumples",
+            "texto": "**Mercado Pago** - 13% hasta $25k ✅ Cumples requisito de $3k/mes"
+        })
+    
+    # Stori 90 días (mejor plazo sin requisitos)
+    if not any("Stori" in k and "90" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0):
+        opciones_disponibles.append({
+            "sofipo": "Stori",
+            "producto": "90 días",
+            "tasa": 10.0,
+            "limite": None,
+            "requisito": None,
+            "texto": "**Stori 90 días** - 10% a plazo fijo (sin requisitos)"
+        })
+    
+    # Ordenar por tasa descendente
+    opciones_disponibles.sort(key=lambda x: x["tasa"], reverse=True)
+    
+    # Mostrar top 3 opciones
+    if len(opciones_disponibles) > 0:
+        recomendaciones.append("\n**🌟 Mejores opciones disponibles para ti:**\n")
+        for i, opcion in enumerate(opciones_disponibles[:3], 1):
+            recomendaciones.append(f"{i}. {opcion['texto']}")
+    
     return recomendaciones
 
 # ============================================================================
@@ -780,6 +880,39 @@ def main():
             index=2,
             format_func=lambda x: f"{x} meses"
         )
+    
+    st.divider()
+    
+    # ========================================================================
+    # PREFERENCIAS DEL USUARIO
+    # ========================================================================
+    
+    st.markdown("### ⚙️ Tus preferencias de inversión")
+    
+    with st.expander("🔧 Configurar requisitos que SÍ puedo cumplir", expanded=False):
+        st.markdown("**Marca las opciones que SÍ cumples para obtener mejores recomendaciones:**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            cumple_klar_plus = st.checkbox(
+                "✅ Tengo membresía Klar Plus o Platino",
+                value=False,
+                help="Necesaria para Klar Inversión Max (15%)"
+            )
+            
+            cumple_mercadopago = st.checkbox(
+                "✅ Puedo depositar $3,000/mes en Mercado Pago",
+                value=False,
+                help="Necesario para obtener el 13% en Mercado Pago"
+            )
+        
+        with col2:
+            cumple_uala_plus = st.checkbox(
+                "✅ Puedo consumir $3k/mes con Ualá o domiciliar nómina",
+                value=False,
+                help="Necesario para Ualá Plus (16% hasta $50k)"
+            )
     
     st.divider()
     
@@ -1219,7 +1352,13 @@ def main():
         # Realizar análisis de diversificación
         analisis = analizar_diversificacion(inversiones_seleccionadas)
         if analisis:
-            recomendaciones = generar_recomendaciones(analisis, rendimiento_ponderado)
+            recomendaciones = generar_recomendaciones(
+                analisis, 
+                rendimiento_ponderado,
+                cumple_klar_plus,
+                cumple_mercadopago,
+                cumple_uala_plus
+            )
             
             # Mostrar métricas de diversificación
             col1, col2, col3 = st.columns(3)
