@@ -1509,10 +1509,10 @@ def main():
             # Calcular distribución agresiva con montos específicos
             st.subheader("💰 Distribución Recomendada para tu Capital")
             
-            # Estrategia: Maximizar tasas - DiDi (16%), Ualá Plus (16%), Klar Max (15%), Nu Turbo (15%)
+            # Estrategia: Maximizar tasas según tus preferencias
             distribucion_agresiva = []
             
-            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1)
+            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - sin requisitos)
             monto_didi = min(10000, monto_total)
             distribucion_agresiva.append({
                 "sofipo": "DiDi",
@@ -1524,20 +1524,20 @@ def main():
             
             saldo_restante = monto_total - monto_didi
             
-            # 2. Ualá Plus: Invertir hasta $50,000 al 16% (PRIORIDAD 2)
-            if saldo_restante > 0:
+            # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2)
+            if cumple_uala_plus and saldo_restante > 0:
                 monto_uala = min(50000, saldo_restante)
                 distribucion_agresiva.append({
                     "sofipo": "Ualá",
                     "producto": "Cuenta Plus",
                     "monto": monto_uala,
                     "tasa": 16.0,
-                    "razon": "🥇 16% hasta $50k (requiere $3k/mes consumos/nómina)"
+                    "razon": "🥇 16% hasta $50k ✅ Cumples requisito de $3k/mes"
                 })
                 saldo_restante -= monto_uala
             
-            # 3. Klar Inversión Flexible Max: 15% (requiere Plus/Platino)
-            if saldo_restante > 0:
+            # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3)
+            if cumple_klar_plus and saldo_restante > 0:
                 monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
                 if monto_klar >= 100:
                     distribucion_agresiva.append({
@@ -1545,7 +1545,7 @@ def main():
                         "producto": "Inversión Flexible Max",
                         "monto": monto_klar,
                         "tasa": 15.0,
-                        "razon": "🥈 15% liquidez inmediata (requiere Plus/Platino)"
+                        "razon": "🥈 15% liquidez inmediata ✅ Tienes Plus/Platino"
                     })
                     saldo_restante -= monto_klar
             
@@ -1605,15 +1605,28 @@ def main():
             with col2:
                 st.metric("Ganancia estimada (12 meses)", f"${ganancia_12m:,.0f}")
             
-            st.warning("""
-            **⚠️ Consideraciones importantes:**
-            - Esta estrategia prioriza SOLO rendimiento máximo (15-16% ponderado)
-            - **Ualá Plus requiere**: Consumir $3k/mes o domiciliar nómina
-            - **Klar Max requiere**: Membresía Plus o Platino
-            - Parte del capital quedará en plazos fijos (menor liquidez)
-            - No es recomendable para fondos de emergencia
-            - Diversificación limitada a favor de mejores tasas
-            """)
+            # Advertencias dinámicas según preferencias
+            advertencias = ["**⚠️ Consideraciones importantes:**"]
+            advertencias.append(f"- Esta estrategia alcanza un rendimiento ponderado de ~{tasa_ponderada_agresiva:.1f}%")
+            
+            # Advertencias sobre requisitos
+            if cumple_uala_plus:
+                advertencias.append("- ✅ Incluye Ualá Plus (cumples requisito de $3k/mes)")
+            else:
+                advertencias.append("- ℹ️ Podrías mejorar con Ualá Plus 16% si puedes consumir $3k/mes")
+            
+            if cumple_klar_plus:
+                advertencias.append("- ✅ Incluye Klar Max (tienes membresía Plus/Platino)")
+            else:
+                advertencias.append("- ℹ️ Podrías mejorar con Klar Max 15% si tienes membresía Plus/Platino")
+            
+            if cumple_mercadopago:
+                advertencias.append("- ℹ️ Considera Mercado Pago 13% (cumples requisito de $3k/mes)")
+            
+            advertencias.append("- Parte del capital puede quedar en plazos fijos (menor liquidez)")
+            advertencias.append("- No es recomendable para fondos de emergencia")
+            
+            st.warning("\n".join(advertencias))
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
