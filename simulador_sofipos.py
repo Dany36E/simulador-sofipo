@@ -2947,15 +2947,12 @@ def main():
             if recomendaciones["oportunidades"]:
                 st.markdown("### 💡 Oportunidades según tus preferencias:")
                 
+                oportunidades_html = ""
                 for i, opp in enumerate(recomendaciones["oportunidades"], 1):
-                    col_num, col_content = st.columns([0.3, 9.7])
-                    with col_num:
-                        st.markdown(f"**{i}.**")
-                    with col_content:
-                        if opp['requisito']:
-                            st.markdown(f"**{opp['sofipo']} {opp['producto']}** - {opp['detalle']} · {opp['requisito']}")
-                        else:
-                            st.markdown(f"**{opp['sofipo']} {opp['producto']}** - {opp['detalle']}")
+                    requisito_txt = f" · {opp['requisito']}" if opp['requisito'] else ""
+                    oportunidades_html += f"**{i}.** **{opp['sofipo']} {opp['producto']}** - {opp['detalle']}{requisito_txt}\n\n"
+                
+                st.markdown(oportunidades_html)
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
