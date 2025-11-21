@@ -2416,6 +2416,217 @@ def main():
             st.dataframe(df_resultados, width="stretch", hide_index=True)
         
         # ====================================================================
+        # 📊 DASHBOARD EJECUTIVO - TU PORTAFOLIO EN 30 SEGUNDOS
+        # ====================================================================
+        
+        st.markdown("---")
+        st.markdown("### 📊 Dashboard Ejecutivo")
+        st.caption("🚀 Tu portafolio en 30 segundos")
+        
+        # Calcular métricas para el score
+        num_sofipos = len(inversiones_seleccionadas)
+        
+        # Calcular montos por SOFIPO para verificar protección IPAB
+        montos_por_sofipo = {}
+        for inversion_key, inversion in inversiones_seleccionadas.items():
+            sofipo = inversion['sofipo']
+            monto = inversion['monto']
+            if sofipo not in montos_por_sofipo:
+                montos_por_sofipo[sofipo] = 0
+            montos_por_sofipo[sofipo] += monto
+        
+        proteccion_ipab_completa = all(monto <= 200000 for monto in montos_por_sofipo.values())
+        
+        # Calcular porcentaje de liquidez
+        monto_liquido = sum(
+            inv['monto'] for inv in inversiones_seleccionadas.values() 
+            if inv['producto_info']['tipo'] in ['vista', 'vista_hibrida']
+        )
+        porcentaje_liquidez = (monto_liquido / total_invertido * 100) if total_invertido > 0 else 0
+        
+        # ====================================================================
+        # SISTEMA DE SCORE INTELIGENTE (0-100)
+        # ====================================================================
+        
+        score_total = 0
+        componentes_score = []
+        
+        # 1. RENDIMIENTO (40 puntos máximo) - El más importante
+        if rendimiento_ponderado >= 15:
+            score_rendimiento = 40
+            nivel_rendimiento = "Excelente"
+        elif rendimiento_ponderado >= 14:
+            score_rendimiento = 35
+            nivel_rendimiento = "Muy Bueno"
+        elif rendimiento_ponderado >= 13:
+            score_rendimiento = 30
+            nivel_rendimiento = "Bueno"
+        elif rendimiento_ponderado >= 12:
+            score_rendimiento = 25
+            nivel_rendimiento = "Aceptable"
+        else:
+            score_rendimiento = int((rendimiento_ponderado / 12) * 25)
+            nivel_rendimiento = "Mejorable"
+        
+        score_total += score_rendimiento
+        componentes_score.append(("Rendimiento", score_rendimiento, 40, nivel_rendimiento))
+        
+        # 2. PROTECCIÓN IPAB (25 puntos máximo)
+        if proteccion_ipab_completa:
+            score_ipab = 25
+            nivel_ipab = "100% Protegido"
+        else:
+            # Calcular qué porcentaje del total está protegido
+            monto_protegido = sum(min(m, 200000) for m in montos_por_sofipo.values())
+            porcentaje_protegido = (monto_protegido / total_invertido * 100) if total_invertido > 0 else 0
+            score_ipab = int((porcentaje_protegido / 100) * 25)
+            nivel_ipab = f"{porcentaje_protegido:.0f}% Protegido"
+        
+        score_total += score_ipab
+        componentes_score.append(("Protección IPAB", score_ipab, 25, nivel_ipab))
+        
+        # 3. LIQUIDEZ (20 puntos máximo)
+        if porcentaje_liquidez >= 80:
+            score_liquidez = 20
+            nivel_liquidez = "Muy Alta"
+        elif porcentaje_liquidez >= 50:
+            score_liquidez = 15
+            nivel_liquidez = "Balanceada"
+        elif porcentaje_liquidez >= 30:
+            score_liquidez = 10
+            nivel_liquidez = "Moderada"
+        else:
+            score_liquidez = int((porcentaje_liquidez / 30) * 10)
+            nivel_liquidez = "Baja"
+        
+        score_total += score_liquidez
+        componentes_score.append(("Liquidez", score_liquidez, 20, nivel_liquidez))
+        
+        # 4. DIVERSIFICACIÓN (15 puntos máximo) - Peso reducido para no penalizar tanto
+        if num_sofipos >= 5:
+            score_diversificacion = 15
+            nivel_diversificacion = "Excelente"
+        elif num_sofipos >= 3:
+            score_diversificacion = 12
+            nivel_diversificacion = "Buena"
+        elif num_sofipos >= 2:
+            score_diversificacion = 9
+            nivel_diversificacion = "Aceptable"
+        else:
+            score_diversificacion = 6
+            nivel_diversificacion = "Básica"
+        
+        score_total += score_diversificacion
+        componentes_score.append(("Diversificación", score_diversificacion, 15, nivel_diversificacion))
+        
+        # ====================================================================
+        # SEMÁFORO DE RIESGO
+        # ====================================================================
+        
+        if score_total >= 85:
+            semaforo = "🟢"
+            semaforo_texto = "EXCELENTE"
+            semaforo_color = "#22c55e"
+            mensaje_riesgo = "Tu portafolio está muy bien optimizado"
+        elif score_total >= 70:
+            semaforo = "🟢"
+            semaforo_texto = "BUENO"
+            semaforo_color = "#84cc16"
+            mensaje_riesgo = "Portafolio sólido con buen balance"
+        elif score_total >= 55:
+            semaforo = "🟡"
+            semaforo_texto = "ACEPTABLE"
+            semaforo_color = "#eab308"
+            mensaje_riesgo = "Considera mejorar algunos aspectos"
+        else:
+            semaforo = "🔴"
+            semaforo_texto = "MEJORABLE"
+            semaforo_color = "#ef4444"
+            mensaje_riesgo = "Hay áreas importantes que optimizar"
+        
+        # ====================================================================
+        # MOSTRAR DASHBOARD EN TARJETA ÚNICA
+        # ====================================================================
+        
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(135deg, {semaforo_color}15 0%, {semaforo_color}05 100%);
+            border: 2px solid {semaforo_color};
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        ">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <div>
+                    <div style="font-size: 48px; font-weight: bold; color: {semaforo_color};">
+                        {score_total}/100
+                    </div>
+                    <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 5px;">
+                        {semaforo} {semaforo_texto}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 14px; opacity: 0.8;">Score de Calidad</div>
+                    <div style="font-size: 12px; opacity: 0.6; margin-top: 5px;">{mensaje_riesgo}</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 15px; opacity: 0.9;">
+                    📋 Desglose del Score:
+                </div>
+                {"".join([f'''
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 13px;">{comp[0]}</span>
+                        <span style="font-size: 13px; font-weight: bold;">{comp[1]}/{comp[2]} pts • {comp[3]}</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+                        <div style="background: {semaforo_color}; width: {(comp[1]/comp[2]*100):.0f}%; height: 100%;"></div>
+                    </div>
+                </div>
+                ''' for comp in componentes_score])}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ====================================================================
+        # KPIs PRINCIPALES EN FORMATO COMPACTO
+        # ====================================================================
+        
+        col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+        
+        with col_kpi1:
+            st.metric(
+                label="📈 GAT Ponderado",
+                value=f"{rendimiento_ponderado:.2f}%",
+                delta="Anual"
+            )
+        
+        with col_kpi2:
+            st.metric(
+                label="🏦 SOFIPOs",
+                value=f"{num_sofipos}",
+                delta=nivel_diversificacion
+            )
+        
+        with col_kpi3:
+            st.metric(
+                label="🛡️ IPAB",
+                value=f"{nivel_ipab}",
+                delta="Protección"
+            )
+        
+        with col_kpi4:
+            st.metric(
+                label="💧 Liquidez",
+                value=f"{porcentaje_liquidez:.0f}%",
+                delta=nivel_liquidez
+            )
+        
+        st.markdown("---")
+        
+        # ====================================================================
         # GRÁFICO PRINCIPAL
         # ====================================================================
         
