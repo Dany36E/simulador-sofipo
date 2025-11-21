@@ -1524,14 +1524,14 @@ def main():
         
         with col1:
             cumple_klar_plus = st.checkbox(
-                "? Tengo membresía Klar Plus o Platino",
+                "💳 Tengo membresía Klar Plus o Platino",
                 value=st.session_state.get("cumple_klar_plus", False),
                 help="Necesaria para Klar Inversión Max (15%)",
                 key="cumple_klar_plus"
             )
             
             cumple_mercadopago = st.checkbox(
-                "? Puedo depositar $3,000/mes en Mercado Pago",
+                "💰 Puedo depositar $3,000/mes en Mercado Pago",
                 value=st.session_state.get("cumple_mercadopago", False),
                 help="Necesario para obtener el 13% en Mercado Pago",
                 key="cumple_mercadopago"
@@ -1539,7 +1539,7 @@ def main():
         
         with col2:
             cumple_uala_plus = st.checkbox(
-                "? Puedo consumir $3k/mes con Ualá o domiciliar nómina",
+                "💸 Puedo consumir $3k/mes con Ualá o domiciliar nómina",
                 value=st.session_state.get("cumple_uala_plus", False),
                 help="Necesario para Ualá Plus (16% hasta $50k)",
                 key="cumple_uala_plus"
