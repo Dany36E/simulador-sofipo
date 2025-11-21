@@ -12,6 +12,8 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timedelta
+import json
+import base64
 
 # Configuración de la página
 st.set_page_config(
@@ -20,6 +22,80 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ========================================================================
+# FUNCIONES DE GUARDAR/CARGAR SIMULACIÓN
+# ========================================================================
+
+def guardar_simulacion():
+    """Captura el estado actual de la simulación y retorna un diccionario"""
+    simulacion = {
+        "fecha_guardado": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "monto_total": st.session_state.get("monto_total_input", 50000),
+        "periodo_simulacion": st.session_state.get("periodo_simulacion", 12),
+        "preferencias": {
+            "cumple_klar_plus": st.session_state.get("cumple_klar_plus", False),
+            "cumple_mercadopago": st.session_state.get("cumple_mercadopago", False),
+            "cumple_uala_plus": st.session_state.get("cumple_uala_plus", False),
+            "usa_nu": st.session_state.get("usa_nu", True),
+            "usa_didi": st.session_state.get("usa_didi", True),
+            "usa_stori": st.session_state.get("usa_stori", True),
+            "usa_klar": st.session_state.get("usa_klar", True),
+            "usa_uala": st.session_state.get("usa_uala", True),
+            "usa_mp": st.session_state.get("usa_mp", True),
+            "usa_finsus": st.session_state.get("usa_finsus", True),
+            "solo_vista": st.session_state.get("solo_vista", False)
+        },
+        "inversiones": {}
+    }
+    
+    # Capturar inversiones manuales (checkboxes y montos)
+    sofipos = ["Nu México", "DiDi", "Stori", "Klar", "Ualá", "Mercado Pago", "Finsus"]
+    for sofipo in sofipos:
+        check_key = f"check_{sofipo}"
+        if st.session_state.get(check_key, False):
+            prod_key = f"prod_{sofipo}"
+            producto = st.session_state.get(prod_key, "")
+            if producto:
+                monto_key = f"monto_{sofipo}_{producto}"
+                monto = st.session_state.get(monto_key, 0)
+                simulacion["inversiones"][sofipo] = {
+                    "producto": producto,
+                    "monto": monto
+                }
+    
+    return simulacion
+
+def cargar_simulacion(simulacion_data):
+    """Carga una simulación guardada al session_state"""
+    try:
+        # Cargar configuración básica
+        st.session_state["monto_total_input"] = simulacion_data.get("monto_total", 50000)
+        st.session_state["periodo_simulacion"] = simulacion_data.get("periodo_simulacion", 12)
+        
+        # Cargar preferencias
+        preferencias = simulacion_data.get("preferencias", {})
+        for key, value in preferencias.items():
+            st.session_state[key] = value
+        
+        # Cargar inversiones
+        inversiones = simulacion_data.get("inversiones", {})
+        for sofipo, datos in inversiones.items():
+            st.session_state[f"check_{sofipo}"] = True
+            st.session_state[f"prod_{sofipo}"] = datos["producto"]
+            st.session_state[f"monto_{sofipo}_{datos['producto']}"] = datos["monto"]
+        
+        return True
+    except Exception as e:
+        st.error(f"Error al cargar simulación: {str(e)}")
+        return False
+
+def exportar_json(simulacion):
+    """Convierte la simulación a JSON para descarga"""
+    json_str = json.dumps(simulacion, indent=2, ensure_ascii=False)
+    b64 = base64.b64encode(json_str.encode()).decode()
+    fecha = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return json_str, b64, fecha
 
 # Estilos CSS personalizados - Diseño Premium
 st.markdown("""
@@ -1304,6 +1380,56 @@ def main():
     st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
     
     # ========================================================================
+    # GUARDAR/CARGAR SIMULACIONES
+    # ========================================================================
+    
+    with st.expander("💾 Guardar/Cargar Simulación", expanded=False):
+        st.markdown("**Guarda tu simulación actual o carga una anterior**")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            # Botón para guardar simulación
+            if st.button("💾 Guardar Simulación Actual", use_container_width=True):
+                simulacion = guardar_simulacion()
+                json_str, b64, fecha = exportar_json(simulacion)
+                st.session_state["ultima_simulacion"] = simulacion
+                st.success("✅ Simulación guardada en memoria")
+        
+        with col2:
+            # Descargar como JSON
+            if "ultima_simulacion" in st.session_state:
+                json_str, b64, fecha = exportar_json(st.session_state["ultima_simulacion"])
+                st.download_button(
+                    label="📥 Descargar JSON",
+                    data=json_str,
+                    file_name=f"simulacion_sofipo_{fecha}.json",
+                    mime="application/json",
+                    use_container_width=True
+                )
+            else:
+                st.button("📥 Descargar JSON", disabled=True, use_container_width=True, help="Primero guarda una simulación")
+        
+        with col3:
+            # Cargar desde archivo
+            uploaded_file = st.file_uploader("📤 Cargar desde archivo", type=['json'], label_visibility="collapsed")
+            if uploaded_file is not None:
+                try:
+                    simulacion_data = json.load(uploaded_file)
+                    if cargar_simulacion(simulacion_data):
+                        st.success(f"✅ Simulación cargada: {simulacion_data.get('fecha_guardado', 'Sin fecha')}")
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Error al cargar archivo: {str(e)}")
+        
+        # Mostrar información de la última simulación guardada
+        if "ultima_simulacion" in st.session_state:
+            sim = st.session_state["ultima_simulacion"]
+            st.info(f"📊 **Última simulación guardada:** {sim['fecha_guardado']} | Monto: ${sim['monto_total']:,.0f} | Inversiones: {len(sim['inversiones'])}")
+    
+    st.divider()
+    
+    # ========================================================================
     # CONFIGURACIÓN RÁPIDA
     # ========================================================================
     
@@ -1314,18 +1440,23 @@ def main():
         monto_total = st.number_input(
             "Monto total disponible (MXN)",
             min_value=1000,
-            value=50000,
+            value=st.session_state.get("monto_total_input", 50000),
             step=5000,
-            help="Este es el capital que tienes disponible para distribuir entre SOFIPOs"
+            help="Este es el capital que tienes disponible para distribuir entre SOFIPOs",
+            key="monto_total_input"
         )
     
     with col2:
         st.markdown("### 📅 Plazo")
+        periodo_options = [3, 6, 12, 24]
+        default_periodo = st.session_state.get("periodo_simulacion", 12)
+        default_index = periodo_options.index(default_periodo) if default_periodo in periodo_options else 2
         periodo_simulacion = st.selectbox(
             "Simular a:",
-            options=[3, 6, 12, 24],
-            index=2,
-            format_func=lambda x: f"{x} meses"
+            options=periodo_options,
+            index=default_index,
+            format_func=lambda x: f"{x} meses",
+            key="periodo_simulacion"
         )
     
     st.divider()
@@ -1344,21 +1475,24 @@ def main():
         with col1:
             cumple_klar_plus = st.checkbox(
                 "✅ Tengo membresía Klar Plus o Platino",
-                value=False,
-                help="Necesaria para Klar Inversión Max (15%)"
+                value=st.session_state.get("cumple_klar_plus", False),
+                help="Necesaria para Klar Inversión Max (15%)",
+                key="cumple_klar_plus"
             )
             
             cumple_mercadopago = st.checkbox(
                 "✅ Puedo depositar $3,000/mes en Mercado Pago",
-                value=False,
-                help="Necesario para obtener el 13% en Mercado Pago"
+                value=st.session_state.get("cumple_mercadopago", False),
+                help="Necesario para obtener el 13% en Mercado Pago",
+                key="cumple_mercadopago"
             )
         
         with col2:
             cumple_uala_plus = st.checkbox(
                 "✅ Puedo consumir $3k/mes con Ualá o domiciliar nómina",
-                value=False,
-                help="Necesario para Ualá Plus (16% hasta $50k)"
+                value=st.session_state.get("cumple_uala_plus", False),
+                help="Necesario para Ualá Plus (16% hasta $50k)",
+                key="cumple_uala_plus"
             )
     
     with st.expander("🚫 Excluir SOFIPOs que NO quiero usar", expanded=False):
@@ -1381,8 +1515,9 @@ def main():
         st.markdown("**Configura si solo quieres productos con disponibilidad inmediata:**")
         solo_vista = st.checkbox(
             "💰 Solo productos A LA VISTA (sin plazo fijo)",
-            value=False,
-            help="Activar para excluir productos con plazos fijos y solo ver rendimientos líquidos disponibles"
+            value=st.session_state.get("solo_vista", False),
+            help="Activar para excluir productos con plazos fijos y solo ver rendimientos líquidos disponibles",
+            key="solo_vista"
         )
     
     st.divider()
