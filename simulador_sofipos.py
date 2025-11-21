@@ -18,7 +18,7 @@ import base64
 # Configuración de la página
 st.set_page_config(
     page_title="Simulador Multi-SOFIPO México",
-    page_icon="??",
+    page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -346,7 +346,7 @@ st.markdown("""
 
 SOFIPOS_DATA = {
     "Nu México": {
-        "logo": "??",
+        "logo": "💜",
         "productos": {
             "Cajita Turbo": {
                 "tasa_base": 15.00,
@@ -395,7 +395,7 @@ SOFIPOS_DATA = {
         "descripcion": "SOFIPO líder en México con 13+ millones de clientes"
     },
     "DiDi": {
-        "logo": "??",
+        "logo": "🚗",
         "productos": {
             "DiDi Ahorro": {
                 "tasa_base": 8.50,
@@ -410,7 +410,7 @@ SOFIPOS_DATA = {
         "descripcion": "Hasta 16% en primeros $10,000, después 8.5%"
     },
     "Stori": {
-        "logo": "??",
+        "logo": "🟦",
         "productos": {
             "Sin plazo": {
                 "tasa_base": 8.00,
@@ -452,7 +452,7 @@ SOFIPOS_DATA = {
         "descripcion": "Inversiones con y sin plazo (requiere cuenta Stori)"
     },
     "Klar": {
-        "logo": "??",
+        "logo": "⚡",
         "productos": {
             "Cuenta Klar": {
                 "tasa_base": 8.50,
@@ -473,7 +473,7 @@ SOFIPOS_DATA = {
         "descripcion": "SOFIPO regulada por CNBV con más de 2M usuarios"
     },
     "Ualá": {
-        "logo": "??",
+        "logo": "🔴",
         "productos": {
             "Cuenta con Rendimiento (Base)": {
                 "tasa_base": 7.75,
@@ -540,7 +540,7 @@ SOFIPOS_DATA = {
         "descripcion": "Hasta 16% con Tasa Plus (requiere $3k/mes en consumos/nómina)"
     },
     "Mercado Pago": {
-        "logo": "??",
+        "logo": "💙",
         "productos": {
             "Rendimientos MP": {
                 "tasa_base": 13.00,
@@ -556,7 +556,7 @@ SOFIPOS_DATA = {
         "descripcion": "13% anual (requiere $3k/mes, máx $25k)"
     },
     "Finsus": {
-        "logo": "??",
+        "logo": "🟢",
         "productos": {
             "Finsus+ (a la vista)": {
                 "tasa_base": 8.09,
@@ -753,17 +753,17 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
     recomendaciones = []
     
     if analisis is None:
-        return ["?? Agrega al menos una inversión para recibir recomendaciones"]
+        return ["💡 Agrega al menos una inversión para recibir recomendaciones"]
     
     # Evaluar diversificación
     if analisis["num_sofipos"] == 1:
         recomendaciones.append(
-            "?? **Alta Concentración**: Estás invirtiendo en una sola SOFIPO. "
+            "⚠️ **Alta Concentración**: Estás invirtiendo en una sola SOFIPO. "
             "Considera diversificar en al menos 3-4 instituciones para reducir riesgo."
         )
     elif analisis["max_concentracion"] > 70:
         recomendaciones.append(
-            f"?? **Concentración Elevada**: {analisis['max_concentracion']:.1f}% en una sola institución. "
+            f"⚠️ **Concentración Elevada**: {analisis['max_concentracion']:.1f}% en una sola institución. "
             "Lo ideal es no superar el 40-50% por SOFIPO."
         )
     elif analisis["num_sofipos"] >= 3 and analisis["max_concentracion"] < 50:
@@ -774,12 +774,12 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
     # Evaluar liquidez
     if analisis["porcentaje_liquido"] < 20:
         recomendaciones.append(
-            f"?? **Baja Liquidez**: Solo {analisis['porcentaje_liquido']:.1f}% está disponible de forma inmediata. "
+            f"⚠️ **Baja Liquidez**: Solo {analisis['porcentaje_liquido']:.1f}% está disponible de forma inmediata. "
             "Considera mantener al menos 20-30% en inversiones líquidas para emergencias."
         )
     elif analisis["porcentaje_liquido"] > 80:
         recomendaciones.append(
-            f"?? **Alta Liquidez**: {analisis['porcentaje_liquido']:.1f}% está disponible inmediatamente. "
+            f"✅ **Alta Liquidez**: {analisis['porcentaje_liquido']:.1f}% está disponible inmediatamente. "
             "Podrías mejorar rendimientos moviendo parte a plazos fijos."
         )
     else:
@@ -791,25 +791,25 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
     # Evaluar rendimiento
     if rendimiento_ponderado < 10:
         recomendaciones.append(
-            f"?? **Rendimiento Bajo**: Tu GAT ponderado es {rendimiento_ponderado:.2f}%. "
+            f"⚠️ **Rendimiento Bajo**: Tu GAT ponderado es {rendimiento_ponderado:.2f}%. "
             "Considera productos como Nu México (15%) o DiDi (16% primeros $10k) para mejorar."
         )
     elif rendimiento_ponderado >= 14:
         recomendaciones.append(
-            f"?? **Excelente Rendimiento**: Tu GAT ponderado de {rendimiento_ponderado:.2f}% "
+            f"🎯 **Excelente Rendimiento**: Tu GAT ponderado de {rendimiento_ponderado:.2f}% "
             "está por encima del promedio del mercado."
         )
     
     # Recomendaciones específicas de protección
     recomendaciones.append(
-        "??? **Protección IPAB**: Recuerda que cada SOFIPO está protegida hasta 25,000 UDIs (~200,000 MXN) "
+        "🛡️ **Protección IPAB**: Recuerda que cada SOFIPO está protegida hasta 25,000 UDIs (~200,000 MXN) "
         "por el IPAB. Si inviertes más, distribuye entre varias instituciones."
     )
     
     # Sugerencias de optimización
     if "Nu México" not in [k for k, v in analisis["concentraciones"].items() if v > 0]:
         recomendaciones.append(
-            "?? **Sugerencia**: Nu México ofrece 15% anual con liquidez inmediata, "
+            "💡 **Sugerencia**: Nu México ofrece 15% anual con liquidez inmediata, "
             "una de las mejores combinaciones del mercado."
         )
     
@@ -817,13 +817,13 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
         tiene_didi = any("DiDi" in k for k in analisis["concentraciones"].keys() if analisis["concentraciones"][k] > 0)
         if not tiene_didi:
             recomendaciones.append(
-                "?? **Sugerencia DiDi**: Con capital suficiente, considera DiDi para aprovechar "
+                " **Sugerencia DiDi**: Con capital suficiente, considera DiDi para aprovechar "
                 "el 16% en los primeros $10,000 MXN."
             )
     
     # Recomendaciones basadas en preferencias del usuario
     st.markdown("---")
-    recomendaciones.append("### ?? Oportunidades según tus preferencias:")
+    recomendaciones.append("### 💡 Oportunidades según tus preferencias:")
     
     # Lista de opciones disponibles ordenadas por tasa
     opciones_disponibles = []
@@ -931,7 +931,7 @@ def generar_recomendaciones(analisis, rendimiento_ponderado, cumple_klar=False, 
     
     # Mostrar top 3 opciones
     if len(opciones_disponibles) > 0:
-        recomendaciones.append("\n**?? Mejores opciones disponibles para ti:**\n")
+        recomendaciones.append("\n**💡 Mejores opciones disponibles para ti:**\n")
         for i, opcion in enumerate(opciones_disponibles[:3], 1):
             recomendaciones.append(f"{i}. {opcion['texto']}")
     
@@ -946,7 +946,7 @@ def main():
     col_spacer, col_toggle = st.columns([6, 1])
     
     with col_toggle:
-        modo_oscuro = st.toggle("??", value=False, key="dark_mode", help="Modo Oscuro")
+        modo_oscuro = st.toggle("🌙", value=False, key="dark_mode", help="Modo Oscuro")
     
     # Aplicar estilos según el modo
     if modo_oscuro:
@@ -1376,48 +1376,48 @@ def main():
         """, unsafe_allow_html=True)
     
     # Encabezado centrado
-    st.markdown('<h1 class="main-header">?? Simulador de Inversiones</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
     
     # ========================================================================
     # GUARDAR/CARGAR SIMULACIONES
     # ========================================================================
     
-    with st.expander("?? Guardar/Cargar Simulación", expanded=False):
+    with st.expander("💾 Guardar/Cargar Simulación", expanded=False):
         st.markdown("**Guarda tu simulación actual o carga una anterior**")
         
         col1, col2, col3 = st.columns(3)
         
         with col1:
             # Botón para guardar simulación
-            if st.button("?? Guardar Simulación Actual", use_container_width=True):
+            if st.button("💾 Guardar Simulación Actual", use_container_width=True):
                 simulacion = guardar_simulacion()
                 json_str, b64, fecha = exportar_json(simulacion)
                 st.session_state["ultima_simulacion"] = simulacion
-                st.success("? Simulación guardada en memoria")
+                st.success("✅ Simulación guardada en memoria")
         
         with col2:
             # Descargar como JSON
             if "ultima_simulacion" in st.session_state:
                 json_str, b64, fecha = exportar_json(st.session_state["ultima_simulacion"])
                 st.download_button(
-                    label="?? Descargar JSON",
+                    label="📥 Descargar JSON",
                     data=json_str,
                     file_name=f"simulacion_sofipo_{fecha}.json",
                     mime="application/json",
                     use_container_width=True
                 )
             else:
-                st.button("?? Descargar JSON", disabled=True, use_container_width=True, help="Primero guarda una simulación")
+                st.button("📥 Descargar JSON", disabled=True, use_container_width=True, help="Primero guarda una simulación")
         
         with col3:
             # Cargar desde archivo
-            uploaded_file = st.file_uploader("?? Cargar desde archivo", type=['json'], label_visibility="collapsed")
+            uploaded_file = st.file_uploader("📂 Cargar desde archivo", type=['json'], label_visibility="collapsed")
             if uploaded_file is not None:
                 try:
                     simulacion_data = json.load(uploaded_file)
                     if cargar_simulacion(simulacion_data):
-                        st.success(f"? Simulación cargada: {simulacion_data.get('fecha_guardado', 'Sin fecha')}")
+                        st.success(f"✅ Simulación cargada: {simulacion_data.get('fecha_guardado', 'Sin fecha')}")
                         st.rerun()
                 except Exception as e:
                     st.error(f"? Error al cargar archivo: {str(e)}")
@@ -1425,7 +1425,7 @@ def main():
         # Mostrar información de la última simulación guardada
         if "ultima_simulacion" in st.session_state:
             sim = st.session_state["ultima_simulacion"]
-            st.info(f"?? **Última simulación guardada:** {sim['fecha_guardado']} | Monto: ${sim['monto_total']:,.0f} | Inversiones: {len(sim['inversiones'])}")
+            st.info(f"ℹ️ **Última simulación guardada:** {sim['fecha_guardado']} | Monto: ${sim['monto_total']:,.0f} | Inversiones: {len(sim['inversiones'])}")
     
     st.divider()
     # ========================================================================
@@ -1471,7 +1471,7 @@ def main():
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.markdown("### ?? ¿Cuánto quieres invertir?")
+        st.markdown("### 🎯 ¿Cuánto quieres invertir?")
         monto_total = st.number_input(
             "Monto total disponible (MXN)",
             min_value=1000,
@@ -1482,7 +1482,7 @@ def main():
         )
     
     with col2:
-        st.markdown("### ?? Plazo")
+        st.markdown("### 📅 Plazo")
         periodo_options = [3, 6, 12, 24]
         default_periodo = st.session_state.get("periodo_simulacion", 12)
         default_index = periodo_options.index(default_periodo) if default_periodo in periodo_options else 2
@@ -1500,9 +1500,9 @@ def main():
     # PREFERENCIAS DEL USUARIO
     # ========================================================================
     
-    st.markdown("### ?? Tus preferencias de inversión")
+    st.markdown("### ⚙️ Tus preferencias de inversión")
     
-    with st.expander("?? Configurar requisitos que SÍ puedo cumplir", expanded=False):
+    with st.expander("✅ Configurar requisitos que SÍ puedo cumplir", expanded=False):
         st.markdown("**Marca las opciones que SÍ cumples para obtener mejores recomendaciones:**")
         
         col1, col2 = st.columns(2)
@@ -1530,26 +1530,26 @@ def main():
                 key="cumple_uala_plus"
             )
     
-    with st.expander("?? Excluir SOFIPOs que NO quiero usar", expanded=False):
+    with st.expander("🚫 Excluir SOFIPOs que NO quiero usar", expanded=False):
         st.markdown("**Desmarca las SOFIPOs que NO quieres que aparezcan en las recomendaciones:**")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            usa_nu = st.checkbox("?? Nu México", value=True, key="usa_nu")
-            usa_didi = st.checkbox("?? DiDi", value=True, key="usa_didi")
-            usa_stori = st.checkbox("?? Stori", value=True, key="usa_stori")
-            usa_klar = st.checkbox("?? Klar", value=True, key="usa_klar")
+            usa_nu = st.checkbox("💜 Nu México", value=True, key="usa_nu")
+            usa_didi = st.checkbox("🚗 DiDi", value=True, key="usa_didi")
+            usa_stori = st.checkbox("🟦 Stori", value=True, key="usa_stori")
+            usa_klar = st.checkbox("⚡ Klar", value=True, key="usa_klar")
         
         with col2:
-            usa_uala = st.checkbox("?? Ualá", value=True, key="usa_uala")
-            usa_mp = st.checkbox("?? Mercado Pago", value=True, key="usa_mp")
-            usa_finsus = st.checkbox("?? Finsus", value=True, key="usa_finsus")
+            usa_uala = st.checkbox("🔴 Ualá", value=True, key="usa_uala")
+            usa_mp = st.checkbox("💙 Mercado Pago", value=True, key="usa_mp")
+            usa_finsus = st.checkbox("🟢 Finsus", value=True, key="usa_finsus")
     
-    with st.expander("?? Preferencias de liquidez", expanded=False):
+    with st.expander("💧 Preferencias de liquidez", expanded=False):
         st.markdown("**Configura si solo quieres productos con disponibilidad inmediata:**")
         solo_vista = st.checkbox(
-            "?? Solo productos A LA VISTA (sin plazo fijo)",
+            "💧 Solo productos A LA VISTA (sin plazo fijo)",
             value=st.session_state.get("solo_vista", False),
             help="Activar para excluir productos con plazos fijos y solo ver rendimientos líquidos disponibles",
             key="solo_vista"
@@ -1561,17 +1561,17 @@ def main():
     # CALCULADORA DE OBJETIVO INVERSO (CON TASAS REALES)
     # ========================================================================
     
-    with st.expander("?? Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
+    with st.expander("🎯 Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
         st.markdown("**Calcula cuánto capital necesitas para alcanzar tu meta de ganancia usando tasas reales y tus preferencias**")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("#### ?? Tu Meta de Ganancia")
+            st.markdown("#### 🎯 Tu Meta de Ganancia")
             objetivo_tipo = st.radio(
                 "Quiero ganar:",
                 options=["mensual", "anual"],
-                format_func=lambda x: "?? Por mes" if x == "mensual" else "?? Por año",
+                format_func=lambda x: "📅 Por mes" if x == "mensual" else "📅 Por año",
                 horizontal=True
             )
             
@@ -1584,8 +1584,8 @@ def main():
             )
         
         with col2:
-            st.markdown("#### ?? Perfil de Inversión")
-            st.info("?? La calculadora usará **tus preferencias actuales** (SOFIPOs excluidas, requisitos, liquidez)")
+            st.markdown("#### ⚙️ Perfil de Inversión")
+            st.info("ℹ️ La calculadora usará **tus preferencias actuales** (SOFIPOs excluidas, requisitos, liquidez)")
         
         # Convertir ganancia a anual
         if objetivo_tipo == "mensual":
@@ -1733,27 +1733,27 @@ def main():
         st.markdown("---")
         
         if tasa_referencia > 0:
-            st.markdown("### ?? Resultado de tu Objetivo (Con Tasas Reales)")
+            st.markdown("### 🎯 Resultado de tu Objetivo (Con Tasas Reales)")
             
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
                 st.metric(
-                    "?? Capital Necesario",
+                    "💰 Capital Necesario",
                     f"${capital_necesario:,.0f}",
                     help="Monto que necesitas invertir"
                 )
             
             with col2:
                 st.metric(
-                    "?? Ganancia Anual",
+                    "💵 Ganancia Anual",
                     f"${ganancia_anual_real:,.0f}",
                     delta=f"{tasa_real:.2f}%"
                 )
             
             with col3:
                 st.metric(
-                    "?? Ganancia Mensual",
+                    "📅 Ganancia Mensual",
                     f"${ganancia_mensual_real:,.0f}",
                     delta=f"~{ganancia_mensual_real/capital_necesario*100:.2f}% mensual"
                 )
@@ -1763,35 +1763,35 @@ def main():
                 if sofipos_count == 0:
                     sofipos_count = len(distribucion_final)
                 st.metric(
-                    "?? SOFIPOs en distribución",
+                    "🏦 SOFIPOs en distribución",
                     f"{sofipos_count}",
                     help="Según tu configuración"
                 )
             
             # Mostrar distribución detallada
             if distribucion_final:
-                st.markdown("#### ?? Distribución Sugerida")
+                st.markdown("#### 📊 Distribución Sugerida")
                 for i, item in enumerate(distribucion_final, 1):
                     porcentaje = (item["monto"] / capital_necesario * 100)
                     ganancia_item = item["monto"] * item["tasa"] / 100
                     
                     # Construir descripción
                     nombre_completo = f"{item['sofipo']} - {item['producto']}"
-                    tipo_icon = "??" if item.get("tipo") == "vista" else "?"
-                    requisito_text = f" ? {item['requisito']}" if item.get("requisito") else ""
+                    tipo_icon = "💧" if item.get("tipo") == "vista" else "📅"
+                    requisito_text = f" ✅ {item['requisito']}" if item.get("requisito") else ""
                     
                     st.markdown(f"{i}. {tipo_icon} **{nombre_completo}** {requisito_text}")
                     st.markdown(f"   +- **\${item['monto']:,.0f}** al **{item['tasa']}%** = **\${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
             
             # Mostrar advertencias según el monto
             if capital_necesario > 1000000:
-                st.warning("?? **Capital alto**: Considera diversificar en múltiples SOFIPOs para no exceder el límite IPAB de $400k por institución.")
+                st.warning("⚠️ **Capital alto**: Considera diversificar en múltiples SOFIPOs para no exceder el límite IPAB de $400k por institución.")
             elif capital_necesario < 5000:
-                st.info("?? **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
+                st.info("ℹ️ **Capital bajo**: Puedes empezar con 1-2 SOFIPOs y diversificar conforme aumentes tu capital.")
             
             # Mostrar advertencias de configuración
             if solo_vista:
-                st.info("?? **Modo A LA VISTA activado**: Solo se incluyen productos líquidos (sin plazo fijo)")
+                st.info("💧 **Modo A LA VISTA activado**: Solo se incluyen productos líquidos (sin plazo fijo)")
             
             excluidas = []
             if not usa_nu: excluidas.append("Nu")
@@ -1803,11 +1803,11 @@ def main():
             if not usa_finsus: excluidas.append("Finsus")
             
             if excluidas:
-                st.warning(f"?? **SOFIPOs excluidas**: {', '.join(excluidas)}")
+                st.warning(f"⚠️ **SOFIPOs excluidas**: {', '.join(excluidas)}")
             
             # Botón para aplicar toda la estrategia al simulador
             st.markdown("---")
-            if st.button("? Aplicar esta estrategia a la simulación", use_container_width=True, key="btn_aplicar_estrategia_objetivo", type="primary"):
+            if st.button("🚀 Aplicar esta estrategia a la simulación", use_container_width=True, key="btn_aplicar_estrategia_objetivo", type="primary"):
                 # Actualizar el monto total
                 # Guardar la estrategia para aplicarla en el próximo render
                 st.session_state["estrategia_objetivo_pendiente"] = {
@@ -1822,10 +1822,10 @@ def main():
     # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
     # ========================================================================
     
-    with st.expander("?? Recomendaciones de Inversión", expanded=False):
+    with st.expander("💡 Recomendaciones de Inversión", expanded=False):
         st.markdown("Basadas en tu capital y preferencias, estas son las estrategias optimizadas:")
         
-        tab1, tab2, tab3 = st.tabs(["??? Conservadora", "?? Balanceada", "?? Agresiva"])
+        tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
         
         with tab1:
             st.markdown("""
@@ -1879,7 +1879,7 @@ def main():
         
         with tab3:
             st.markdown("""
-            ### ?? Estrategia Agresiva - Maximizar Rendimientos
+            ### 🚀 Estrategia Agresiva - Maximizar Rendimientos
             
             **Objetivo**: Obtener el **máximo rendimiento posible** sin importar el riesgo ni la liquidez.
             
@@ -1887,11 +1887,11 @@ def main():
             """)
             
             # Calcular distribución agresiva con montos específicos
-            st.subheader("?? Distribución Recomendada para tu Capital")
+            st.subheader("💰 Distribución Recomendada para tu Capital")
             
             # Mostrar filtro activo si está en modo solo vista
             if solo_vista:
-                st.info("?? **Modo A LA VISTA activado**: Solo se mostrarán productos sin plazo fijo")
+                st.info("💧 **Modo A LA VISTA activado**: Solo se mostrarán productos sin plazo fijo")
             
             # Estrategia: Maximizar tasas según tus preferencias Y exclusiones
             distribucion_agresiva = []
@@ -1905,7 +1905,7 @@ def main():
                     "producto": "DiDi Ahorro",
                     "monto": monto_didi,
                     "tasa": 16.0,
-                    "razon": "?? 16% primeros $10k (después 8.5%) ?? A LA VISTA"
+                    "razon": "🚗 16% primeros $10k (después 8.5%) 💧 A LA VISTA"
                 })
                 saldo_restante -= monto_didi
             
@@ -1917,7 +1917,7 @@ def main():
                     "producto": "Cuenta Plus",
                     "monto": monto_uala,
                     "tasa": 16.0,
-                    "razon": "?? 16% hasta $50k ? Cumples requisito de $3k/mes ?? A LA VISTA"
+                    "razon": "🔴 16% hasta $50k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
                 })
                 saldo_restante -= monto_uala
             
@@ -1930,7 +1930,7 @@ def main():
                         "producto": "Inversión Flexible Max",
                         "monto": monto_klar,
                         "tasa": 15.0,
-                        "razon": "?? 15% liquidez inmediata ? Tienes Plus/Platino ?? A LA VISTA"
+                        "razon": "⚡ 15% liquidez inmediata ✅ Tienes Plus/Platino 💧 A LA VISTA"
                     })
                     saldo_restante -= monto_klar
             
@@ -1943,7 +1943,7 @@ def main():
                         "producto": "Cajita Turbo",
                         "monto": monto_nu_turbo,
                         "tasa": 15.0,
-                        "razon": "?? 15% hasta $25k liquidez inmediata ?? A LA VISTA"
+                        "razon": "💜 15% hasta $25k liquidez inmediata 💧 A LA VISTA"
                     })
                     saldo_restante -= monto_nu_turbo
             
@@ -1977,7 +1977,7 @@ def main():
                     "producto": "90 días",
                     "monto": saldo_restante,
                     "tasa": 10.0,
-                    "razon": "?? 10% plazo 90 días ? PLAZO FIJO"
+                    "razon": "🟦 10% plazo 90 días 📅 PLAZO FIJO"
                 })
                 saldo_restante -= saldo_restante
             
@@ -1988,16 +1988,16 @@ def main():
                     "producto": "Apartado 360 días",
                     "monto": saldo_restante,
                     "tasa": 10.09,
-                    "razon": "?? 10.09% plazo 360 días ? PLAZO FIJO"
+                    "razon": "🟢 10.09% plazo 360 días 📅 PLAZO FIJO"
                 })
                 saldo_restante -= saldo_restante
             
             # Advertencia si quedan fondos sin asignar
             if saldo_restante > 0:
                 if solo_vista:
-                    st.warning(f"?? Quedan **${saldo_restante:,.0f}** sin asignar. En modo A LA VISTA, los productos a plazo fijo están excluidos. Desactiva el modo A LA VISTA o activa más SOFIPOs para distribuir todo tu capital.")
+                    st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. En modo A LA VISTA, los productos a plazo fijo están excluidos. Desactiva el modo A LA VISTA o activa más SOFIPOs para distribuir todo tu capital.")
                 else:
-                    st.warning(f"?? Quedan **${saldo_restante:,.0f}** sin asignar. Has excluido demasiadas SOFIPOs. Activa al menos una más para distribuir todo tu capital.")
+                    st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. Has excluido demasiadas SOFIPOs. Activa al menos una más para distribuir todo tu capital.")
             
             # Mostrar tabla con montos exactos
             if distribucion_agresiva:
@@ -2982,8 +2982,8 @@ def main():
     ---
     <div style='text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                 padding: 2rem; border-radius: 20px; color: white; margin-top: 2rem;'>
-        <h3 style='margin: 0; font-weight: 700;'>?? Simulador de Inversiones Multi-SOFIPO</h3>
-        <p style='margin: 1rem 0; opacity: 0.9;'>?? Este simulador es una herramienta educativa. Las tasas pueden variar.<br>
+        <h3 style='margin: 0; font-weight: 700;'>💰 Simulador de Inversiones Multi-SOFIPO</h3>
+        <p style='margin: 1rem 0; opacity: 0.9;'>ℹ️ Este simulador es una herramienta educativa. Las tasas pueden variar.<br>
         Verifica siempre las condiciones vigentes con cada institución.</p>
         <p style='margin: 0.5rem 0;'><span class="badge">?? Tasas actualizadas: Noviembre 2025</span></p>
         <p style='margin-top: 1rem; font-size: 1.1rem;'>Desarrollado con ?? para inversionistas mexicanos ????</p>
@@ -2996,4 +2996,5 @@ def main():
     st.markdown('<div style="text-align: center; font-size: 0.7rem; color: #999; padding: 1rem;">?? Última actualización de tasas: 21 de Noviembre, 2025</div>', unsafe_allow_html=True)
 if __name__ == "__main__":
     main()
+
 
