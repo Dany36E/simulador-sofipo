@@ -1691,7 +1691,7 @@ def main():
             for i, item in enumerate(distribucion_final, 1):
                 porcentaje = (item["monto"] / capital_necesario * 100)
                 ganancia_item = item["monto"] * item["tasa"] / 100
-                st.caption(f"{i}. ${item['monto']:,.0f} al {item['tasa']}% = **${ganancia_item:,.0f}/año** ({porcentaje:.1f}% del total)")
+                st.caption(f"{i}. ${item['monto']:,.0f}  al  {item['tasa']}%  =  **${ganancia_item:,.0f}/año**  ({porcentaje:.1f}% del total)")
         
         # Mostrar advertencias según el monto
         if capital_necesario > 1000000:
