@@ -772,6 +772,70 @@ def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
     
     return pd.DataFrame(proyeccion)
 
+def generar_proyeccion_con_aportaciones(
+    capital_inicial, 
+    tasa_anual, 
+    tipo_calculo, 
+    meses=12, 
+    aportacion=0, 
+    frecuencia="Mensual"
+):
+    """
+    Genera proyección considerando aportaciones recurrentes
+    
+    Args:
+        capital_inicial: Capital inicial a invertir
+        tasa_anual: Tasa de interés anual promedio ponderada
+        tipo_calculo: "compuesto" o "simple"
+        meses: Número de meses a simular
+        aportacion: Monto de cada aportación
+        frecuencia: "Semanal", "Quincenal", o "Mensual"
+    
+    Returns:
+        DataFrame con proyección detallada mes a mes
+    """
+    proyeccion = []
+    
+    # Calcular número de aportaciones por mes según frecuencia
+    aportaciones_por_mes = {
+        "Semanal": 4.33,      # ~4.33 semanas por mes
+        "Quincenal": 2,
+        "Mensual": 1
+    }
+    
+    aportacion_mensual_equivalente = aportacion * aportaciones_por_mes.get(frecuencia, 1)
+    
+    capital_acumulado = capital_inicial
+    total_aportaciones = 0
+    
+    for mes in range(meses + 1):
+        # Calcular intereses del mes sobre el capital acumulado
+        if mes > 0:
+            dias_mes = 30
+            if tipo_calculo == "compuesto":
+                intereses_mes = calcular_interes_compuesto(capital_acumulado, tasa_anual, dias_mes)
+            else:
+                intereses_mes = calcular_interes_simple(capital_acumulado, tasa_anual, dias_mes)
+            
+            capital_acumulado += intereses_mes
+            
+            # Agregar aportación al final del mes
+            capital_acumulado += aportacion_mensual_equivalente
+            total_aportaciones += aportacion_mensual_equivalente
+        
+        # Calcular intereses totales acumulados
+        intereses_totales = capital_acumulado - capital_inicial - total_aportaciones
+        
+        proyeccion.append({
+            "Mes": mes,
+            "Capital Inicial": capital_inicial,
+            "Aportaciones Acumuladas": total_aportaciones,
+            "Intereses Generados": intereses_totales,
+            "Total Acumulado": capital_acumulado
+        })
+    
+    return pd.DataFrame(proyeccion)
+
 def analizar_diversificacion(inversiones_dict):
     """
     Analiza el nivel de diversificación y genera recomendaciones
@@ -1516,6 +1580,55 @@ def main():
             index=default_index,
             format_func=lambda x: f"{x} meses",
             key="periodo_simulacion"
+        )
+    
+    # ========================================================================
+    # APORTACIONES RECURRENTES
+    # ========================================================================
+    
+    st.markdown("### 💰 Aportaciones Recurrentes (Opcional)")
+    
+    col_activar, col_monto, col_frecuencia, col_estrategia = st.columns([1.5, 2, 2, 2.5])
+    
+    with col_activar:
+        aportaciones_activas = st.checkbox(
+            "Activar aportaciones",
+            value=st.session_state.get("aportaciones_activas", False),
+            help="Simula el efecto de agregar dinero periódicamente",
+            key="aportaciones_activas"
+        )
+    
+    with col_monto:
+        aportacion_monto = st.number_input(
+            "Monto por aportación",
+            min_value=0,
+            value=st.session_state.get("aportacion_monto", 2000),
+            step=500,
+            disabled=not aportaciones_activas,
+            key="aportacion_monto"
+        )
+    
+    with col_frecuencia:
+        frecuencia_aportacion = st.selectbox(
+            "Frecuencia",
+            options=["Semanal", "Quincenal", "Mensual"],
+            index=2,  # Default: Mensual
+            disabled=not aportaciones_activas,
+            key="frecuencia_aportacion"
+        )
+    
+    with col_estrategia:
+        estrategia_aportacion = st.selectbox(
+            "Estrategia de inversión",
+            options=[
+                "Misma distribución que capital inicial",
+                "Solo productos de mayor rendimiento",
+                "Distribución inteligente automática"
+            ],
+            index=0,
+            disabled=not aportaciones_activas,
+            help="Define cómo se invertirán las aportaciones recurrentes",
+            key="estrategia_aportacion"
         )
     
     st.divider()
@@ -2442,6 +2555,52 @@ def main():
         # GAT Ponderado destacado
         st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
         
+        # Mostrar impacto de aportaciones si están activas
+        if aportaciones_activas and aportacion_monto > 0:
+            st.markdown("---")
+            st.markdown("### 💰 Impacto de Aportaciones Recurrentes")
+            
+            # Calcular datos finales
+            total_final_sin_aport = total_invertido + ganancia_total
+            total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
+            aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
+            intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
+            ganancia_extra_por_aportaciones = total_final_con_aport - total_final_sin_aport
+            
+            col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+            
+            with col_a1:
+                st.metric(
+                    "Total Aportado",
+                    f"${aportaciones_totales:,.0f}",
+                    help=f"Suma de todas tus aportaciones {frecuencia_aportacion.lower()}es"
+                )
+            
+            with col_a2:
+                st.metric(
+                    "Intereses Generados",
+                    f"${intereses_con_aport:,.0f}",
+                    help="Intereses sobre capital inicial + aportaciones"
+                )
+            
+            with col_a3:
+                st.metric(
+                    "Total Final",
+                    f"${total_final_con_aport:,.0f}",
+                    delta=f"+${ganancia_extra_por_aportaciones:,.0f} vs sin aportaciones",
+                    delta_color="normal"
+                )
+            
+            with col_a4:
+                porcentaje_extra = (ganancia_extra_por_aportaciones / total_final_sin_aport * 100) if total_final_sin_aport > 0 else 0
+                st.metric(
+                    "Crecimiento Extra",
+                    f"{porcentaje_extra:.1f}%",
+                    help="Cuánto más ganas con aportaciones vs solo capital inicial"
+                )
+            
+            st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
+        
         # Tabla detallada en expander
         with st.expander("? Ver desglose detallado por SOFIPO"):
             df_resultados = pd.DataFrame(resultados)
@@ -2674,52 +2833,140 @@ def main():
                 'Total Acumulado': 'sum'
             }).reset_index()
             
+            # Si hay aportaciones activas, generar proyección con aportaciones
+            if aportaciones_activas and aportacion_monto > 0:
+                df_total_con_aportaciones = generar_proyeccion_con_aportaciones(
+                    capital_inicial=total_invertido,
+                    tasa_anual=rendimiento_ponderado,
+                    tipo_calculo="compuesto",
+                    meses=periodo_simulacion,
+                    aportacion=aportacion_monto,
+                    frecuencia=frecuencia_aportacion
+                )
+            
             # Dos columnas para las visualizaciones
             col_viz1, col_viz2 = st.columns([1.5, 1])
             
             with col_viz1:
-                st.markdown("### 📈 Proyección de Crecimiento")
+                titulo_grafica = "### 📈 Proyección de Crecimiento"
+                if aportaciones_activas and aportacion_monto > 0:
+                    # Calcular frecuencia para mostrar
+                    frecuencias_texto = {
+                        "Semanal": f"${aportacion_monto:,.0f}/semana",
+                        "Quincenal": f"${aportacion_monto:,.0f}/quincena",
+                        "Mensual": f"${aportacion_monto:,.0f}/mes"
+                    }
+                    titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+                
+                st.markdown(titulo_grafica)
                 
                 # Crear gráfico profesional con gradiente
                 fig = go.Figure()
                 
-                # Área de relleno con gradiente
-                fig.add_trace(go.Scatter(
-                    x=df_total['Mes'],
-                    y=df_total['Total Acumulado'],
-                    mode='lines',
-                    name='Crecimiento',
-                    line=dict(width=0),
-                    fillcolor='rgba(102, 126, 234, 0.3)',
-                    fill='tozeroy',
-                    showlegend=False,
-                    hoverinfo='skip'
-                ))
-                
-                # Línea principal con gradiente profesional
-                fig.add_trace(go.Scatter(
-                    x=df_total['Mes'],
-                    y=df_total['Total Acumulado'],
-                    mode='lines+markers',
-                    name='Total del Portafolio',
-                    line=dict(
-                        width=3.5,
-                        color='#667eea',
-                        shape='spline',  # Línea suavizada
-                    ),
-                    marker=dict(
-                        size=9,
-                        color='#667eea',
-                        symbol='circle',
-                        line=dict(color='white', width=2)
-                    ),
-                    hovertemplate=(
-                        '<b style="color:#667eea;">Total Acumulado</b><br>' +
-                        '<b>Mes %{x}</b><br>' +
-                        'Monto: <b>$%{y:,.0f}</b><br>' +
-                        '<extra></extra>'
-                    )
-                ))
+                # Si hay aportaciones, mostrar comparación
+                if aportaciones_activas and aportacion_monto > 0:
+                    # Área de relleno para CON aportaciones
+                    fig.add_trace(go.Scatter(
+                        x=df_total_con_aportaciones['Mes'],
+                        y=df_total_con_aportaciones['Total Acumulado'],
+                        mode='lines',
+                        name='Con Aportaciones (área)',
+                        line=dict(width=0),
+                        fillcolor='rgba(67, 233, 123, 0.3)',
+                        fill='tozeroy',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    ))
+                    
+                    # Línea principal CON aportaciones
+                    fig.add_trace(go.Scatter(
+                        x=df_total_con_aportaciones['Mes'],
+                        y=df_total_con_aportaciones['Total Acumulado'],
+                        mode='lines+markers',
+                        name='Con Aportaciones',
+                        line=dict(
+                            width=3.5,
+                            color='#43e97b',
+                            shape='spline',
+                        ),
+                        marker=dict(
+                            size=9,
+                            color='#43e97b',
+                            symbol='circle',
+                            line=dict(color='white', width=2)
+                        ),
+                        hovertemplate=(
+                            '<b style="color:#43e97b;">Con Aportaciones</b><br>' +
+                            '<b>Mes %{x}</b><br>' +
+                            'Total: <b>$%{y:,.0f}</b><br>' +
+                            '<extra></extra>'
+                        )
+                    ))
+                    
+                    # Línea SIN aportaciones (para comparar)
+                    fig.add_trace(go.Scatter(
+                        x=df_total['Mes'],
+                        y=df_total['Total Acumulado'],
+                        mode='lines+markers',
+                        name='Sin Aportaciones',
+                        line=dict(
+                            width=2.5,
+                            color='#667eea',
+                            shape='spline',
+                            dash='dash'
+                        ),
+                        marker=dict(
+                            size=7,
+                            color='#667eea',
+                            symbol='circle',
+                            line=dict(color='white', width=1.5)
+                        ),
+                        hovertemplate=(
+                            '<b style="color:#667eea;">Sin Aportaciones</b><br>' +
+                            '<b>Mes %{x}</b><br>' +
+                            'Total: <b>$%{y:,.0f}</b><br>' +
+                            '<extra></extra>'
+                        )
+                    ))
+                else:
+                    # Gráfico normal sin aportaciones
+                    # Área de relleno con gradiente
+                    fig.add_trace(go.Scatter(
+                        x=df_total['Mes'],
+                        y=df_total['Total Acumulado'],
+                        mode='lines',
+                        name='Crecimiento',
+                        line=dict(width=0),
+                        fillcolor='rgba(102, 126, 234, 0.3)',
+                        fill='tozeroy',
+                        showlegend=False,
+                        hoverinfo='skip'
+                    ))
+                    
+                    # Línea principal con gradiente profesional
+                    fig.add_trace(go.Scatter(
+                        x=df_total['Mes'],
+                        y=df_total['Total Acumulado'],
+                        mode='lines+markers',
+                        name='Total del Portafolio',
+                        line=dict(
+                            width=3.5,
+                            color='#667eea',
+                            shape='spline',  # Línea suavizada
+                        ),
+                        marker=dict(
+                            size=9,
+                            color='#667eea',
+                            symbol='circle',
+                            line=dict(color='white', width=2)
+                        ),
+                        hovertemplate=(
+                            '<b style="color:#667eea;">Total Acumulado</b><br>' +
+                            '<b>Mes %{x}</b><br>' +
+                            'Monto: <b>$%{y:,.0f}</b><br>' +
+                            '<extra></extra>'
+                        )
+                    ))
                 
                 # Línea de capital inicial (más sutil)
                 fig.add_trace(go.Scatter(
@@ -2735,27 +2982,71 @@ def main():
                     hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
                 ))
                 
-                # Usar la ganancia_total calculada correctamente (la misma que las métricas)
-                total_final_correcto = total_invertido + ganancia_total
-                
                 # Anotación profesional al final
-                fig.add_annotation(
-                    x=df_total['Mes'].iloc[-1],
-                    y=df_total['Total Acumulado'].iloc[-1],
-                    text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
-                    showarrow=True,
-                    arrowhead=2,
-                    arrowsize=1,
-                    arrowwidth=2,
-                    arrowcolor="#667eea",
-                    ax=40,
-                    ay=-40,
-                    font=dict(size=12, color="#667eea", family="Arial"),
-                    bgcolor="rgba(255,255,255,0.9)",
-                    bordercolor="#667eea",
-                    borderwidth=2,
-                    borderpad=4
-                )
+                if aportaciones_activas and aportacion_monto > 0:
+                    # Anotación para CON aportaciones
+                    total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
+                    aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
+                    intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
+                    
+                    fig.add_annotation(
+                        x=df_total_con_aportaciones['Mes'].iloc[-1],
+                        y=total_final_con_aport,
+                        text=f"<b>${total_final_con_aport:,.0f}</b><br>+${intereses_con_aport:,.0f} intereses",
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        arrowcolor="#43e97b",
+                        ax=40,
+                        ay=-50,
+                        font=dict(size=12, color="#43e97b", family="Arial"),
+                        bgcolor="rgba(255,255,255,0.9)",
+                        bordercolor="#43e97b",
+                        borderwidth=2,
+                        borderpad=4
+                    )
+                    
+                    # Anotación para SIN aportaciones (más pequeña)
+                    total_final_correcto = total_invertido + ganancia_total
+                    fig.add_annotation(
+                        x=df_total['Mes'].iloc[-1],
+                        y=df_total['Total Acumulado'].iloc[-1],
+                        text=f"<b>${total_final_correcto:,.0f}</b>",
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        arrowcolor="#667eea",
+                        ax=-40,
+                        ay=30,
+                        font=dict(size=11, color="#667eea", family="Arial"),
+                        bgcolor="rgba(255,255,255,0.85)",
+                        bordercolor="#667eea",
+                        borderwidth=1.5,
+                        borderpad=3
+                    )
+                else:
+                    # Anotación normal sin aportaciones
+                    total_final_correcto = total_invertido + ganancia_total
+                    
+                    fig.add_annotation(
+                        x=df_total['Mes'].iloc[-1],
+                        y=df_total['Total Acumulado'].iloc[-1],
+                        text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        arrowcolor="#667eea",
+                        ax=40,
+                        ay=-40,
+                        font=dict(size=12, color="#667eea", family="Arial"),
+                        bgcolor="rgba(255,255,255,0.9)",
+                        bordercolor="#667eea",
+                        borderwidth=2,
+                        borderpad=4
+                    )
                 
                 fig.update_layout(
                     height=450,
