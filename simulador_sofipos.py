@@ -1558,55 +1558,89 @@ def main():
         else:
             ganancia_anual_objetivo = objetivo_ganancia
         
-        # Función para calcular distribución y tasa ponderada con un monto dado
+        # Función para calcular distribución ÓPTIMA con TODAS las tasas disponibles
         def calcular_tasa_ponderada_real(monto_prueba):
-            """Simula la distribución agresiva y calcula la tasa ponderada real"""
+            """Calcula la mejor distribución usando TODOS los productos del catálogo"""
+            
+            # Construir catálogo completo de productos disponibles
+            productos_disponibles = []
+            
+            # Nu México
+            if usa_nu:
+                productos_disponibles.append({"sofipo": "Nu México", "producto": "Cajita Turbo", "tasa": 15.0, "maximo": 25000, "tipo": "vista", "requisito": None})
+                productos_disponibles.append({"sofipo": "Nu México", "producto": "Dinero en Cajita", "tasa": 7.5, "maximo": None, "tipo": "vista", "requisito": None})
+            
+            # DiDi
+            if usa_didi:
+                productos_disponibles.append({"sofipo": "DiDi", "producto": "DiDi Ahorro (primeros $10k)", "tasa": 16.0, "maximo": 10000, "tipo": "vista", "requisito": None})
+                productos_disponibles.append({"sofipo": "DiDi", "producto": "DiDi Ahorro (después de $10k)", "tasa": 8.5, "maximo": None, "tipo": "vista", "requisito": None})
+            
+            # Stori
+            if usa_stori and not solo_vista:
+                productos_disponibles.append({"sofipo": "Stori", "producto": "28 días", "tasa": 9.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                productos_disponibles.append({"sofipo": "Stori", "producto": "90 días", "tasa": 10.0, "maximo": None, "tipo": "plazo", "requisito": None})
+                productos_disponibles.append({"sofipo": "Stori", "producto": "180 días", "tasa": 10.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                productos_disponibles.append({"sofipo": "Stori", "producto": "360 días", "tasa": 11.0, "maximo": None, "tipo": "plazo", "requisito": None})
+            
+            # Klar
+            if usa_klar:
+                productos_disponibles.append({"sofipo": "Klar", "producto": "Cuenta (Base)", "tasa": 8.5, "maximo": None, "tipo": "vista", "requisito": None})
+                if cumple_klar_plus:
+                    productos_disponibles.append({"sofipo": "Klar", "producto": "Inversión Flexible Max", "tasa": 15.0, "maximo": None, "tipo": "vista", "requisito": "Klar Plus"})
+            
+            # Ualá
+            if usa_uala:
+                productos_disponibles.append({"sofipo": "Ualá", "producto": "Cuenta Base", "tasa": 7.75, "maximo": 30000, "tipo": "vista", "requisito": None})
+                if cumple_uala_plus:
+                    productos_disponibles.append({"sofipo": "Ualá", "producto": "Cuenta Plus", "tasa": 16.0, "maximo": 50000, "tipo": "vista", "requisito": "Ualá Plus"})
+            
+            # Mercado Pago
+            if usa_mp:
+                if cumple_mercadopago:
+                    productos_disponibles.append({"sofipo": "Mercado Pago", "producto": "Cuenta Remunerada", "tasa": 13.0, "maximo": 25000, "tipo": "vista", "requisito": "$3k/mes"})
+                else:
+                    productos_disponibles.append({"sofipo": "Mercado Pago", "producto": "Cuenta Remunerada Base", "tasa": 10.0, "maximo": None, "tipo": "vista", "requisito": None})
+            
+            # Finsus
+            if usa_finsus and not solo_vista:
+                productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 28 días", "tasa": 9.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 91 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
+                productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 360 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
+            
+            if not productos_disponibles:
+                return 0, []
+            
+            # Ordenar productos por tasa (de mayor a menor)
+            productos_ordenados = sorted(productos_disponibles, key=lambda x: x["tasa"], reverse=True)
+            
+            # Distribuir el capital en los productos con mejores tasas
             distribucion = []
             saldo = monto_prueba
             
-            # 1. DiDi 16% hasta $10k
-            if usa_didi and saldo > 0:
-                monto_didi = min(10000, saldo)
-                distribucion.append({"monto": monto_didi, "tasa": 16.0})
-                saldo -= monto_didi
-            
-            # 2. Ualá Plus 16% hasta $50k (si cumple requisitos)
-            if usa_uala and cumple_uala_plus and saldo > 0:
-                monto_uala = min(50000, saldo)
-                distribucion.append({"monto": monto_uala, "tasa": 16.0})
-                saldo -= monto_uala
-            
-            # 3. Klar Max 15% (si cumple requisitos)
-            if usa_klar and cumple_klar_plus and saldo > 0:
-                distribucion.append({"monto": saldo, "tasa": 15.0})
-                saldo = 0
-            
-            # 4. Nu Turbo 15% hasta $25k
-            if usa_nu and saldo > 0:
-                monto_nu = min(25000, saldo)
-                distribucion.append({"monto": monto_nu, "tasa": 15.0})
-                saldo -= monto_nu
-            
-            # 5. Mercado Pago 13% hasta $25k (si cumple requisitos)
-            if usa_mp and cumple_mercadopago and saldo > 0:
-                monto_mp = min(25000, saldo)
-                distribucion.append({"monto": monto_mp, "tasa": 13.0})
-                saldo -= monto_mp
-            
-            # 6. DiDi Base 8.5% (resto) - A LA VISTA
-            if usa_didi and saldo > 0:
-                distribucion.append({"monto": saldo, "tasa": 8.5})
-                saldo = 0
-            
-            # 7. Stori 10% (plazo fijo - solo si NO está en modo vista)
-            if not solo_vista and usa_stori and saldo > 0:
-                distribucion.append({"monto": saldo, "tasa": 10.0})
-                saldo = 0
-            
-            # 8. Finsus 10.09% (plazo fijo - solo si NO está en modo vista)
-            if not solo_vista and usa_finsus and saldo > 0:
-                distribucion.append({"monto": saldo, "tasa": 10.09})
-                saldo = 0
+            for producto in productos_ordenados:
+                if saldo <= 0:
+                    break
+                
+                if producto["maximo"] is not None:
+                    monto_asignar = min(producto["maximo"], saldo)
+                else:
+                    # Si no tiene máximo, asignar todo el saldo restante
+                    monto_asignar = saldo
+                
+                if monto_asignar > 0:
+                    distribucion.append({
+                        "sofipo": producto["sofipo"],
+                        "producto": producto["producto"],
+                        "monto": monto_asignar,
+                        "tasa": producto["tasa"],
+                        "tipo": producto["tipo"],
+                        "requisito": producto["requisito"]
+                    })
+                    saldo -= monto_asignar
+                    
+                    # Si el producto no tiene máximo, ya asignamos todo
+                    if producto["maximo"] is None:
+                        break
             
             # Calcular tasa ponderada
             if distribucion:
@@ -1705,7 +1739,14 @@ def main():
                 for i, item in enumerate(distribucion_final, 1):
                     porcentaje = (item["monto"] / capital_necesario * 100)
                     ganancia_item = item["monto"] * item["tasa"] / 100
-                    st.markdown(f"{i}. **\${item['monto']:,.0f}** al **{item['tasa']}%** = **\${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
+                    
+                    # Construir descripción
+                    nombre_completo = f"{item['sofipo']} - {item['producto']}"
+                    tipo_icon = "💧" if item.get("tipo") == "vista" else "⏰"
+                    requisito_text = f" ✅ {item['requisito']}" if item.get("requisito") else ""
+                    
+                    st.markdown(f"{i}. {tipo_icon} **{nombre_completo}** {requisito_text}")
+                    st.markdown(f"   └─ **\${item['monto']:,.0f}** al **{item['tasa']}%** = **\${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
             
             # Mostrar advertencias según el monto
             if capital_necesario > 1000000:
