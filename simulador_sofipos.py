@@ -1361,6 +1361,22 @@ def main():
                 help="Necesario para Ualá Plus (16% hasta $50k)"
             )
     
+    with st.expander("🚫 Excluir SOFIPOs que NO quiero usar", expanded=False):
+        st.markdown("**Desmarca las SOFIPOs que NO quieres que aparezcan en las recomendaciones:**")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            usa_nu = st.checkbox("🟣 Nu México", value=True, key="usa_nu")
+            usa_didi = st.checkbox("🧡 DiDi", value=True, key="usa_didi")
+            usa_stori = st.checkbox("💙 Stori", value=True, key="usa_stori")
+            usa_klar = st.checkbox("💚 Klar", value=True, key="usa_klar")
+        
+        with col2:
+            usa_uala = st.checkbox("💜 Ualá", value=True, key="usa_uala")
+            usa_mp = st.checkbox("💵 Mercado Pago", value=True, key="usa_mp")
+            usa_finsus = st.checkbox("🔵 Finsus", value=True, key="usa_finsus")
+    
     st.divider()
     
     # ========================================================================
@@ -1434,23 +1450,24 @@ def main():
         # Calcular distribución agresiva con montos específicos
         st.subheader("💰 Distribución Recomendada para tu Capital")
         
-        # Estrategia: Maximizar tasas según tus preferencias
+        # Estrategia: Maximizar tasas según tus preferencias Y exclusiones
         distribucion_agresiva = []
+        saldo_restante = monto_total
         
         # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - sin requisitos)
-        monto_didi = min(10000, monto_total)
-        distribucion_agresiva.append({
-            "sofipo": "DiDi",
-            "producto": "DiDi Ahorro",
-            "monto": monto_didi,
-            "tasa": 16.0,
-            "razon": "🥇 16% primeros $10k (después 8.5%)"
-        })
-        
-        saldo_restante = monto_total - monto_didi
+        if usa_didi and saldo_restante > 0:
+            monto_didi = min(10000, saldo_restante)
+            distribucion_agresiva.append({
+                "sofipo": "DiDi",
+                "producto": "DiDi Ahorro",
+                "monto": monto_didi,
+                "tasa": 16.0,
+                "razon": "🥇 16% primeros $10k (después 8.5%)"
+            })
+            saldo_restante -= monto_didi
         
         # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2)
-        if cumple_uala_plus and saldo_restante > 0:
+        if usa_uala and cumple_uala_plus and saldo_restante > 0:
             monto_uala = min(50000, saldo_restante)
             distribucion_agresiva.append({
                 "sofipo": "Ualá",
@@ -1462,7 +1479,7 @@ def main():
             saldo_restante -= monto_uala
         
         # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3)
-        if cumple_klar_plus and saldo_restante > 0:
+        if usa_klar and cumple_klar_plus and saldo_restante > 0:
             monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
             if monto_klar >= 100:
                 distribucion_agresiva.append({
@@ -1474,20 +1491,8 @@ def main():
                 })
                 saldo_restante -= monto_klar
         
-        # 4. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 4)
-        if cumple_mercadopago and saldo_restante > 0:
-            monto_mp = min(25000, saldo_restante)
-            distribucion_agresiva.append({
-                "sofipo": "Mercado Pago",
-                "producto": "Cuenta Remunerada",
-                "monto": monto_mp,
-                "tasa": 13.0,
-                "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
-            })
-            saldo_restante -= monto_mp
-        
-        # 5. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 5)
-        if saldo_restante > 0:
+        # 4. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 4)
+        if usa_nu and saldo_restante > 0:
             monto_nu_turbo = min(25000, saldo_restante)
             if monto_nu_turbo > 0:
                 distribucion_agresiva.append({
@@ -1499,18 +1504,49 @@ def main():
                 })
                 saldo_restante -= monto_nu_turbo
         
-        # 6. Stori 90 días: Al 10% (lo que reste - ÚLTIMA OPCIÓN)
-        if saldo_restante > 0:
+        # 5. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 5)
+        if usa_mp and cumple_mercadopago and saldo_restante > 0:
+            monto_mp = min(25000, saldo_restante)
+            distribucion_agresiva.append({
+                "sofipo": "Mercado Pago",
+                "producto": "Cuenta Remunerada",
+                "monto": monto_mp,
+                "tasa": 13.0,
+                "razon": "🥈 13% hasta $25k ✅ Cumples requisito de $3k/mes"
+            })
+            saldo_restante -= monto_mp
+        
+        # 6. Stori 90 días: Al 10% (PRIORIDAD 6)
+        if usa_stori and saldo_restante > 0:
             distribucion_agresiva.append({
                 "sofipo": "Stori",
                 "producto": "90 días",
                 "monto": saldo_restante,
                 "tasa": 10.0,
-                "razon": "🥉 10% plazo 90 días"
+                "razon": "� 10% plazo 90 días"
             })
+            saldo_restante -= saldo_restante
+        
+        # 7. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO)
+        if usa_finsus and saldo_restante > 0:
+            distribucion_agresiva.append({
+                "sofipo": "Finsus",
+                "producto": "Apartado 360 días",
+                "monto": saldo_restante,
+                "tasa": 10.09,
+                "razon": "🥉 10.09% plazo 360 días"
+            })
+            saldo_restante -= saldo_restante
+        
+        # Advertencia si quedan fondos sin asignar
+        if saldo_restante > 0:
+            st.warning(f"⚠️ Quedan **${saldo_restante:,.0f}** sin asignar. Has excluido demasiadas SOFIPOs. Activa al menos una más para distribuir todo tu capital.")
         
         # Mostrar tabla con montos exactos
-        st.markdown("**💵 Montos específicos sugeridos:**")
+        if distribucion_agresiva:
+            st.markdown("**💵 Montos específicos sugeridos:**")
+        else:
+            st.error("❌ No hay recomendaciones disponibles. Has excluido todas las SOFIPOs. Activa al menos una para ver recomendaciones.")
         
         for i, dist in enumerate(distribucion_agresiva, 1):
             porcentaje = (dist['monto'] / monto_total * 100)
