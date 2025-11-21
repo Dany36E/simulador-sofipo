@@ -399,22 +399,69 @@ SOFIPOS_DATA = {
     "Ualá": {
         "logo": "💳",
         "productos": {
-            "Ualá Ahorro": {
-                "tasa_base": 10.00,
+            "Cuenta con Rendimiento (Base)": {
+                "tasa_base": 7.75,
                 "liquidez": "Inmediata",
                 "minimo": 0,
-                "tipo": "vista"
+                "tipo": "vista",
+                "limite_max": 30000,
+                "descripcion_extra": "7.75% hasta $30,000"
             },
-            "Ualá Plazo Fijo 28 días": {
-                "tasa_base": 11.00,
+            "Cuenta con Rendimiento Plus": {
+                "tasa_base": 16.00,
+                "liquidez": "Inmediata",
+                "minimo": 0,
+                "tipo": "vista",
+                "limite_max": 50000,
+                "requisito": "Plus",
+                "requisito_deposito": 3000,
+                "descripcion_extra": "16% hasta $50k (requiere $3k/mes en consumos o nómina)"
+            },
+            "Reserva 7 días": {
+                "tasa_base": 7.80,
+                "liquidez": "7 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 7
+            },
+            "Reserva 14 días": {
+                "tasa_base": 7.85,
+                "liquidez": "14 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 14
+            },
+            "Reserva 28 días": {
+                "tasa_base": 7.90,
                 "liquidez": "28 días",
-                "minimo": 100,
+                "minimo": 0,
                 "tipo": "plazo",
                 "plazo_dias": 28
+            },
+            "Reserva 90 días": {
+                "tasa_base": 8.00,
+                "liquidez": "90 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 90
+            },
+            "Reserva 180 días": {
+                "tasa_base": 8.10,
+                "liquidez": "180 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 180
+            },
+            "Reserva 1 año": {
+                "tasa_base": 8.15,
+                "liquidez": "365 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 365
             }
         },
         "color": "#00D4FF",
-        "descripcion": "Fintech argentina consolidada en México"
+        "descripcion": "Hasta 16% con Tasa Plus (requiere $3k/mes en consumos/nómina)"
     },
     "Mercado Pago": {
         "logo": "💵",
@@ -841,6 +888,14 @@ def main():
                         st.warning("⚠️ Mercado Pago tiene un límite de $25,000 para obtener el 13%")
                     st.info("ℹ️ Requieres depositar al menos $3,000 MXN mensuales para mantener la tasa del 13%")
                 
+                if sofipo_name == "Ualá":
+                    if "Plus" in producto_seleccionado:
+                        if monto > 50000:
+                            st.warning("⚠️ Ualá Plus tiene un límite de $50,000 para obtener el 16%")
+                        st.info("ℹ️ Requieres consumir $3,000/mes con tarjetas Ualá o domiciliar tu nómina")
+                    elif "Base" in producto_seleccionado and monto > 30000:
+                        st.warning("⚠️ La tasa base del 7.75% aplica solo hasta $30,000")
+                
                 # Requisitos especiales
                 cumple_requisito = True
                 if producto_info.get("requisito") is not None:
@@ -1248,19 +1303,19 @@ def main():
             **Distribución sugerida**:
             - 30% Nu México (Cajita Turbo) - 15% GAT (hasta $25k)
             - 25% Mercado Pago - 13% GAT (requiere $3k/mes)
-            - 20% Ualá Ahorro - 10% GAT
+            - 20% Ualá Base - 7.75% GAT (hasta $30k)
             - 15% Klar Cuenta - 8.5% GAT
             - 10% Nu México (Dinero en Cajita) - 7.5% GAT (emergencias)
             
             **Ventajas**:
             - ✅ Máxima liquidez inmediata (100%)
             - ✅ Diversificación en 4 instituciones sólidas
-            - ✅ Rendimiento promedio ~11.7% anual
+            - ✅ Rendimiento promedio ~11.3% anual
             
             **Consideraciones**:
             - Todas las opciones tienen liquidez inmediata
             - Ideal para fondos de emergencia
-            - Sin requisitos especiales ni membresías
+            - Mercado Pago requiere $3k/mes, resto sin requisitos especiales
             """)
         
         with tab2:
@@ -1301,35 +1356,47 @@ def main():
             # Calcular distribución agresiva con montos específicos
             st.subheader("💰 Distribución Recomendada para tu Capital")
             
-            # Estrategia: Maximizar tasas - DiDi (16%), Klar Max (15%), Nu Turbo (15%), Stori (13.5%)
+            # Estrategia: Maximizar tasas - DiDi (16%), Ualá Plus (16%), Klar Max (15%), Nu Turbo (15%)
             distribucion_agresiva = []
             
-            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (MÁXIMA PRIORIDAD)
+            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1)
             monto_didi = min(10000, monto_total)
             distribucion_agresiva.append({
                 "sofipo": "DiDi",
                 "producto": "DiDi Ahorro",
                 "monto": monto_didi,
                 "tasa": 16.0,
-                "razon": "🥇 Máxima tasa del mercado (primeros $10k, después 8.5%)"
+                "razon": "🥇 16% primeros $10k (después 8.5%)"
             })
             
             saldo_restante = monto_total - monto_didi
             
-            # 2. Klar Inversión Flexible Max: 15% (requiere Plus/Platino)
+            # 2. Ualá Plus: Invertir hasta $50,000 al 16% (PRIORIDAD 2)
             if saldo_restante > 0:
-                monto_klar = int(saldo_restante * 0.40)  # 40% del restante
+                monto_uala = min(50000, saldo_restante)
+                distribucion_agresiva.append({
+                    "sofipo": "Ualá",
+                    "producto": "Cuenta Plus",
+                    "monto": monto_uala,
+                    "tasa": 16.0,
+                    "razon": "🥇 16% hasta $50k (requiere $3k/mes consumos/nómina)"
+                })
+                saldo_restante -= monto_uala
+            
+            # 3. Klar Inversión Flexible Max: 15% (requiere Plus/Platino)
+            if saldo_restante > 0:
+                monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
                 if monto_klar >= 100:
                     distribucion_agresiva.append({
                         "sofipo": "Klar",
                         "producto": "Inversión Flexible Max",
                         "monto": monto_klar,
                         "tasa": 15.0,
-                        "razon": "🥈 15% con liquidez inmediata (requiere Plus/Platino)"
+                        "razon": "🥈 15% liquidez inmediata (requiere Plus/Platino)"
                     })
                     saldo_restante -= monto_klar
             
-            # 3. Nu México Cajita Turbo: Hasta $25,000 al 15%
+            # 4. Nu México Cajita Turbo: Hasta $25,000 al 15%
             if saldo_restante > 0:
                 monto_nu_turbo = min(25000, saldo_restante)
                 if monto_nu_turbo > 0:
@@ -1338,18 +1405,18 @@ def main():
                         "producto": "Cajita Turbo",
                         "monto": monto_nu_turbo,
                         "tasa": 15.0,
-                        "razon": "� 15% hasta $25k con liquidez inmediata"
+                        "razon": "🥈 15% hasta $25k liquidez inmediata"
                     })
                     saldo_restante -= monto_nu_turbo
             
-            # 4. Stori 90 días: Al 10%
+            # 5. Stori 90 días: Al 10% (lo que reste)
             if saldo_restante > 0:
                 distribucion_agresiva.append({
                     "sofipo": "Stori",
                     "producto": "90 días",
                     "monto": saldo_restante,
                     "tasa": 10.0,
-                    "razon": "🥉 10% a plazo fijo de 90 días"
+                    "razon": "🥉 10% plazo 90 días"
                 })
             
             # Mostrar tabla con montos exactos
@@ -1387,9 +1454,10 @@ def main():
             
             st.warning("""
             **⚠️ Consideraciones importantes:**
-            - Esta estrategia prioriza SOLO rendimiento máximo
+            - Esta estrategia prioriza SOLO rendimiento máximo (15-16% ponderado)
+            - **Ualá Plus requiere**: Consumir $3k/mes o domiciliar nómina
+            - **Klar Max requiere**: Membresía Plus o Platino
             - Parte del capital quedará en plazos fijos (menor liquidez)
-            - Stori 90 días requiere mantener el capital 3 meses
             - No es recomendable para fondos de emergencia
             - Diversificación limitada a favor de mejores tasas
             """)
