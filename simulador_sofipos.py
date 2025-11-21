@@ -1692,9 +1692,13 @@ def main():
                     if producto["maximo"] is None:
                         break
             
-            # Calcular tasa ponderada
+            # Calcular tasa ponderada usando interés compuesto como en la simulación
             if distribucion:
-                rendimiento_total = sum([d["monto"] * d["tasa"] / 100 for d in distribucion])
+                rendimiento_total = 0
+                for d in distribucion:
+                    # Usar interés compuesto mensual consistente con el resto del sistema
+                    interes = calcular_interes_compuesto(d["monto"], d["tasa"], 365, 'mensual')
+                    rendimiento_total += interes
                 tasa_ponderada = (rendimiento_total / monto_prueba) * 100 if monto_prueba > 0 else 0
                 return tasa_ponderada, distribucion
             else:
@@ -1788,7 +1792,8 @@ def main():
                 st.markdown("#### 📊 Distribución Sugerida")
                 for i, item in enumerate(distribucion_final, 1):
                     porcentaje = (item["monto"] / capital_necesario * 100)
-                    ganancia_item = item["monto"] * item["tasa"] / 100
+                    # Calcular ganancia con interés compuesto
+                    ganancia_item = calcular_interes_compuesto(item["monto"], item["tasa"], 365, 'mensual')
                     
                     # Construir descripción
                     nombre_completo = f"{item['sofipo']} - {item['producto']}"
@@ -2038,10 +2043,15 @@ def main():
                 with col3:
                     st.metric("GAT", f"{dist['tasa']}%")
             
-            # Calcular rendimiento proyectado de esta estrategia
-            rendimiento_agresivo = sum([d['monto'] * d['tasa'] / 100 for d in distribucion_agresiva])
-            tasa_ponderada_agresiva = (rendimiento_agresivo / monto_total) * 100
-            ganancia_12m = int(rendimiento_agresivo)
+            # Calcular rendimiento proyectado de esta estrategia usando interés compuesto
+            ganancia_12m = 0
+            for d in distribucion_agresiva:
+                # Usar interés compuesto mensual como en la simulación principal
+                interes = calcular_interes_compuesto(d['monto'], d['tasa'], 365, 'mensual')
+                ganancia_12m += interes
+            
+            ganancia_12m = int(ganancia_12m)
+            tasa_ponderada_agresiva = (ganancia_12m / monto_total) * 100
             
             st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
             col1, col2 = st.columns(2)
