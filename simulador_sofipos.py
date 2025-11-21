@@ -435,15 +435,85 @@ SOFIPOS_DATA = {
     "Finsus": {
         "logo": "🏦",
         "productos": {
-            "Finsus Ahorro": {
-                "tasa_base": 11.00,
+            "Finsus+ (a la vista)": {
+                "tasa_base": 8.09,
                 "liquidez": "Inmediata",
                 "minimo": 0,
                 "tipo": "vista"
+            },
+            "Apartados": {
+                "tasa_base": 4.00,
+                "liquidez": "Inmediata",
+                "minimo": 0,
+                "tipo": "vista",
+                "descripcion_extra": "Ideal para metas de ahorro"
+            },
+            "Plazo Fijo 7 días": {
+                "tasa_base": 8.00,
+                "liquidez": "7 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 7
+            },
+            "Plazo Fijo 30 días": {
+                "tasa_base": 8.09,
+                "liquidez": "30 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 30
+            },
+            "Plazo Fijo 90 días": {
+                "tasa_base": 8.39,
+                "liquidez": "90 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 90
+            },
+            "Plazo Fijo 180 días": {
+                "tasa_base": 8.59,
+                "liquidez": "180 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 180
+            },
+            "Plazo Fijo 360 días": {
+                "tasa_base": 10.09,
+                "liquidez": "360 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 360
+            },
+            "Plazo Fijo 720 días": {
+                "tasa_base": 8.19,
+                "liquidez": "720 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 720
+            },
+            "Plazo Fijo 1080 días": {
+                "tasa_base": 7.59,
+                "liquidez": "1080 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 1080
+            },
+            "Plazo Fijo 1440 días": {
+                "tasa_base": 7.29,
+                "liquidez": "1440 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 1440
+            },
+            "Plazo Fijo 1800 días": {
+                "tasa_base": 6.89,
+                "liquidez": "1800 días",
+                "minimo": 0,
+                "tipo": "plazo",
+                "plazo_dias": 1800
             }
         },
         "color": "#4CAF50",
-        "descripcion": "SOFIPO enfocada en inclusión financiera"
+        "descripcion": "Ahorro sustentable a la vista y plazos fijos hasta 1800 días"
     }
 }
 
