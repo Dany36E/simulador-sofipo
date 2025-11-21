@@ -876,65 +876,302 @@ def main():
     if modo_oscuro:
         st.markdown("""
         <style>
-            /* Modo Oscuro */
-            .main {
-                background: #1a1a2e !important;
-                color: #e0e0e0 !important;
+            /* ============================================ */
+            /* MODO OSCURO COMPLETO */
+            /* ============================================ */
+            
+            /* Fondo principal y contenedor */
+            .stApp, .main, .block-container {
+                background-color: #0d1117 !important;
+                color: #c9d1d9 !important;
             }
+            
+            /* Headers y títulos */
             .main-header {
-                color: #ffffff !important;
+                color: #f0f6fc !important;
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
             }
+            
             .subtitle {
-                color: #b0b0b0 !important;
+                color: #8b949e !important;
             }
+            
+            h1, h2, h3, h4, h5, h6 {
+                color: #f0f6fc !important;
+            }
+            
+            /* Texto general */
+            p, span, label, div, li {
+                color: #c9d1d9 !important;
+            }
+            
+            /* Tarjetas de SOFIPO */
             .sofipo-section {
-                background: #2d2d44 !important;
-                border: 1px solid #3a3a52 !important;
-                color: #e0e0e0 !important;
+                background: #161b22 !important;
+                border: 1px solid #30363d !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
             }
-            .stMetric {
-                background: #2d2d44 !important;
+            
+            .sofipo-section:hover {
+                background: #1c2128 !important;
+                border-color: #667eea !important;
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2) !important;
             }
+            
+            /* Métricas */
+            [data-testid="stMetric"] {
+                background-color: #161b22 !important;
+                border: 1px solid #30363d !important;
+                border-radius: 12px !important;
+                padding: 1rem !important;
+            }
+            
+            [data-testid="stMetricValue"] {
+                color: #58a6ff !important;
+            }
+            
+            [data-testid="stMetricLabel"] {
+                color: #8b949e !important;
+            }
+            
+            [data-testid="stMetricDelta"] {
+                color: #3fb950 !important;
+            }
+            
             .metric-card {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             }
-            div[data-testid="stExpander"] {
-                background: #2d2d44 !important;
-                border: 1px solid #3a3a52 !important;
+            
+            /* Inputs */
+            input, textarea, select {
+                background-color: #0d1117 !important;
+                color: #c9d1d9 !important;
+                border: 1px solid #30363d !important;
             }
+            
+            input:focus, textarea:focus, select:focus {
+                border-color: #58a6ff !important;
+                box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1) !important;
+            }
+            
+            .stNumberInput input {
+                background-color: #0d1117 !important;
+                color: #c9d1d9 !important;
+                border: 1px solid #30363d !important;
+            }
+            
+            /* Selectbox */
+            [data-baseweb="select"] {
+                background-color: #0d1117 !important;
+            }
+            
+            [data-baseweb="select"] > div {
+                background-color: #0d1117 !important;
+                border-color: #30363d !important;
+            }
+            
+            /* Checkbox y Toggle */
+            [data-testid="stCheckbox"] label {
+                color: #c9d1d9 !important;
+            }
+            
+            /* Radio buttons */
+            [data-testid="stRadio"] label {
+                color: #c9d1d9 !important;
+            }
+            
+            /* Tabs */
             .stTabs [data-baseweb="tab-list"] {
-                background-color: #2d2d44 !important;
+                background-color: #161b22 !important;
+                border-radius: 12px !important;
+                padding: 0.5rem !important;
             }
+            
             .stTabs [data-baseweb="tab"] {
-                color: #b0b0b0 !important;
+                background-color: transparent !important;
+                color: #8b949e !important;
+                border-radius: 8px !important;
             }
+            
+            .stTabs [data-baseweb="tab"]:hover {
+                background-color: #21262d !important;
+                color: #c9d1d9 !important;
+            }
+            
             .stTabs [aria-selected="true"] {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-                color: white !important;
+                color: #ffffff !important;
             }
-            div[data-testid="stDataFrame"] {
-                background: #2d2d44 !important;
+            
+            /* Expander */
+            [data-testid="stExpander"] {
+                background-color: #161b22 !important;
+                border: 1px solid #30363d !important;
+                border-radius: 12px !important;
             }
+            
+            [data-testid="stExpander"] summary {
+                background-color: #161b22 !important;
+                color: #c9d1d9 !important;
+            }
+            
+            [data-testid="stExpander"]:hover {
+                border-color: #667eea !important;
+            }
+            
+            /* DataFrames y Tablas */
+            [data-testid="stDataFrame"], .dataframe {
+                background-color: #0d1117 !important;
+                color: #c9d1d9 !important;
+            }
+            
+            .dataframe thead tr th {
+                background-color: #161b22 !important;
+                color: #58a6ff !important;
+                border-bottom: 2px solid #30363d !important;
+            }
+            
+            .dataframe tbody tr {
+                background-color: #0d1117 !important;
+                border-bottom: 1px solid #21262d !important;
+            }
+            
+            .dataframe tbody tr:hover {
+                background-color: #161b22 !important;
+            }
+            
+            .dataframe tbody tr td {
+                color: #c9d1d9 !important;
+            }
+            
+            /* Alertas y cajas de mensaje */
+            .stAlert, [data-testid="stNotification"] {
+                background-color: #161b22 !important;
+                border: 1px solid #30363d !important;
+                color: #c9d1d9 !important;
+            }
+            
             .warning-box {
-                background: #3d3d1a !important;
-                border-left: 3px solid #f59e0b !important;
+                background-color: #3d2a00 !important;
+                border-left: 4px solid #f59e0b !important;
                 color: #fbbf24 !important;
             }
+            
             .success-box {
-                background: #1a3d2d !important;
-                border-left: 3px solid #10b981 !important;
+                background-color: #002d1a !important;
+                border-left: 4px solid #10b981 !important;
                 color: #34d399 !important;
             }
+            
             .info-box {
-                background: #1a2d3d !important;
-                border-left: 3px solid #3b82f6 !important;
+                background-color: #001d3d !important;
+                border-left: 4px solid #3b82f6 !important;
                 color: #60a5fa !important;
             }
-            label, p, span, div {
-                color: #e0e0e0 !important;
+            
+            /* Divisores */
+            hr {
+                border-color: #30363d !important;
+                background: linear-gradient(90deg, transparent, #30363d, transparent) !important;
             }
-            h1, h2, h3, h4, h5, h6 {
-                color: #ffffff !important;
+            
+            /* Botones */
+            .stButton > button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .stButton > button:hover {
+                background: linear-gradient(135deg, #5568d3 0%, #643a8d 100%) !important;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+            }
+            
+            /* Sidebar (si se usa) */
+            [data-testid="stSidebar"] {
+                background-color: #0d1117 !important;
+            }
+            
+            [data-testid="stSidebarNav"] {
+                background-color: #161b22 !important;
+            }
+            
+            /* Gráficas Plotly */
+            .js-plotly-plot .plotly, .plotly {
+                background-color: #0d1117 !important;
+            }
+            
+            .js-plotly-plot .plotly .bg {
+                fill: #0d1117 !important;
+            }
+            
+            /* Caption y textos pequeños */
+            .stCaption, small {
+                color: #8b949e !important;
+            }
+            
+            /* Footer */
+            footer {
+                background-color: #0d1117 !important;
+                color: #8b949e !important;
+            }
+            
+            /* Markdown y código */
+            code {
+                background-color: #161b22 !important;
+                color: #ff7b72 !important;
+                border: 1px solid #30363d !important;
+            }
+            
+            /* Progress bars */
+            [data-testid="stProgressBar"] > div > div {
+                background-color: #667eea !important;
+            }
+            
+            /* Spinner */
+            [data-testid="stSpinner"] > div {
+                border-color: #667eea transparent transparent transparent !important;
+            }
+            
+            /* Markdown containers */
+            .element-container {
+                color: #c9d1d9 !important;
+            }
+            
+            /* Info, warning, error, success messages de Streamlit */
+            .stInfo {
+                background-color: #001d3d !important;
+                color: #60a5fa !important;
+            }
+            
+            .stWarning {
+                background-color: #3d2a00 !important;
+                color: #fbbf24 !important;
+            }
+            
+            .stError {
+                background-color: #3d0000 !important;
+                color: #ff7b72 !important;
+            }
+            
+            .stSuccess {
+                background-color: #002d1a !important;
+                color: #34d399 !important;
+            }
+            
+            /* Links */
+            a {
+                color: #58a6ff !important;
+            }
+            
+            a:hover {
+                color: #79c0ff !important;
+            }
+            
+            /* Badge */
+            .badge {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: white !important;
             }
         </style>
         """, unsafe_allow_html=True)
