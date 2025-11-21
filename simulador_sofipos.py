@@ -1492,7 +1492,7 @@ def main():
         
         # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3 - A LA VISTA)
         if usa_klar and cumple_klar_plus and saldo_restante > 0:
-            monto_klar = min(int(saldo_restante * 0.50), saldo_restante)
+            monto_klar = saldo_restante
             if monto_klar >= 100:
                 distribucion_agresiva.append({
                     "sofipo": "Klar",
