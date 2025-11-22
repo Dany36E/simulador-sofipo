@@ -772,6 +772,129 @@ def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
     
     return pd.DataFrame(proyeccion)
 
+def calcular_distribucion_aportaciones(inversiones_seleccionadas, aportacion_monto, estrategia, total_invertido):
+    """
+    Calcula cómo distribuir cada aportación entre los productos, respetando límites máximos
+    
+    Args:
+        inversiones_seleccionadas: Dict con las inversiones actuales
+        aportacion_monto: Monto de cada aportación
+        estrategia: Estrategia de distribución seleccionada
+        total_invertido: Capital inicial total
+    
+    Returns:
+        Dict con la distribución de la aportación y lista de mensajes explicativos
+    """
+    distribucion = {}
+    mensajes = []
+    monto_restante = aportacion_monto
+    
+    if estrategia == "Misma distribución que capital inicial":
+        # Intentar distribuir proporcionalmente, respetando límites
+        for sofipo_key, inv_data in inversiones_seleccionadas.items():
+            porcentaje = (inv_data['monto'] / total_invertido) if total_invertido > 0 else 0
+            monto_proporcional = aportacion_monto * porcentaje
+            
+            # Verificar si el producto tiene límite máximo
+            producto_info = inv_data['producto_info']
+            # Buscar limite_maximo, limite_max, o limite_premium (para DiDi)
+            limite_maximo = producto_info.get('limite_maximo', producto_info.get('limite_max', producto_info.get('limite_premium', None)))
+            monto_actual = inv_data['monto']
+            
+            if limite_maximo and monto_actual >= limite_maximo:
+                # Ya alcanzó el límite, no puede recibir más
+                distribucion[sofipo_key] = 0
+                mensajes.append(f"⚠️ {inv_data['sofipo']} - {inv_data['producto']}: Ya alcanzó el límite de ${limite_maximo:,.0f}")
+            elif limite_maximo and (monto_actual + monto_proporcional) > limite_maximo:
+                # Puede recibir solo hasta el límite
+                monto_asignable = limite_maximo - monto_actual
+                distribucion[sofipo_key] = monto_asignable
+                mensajes.append(f"⚠️ {inv_data['sofipo']} - {inv_data['producto']}: Solo puede recibir ${monto_asignable:,.0f} más (límite: ${limite_maximo:,.0f})")
+            else:
+                # Puede recibir el monto proporcional completo
+                distribucion[sofipo_key] = monto_proporcional
+                mensajes.append(f"✅ {inv_data['sofipo']} - {inv_data['producto']}: ${monto_proporcional:,.0f} ({porcentaje*100:.1f}%)")
+        
+        # Si hay sobrante por límites alcanzados, redistribuir proporcionalmente entre los que pueden recibir más
+        monto_asignado = sum(distribucion.values())
+        if monto_asignado < aportacion_monto:
+            sobrante = aportacion_monto - monto_asignado
+            productos_disponibles = {k: v for k, v in distribucion.items() if v > 0}
+            
+            if productos_disponibles:
+                mensajes.append(f"\n💡 Redistribuyendo ${sobrante:,.0f} sobrante entre productos disponibles:")
+                for sofipo_key in productos_disponibles:
+                    porcentaje_disponible = distribucion[sofipo_key] / monto_asignado if monto_asignado > 0 else 0
+                    distribucion[sofipo_key] += sobrante * porcentaje_disponible
+                    mensajes.append(f"   • {inversiones_seleccionadas[sofipo_key]['sofipo']}: +${sobrante * porcentaje_disponible:,.0f}")
+    
+    elif estrategia == "Solo productos de mayor rendimiento":
+        # Ordenar por tasa y llenar hasta el límite
+        inversiones_ordenadas = sorted(
+            inversiones_seleccionadas.items(),
+            key=lambda x: x[1]['producto_info']['tasa_base'],
+            reverse=True
+        )
+        
+        mensajes.append("📈 Priorizando productos con mejores tasas:")
+        for sofipo_key, inv_data in inversiones_ordenadas:
+            if monto_restante <= 0:
+                break
+            
+            producto_info = inv_data['producto_info']
+            limite_maximo = producto_info.get('limite_maximo', producto_info.get('limite_max', producto_info.get('limite_premium', None)))
+            monto_actual = inv_data['monto']
+            tasa = producto_info['tasa_base']
+            
+            if limite_maximo and monto_actual >= limite_maximo:
+                distribucion[sofipo_key] = 0
+                mensajes.append(f"⚠️ {inv_data['sofipo']} ({tasa}%): Límite alcanzado")
+            elif limite_maximo:
+                espacio_disponible = limite_maximo - monto_actual
+                monto_asignar = min(monto_restante, espacio_disponible)
+                distribucion[sofipo_key] = monto_asignar
+                monto_restante -= monto_asignar
+                mensajes.append(f"✅ {inv_data['sofipo']} ({tasa}%): ${monto_asignar:,.0f}")
+            else:
+                # Sin límite, asignar todo lo que queda
+                distribucion[sofipo_key] = monto_restante
+                mensajes.append(f"✅ {inv_data['sofipo']} ({tasa}%): ${monto_restante:,.0f}")
+                monto_restante = 0
+    
+    else:  # Distribución inteligente automática
+        mensajes.append("🤖 Aplicando distribución inteligente (simulada):")
+        mensajes.append("   • Maximizando rendimiento")
+        mensajes.append("   • Respetando límites por producto")
+        mensajes.append("   • Manteniendo diversificación")
+        
+        # Por ahora, usar la misma lógica que "mayor rendimiento"
+        inversiones_ordenadas = sorted(
+            inversiones_seleccionadas.items(),
+            key=lambda x: x[1]['producto_info']['tasa_base'],
+            reverse=True
+        )
+        
+        for sofipo_key, inv_data in inversiones_ordenadas:
+            if monto_restante <= 0:
+                break
+            
+            producto_info = inv_data['producto_info']
+            limite_maximo = producto_info.get('limite_maximo', producto_info.get('limite_max', producto_info.get('limite_premium', None)))
+            monto_actual = inv_data['monto']
+            
+            if limite_maximo and monto_actual >= limite_maximo:
+                distribucion[sofipo_key] = 0
+            elif limite_maximo:
+                espacio_disponible = limite_maximo - monto_actual
+                monto_asignar = min(monto_restante, espacio_disponible)
+                distribucion[sofipo_key] = monto_asignar
+                monto_restante -= monto_asignar
+            else:
+                distribucion[sofipo_key] = monto_restante
+                monto_restante = 0
+    
+    return distribucion, mensajes
+
 def generar_proyeccion_con_aportaciones(
     capital_inicial, 
     tasa_anual, 
@@ -3192,37 +3315,44 @@ def main():
                 # Explicar estrategia de distribución de aportaciones
                 st.markdown("##### 📋 Estrategia de Distribución de Aportaciones")
                 
+                # Calcular distribución real respetando límites
+                distribucion_aportacion, mensajes_distribucion = calcular_distribucion_aportaciones(
+                    inversiones_seleccionadas,
+                    aportacion_monto,
+                    estrategia_aportacion,
+                    total_invertido
+                )
+                
+                # Mostrar estrategia seleccionada
                 if estrategia_aportacion == "Misma distribución que capital inicial":
                     st.caption("🔄 **Estrategia Seleccionada:** Misma distribución que capital inicial")
-                    st.markdown("Cada aportación se distribuye proporcionalmente igual que tu inversión inicial:")
-                    
-                    # Calcular distribución proporcional
-                    for sofipo_key, inv_data in inversiones_seleccionadas.items():
-                        porcentaje = (inv_data['monto'] / total_invertido * 100) if total_invertido > 0 else 0
-                        st.markdown(f"• **{inv_data['sofipo']}**: {porcentaje:.1f}% → ${aportacion_monto * (porcentaje/100):,.0f} por aportación")
-                
                 elif estrategia_aportacion == "Solo productos de mayor rendimiento":
                     st.caption("📈 **Estrategia Seleccionada:** Solo productos de mayor rendimiento")
-                    
-                    # Ordenar inversiones por tasa
-                    inversiones_ordenadas = sorted(
-                        inversiones_seleccionadas.items(),
-                        key=lambda x: x[1]['producto_info']['tasa_base'],
-                        reverse=True
-                    )
-                    
-                    st.markdown("Las aportaciones se destinan a los productos con mejores tasas:")
-                    for i, (sofipo_key, inv_data) in enumerate(inversiones_ordenadas[:3], 1):
-                        tasa = inv_data['producto_info']['tasa_base']
-                        st.markdown(f"• **{i}. {inv_data['sofipo']} - {inv_data['producto']}**: {tasa}% GAT")
-                
-                else:  # Distribución inteligente automática
+                else:
                     st.caption("🤖 **Estrategia Seleccionada:** Distribución inteligente automática")
-                    st.markdown("Las aportaciones se distribuyen automáticamente para:")
-                    st.markdown("• Maximizar rendimiento total")
-                    st.markdown("• Mantener diversificación (mínimo 3 SOFIPOs)")
-                    st.markdown("• Balancear liquidez y plazo fijo")
-                    st.markdown("• Respetar límites máximos por producto")
+                
+                # Mostrar distribución detallada en expander
+                with st.expander("🔍 Ver distribución detallada de cada aportación", expanded=False):
+                    st.markdown(f"**Monto por aportación:** ${aportacion_monto:,.0f}")
+                    st.markdown("---")
+                    
+                    # Mostrar cada mensaje de la distribución
+                    for mensaje in mensajes_distribucion:
+                        st.markdown(mensaje)
+                    
+                    # Resumen de la distribución
+                    st.markdown("---")
+                    st.markdown("**📊 Resumen de distribución:**")
+                    total_distribuido = sum(distribucion_aportacion.values())
+                    
+                    for sofipo_key, monto_aport in distribucion_aportacion.items():
+                        if monto_aport > 0:
+                            inv_data = inversiones_seleccionadas[sofipo_key]
+                            porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
+                            st.markdown(f"• **{inv_data['sofipo']} - {inv_data['producto']}**: ${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
+                    
+                    if total_distribuido < aportacion_monto:
+                        st.warning(f"⚠️ Solo se pueden distribuir ${total_distribuido:,.0f} de ${aportacion_monto:,.0f} debido a límites máximos de productos.")
         
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES
