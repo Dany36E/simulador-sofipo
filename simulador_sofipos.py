@@ -2160,104 +2160,185 @@ def main():
             if solo_vista:
                 st.info("💧 **Modo A LA VISTA activado**: Solo se mostrarán productos sin plazo fijo")
             
-            # Estrategia: Maximizar tasas según tus preferencias Y exclusiones
+            # ================================================================
+            # ALGORITMO INTELIGENTE DE OPTIMIZACIÓN DE RENDIMIENTO
+            # ================================================================
+            
+            # Construir lista de todas las opciones disponibles con sus límites y tasas
+            opciones_disponibles = []
+            
+            # DiDi Ahorro (16% hasta $10k, luego 8.5%)
+            if usa_didi:
+                opciones_disponibles.append({
+                    "sofipo": "DiDi",
+                    "producto": "DiDi Ahorro",
+                    "tasa": 16.0,
+                    "limite": 10000,
+                    "minimo": 0,
+                    "prioridad": 1,  # Máxima prioridad por mejor tasa
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "🚗 16% primeros $10k 💧 A LA VISTA",
+                    "emoji": "🚗"
+                })
+            
+            # Ualá Plus (16% hasta $50k) - SOLO si cumple requisitos
+            if usa_uala and cumple_uala_plus:
+                opciones_disponibles.append({
+                    "sofipo": "Ualá",
+                    "producto": "Cuenta Plus",
+                    "tasa": 16.0,
+                    "limite": 50000,
+                    "minimo": 0,
+                    "prioridad": 2,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "🔴 16% hasta $50k ✅ Cumples $3k/mes 💧 A LA VISTA",
+                    "emoji": "🔴"
+                })
+            
+            # Nu México Cajita Turbo (15% hasta $25k)
+            if usa_nu:
+                opciones_disponibles.append({
+                    "sofipo": "Nu México",
+                    "producto": "Cajita Turbo",
+                    "tasa": 15.0,
+                    "limite": 25000,
+                    "minimo": 0,
+                    "prioridad": 3,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "💜 15% hasta $25k 💧 A LA VISTA",
+                    "emoji": "💜"
+                })
+            
+            # Klar Inversión Max (15%) - SOLO si cumple requisitos
+            if usa_klar and cumple_klar_plus:
+                opciones_disponibles.append({
+                    "sofipo": "Klar",
+                    "producto": "Inversión Flexible Max",
+                    "tasa": 15.0,
+                    "limite": None,  # Sin límite
+                    "minimo": 100,
+                    "prioridad": 4,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "⚡ 15% sin límite ✅ Tienes Plus/Platino 💧 A LA VISTA",
+                    "emoji": "⚡"
+                })
+            
+            # Mercado Pago (13% hasta $25k) - SOLO si cumple requisitos
+            if usa_mp and cumple_mercadopago:
+                opciones_disponibles.append({
+                    "sofipo": "Mercado Pago",
+                    "producto": "Cuenta Remunerada",
+                    "tasa": 13.0,
+                    "limite": 25000,
+                    "minimo": 0,
+                    "prioridad": 5,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "� 13% hasta $25k ✅ Cumples $3k/mes 💧 A LA VISTA",
+                    "emoji": "💙"
+                })
+            
+            # Stori 90 días (10%) - Solo si NO está en modo solo_vista
+            if not solo_vista and usa_stori:
+                opciones_disponibles.append({
+                    "sofipo": "Stori",
+                    "producto": "90 días",
+                    "tasa": 10.0,
+                    "limite": None,
+                    "minimo": 1000,
+                    "prioridad": 6,
+                    "liquidez": "90 días",
+                    "tipo": "plazo",
+                    "razon": "🟦 10% plazo 90 días 📅 PLAZO FIJO",
+                    "emoji": "🟦"
+                })
+            
+            # Finsus 360 días (10.09%) - Solo si NO está en modo solo_vista
+            if not solo_vista and usa_finsus:
+                opciones_disponibles.append({
+                    "sofipo": "Finsus",
+                    "producto": "Apartado 360 días",
+                    "tasa": 10.09,
+                    "limite": None,
+                    "minimo": 1000,
+                    "prioridad": 7,
+                    "liquidez": "360 días",
+                    "tipo": "plazo",
+                    "razon": "🟢 10.09% plazo 360 días � PLAZO FIJO",
+                    "emoji": "🟢"
+                })
+            
+            # Ualá Base (7.75%) - Solo si NO tiene Ualá Plus
+            if usa_uala and not cumple_uala_plus:
+                opciones_disponibles.append({
+                    "sofipo": "Ualá",
+                    "producto": "Cuenta Base",
+                    "tasa": 7.75,
+                    "limite": 30000,
+                    "minimo": 0,
+                    "prioridad": 8,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "� 7.75% hasta $30k 💧 A LA VISTA",
+                    "emoji": "🔴"
+                })
+            
+            # Klar Cuenta (8.5%) - Solo si NO tiene Klar Max
+            if usa_klar and not cumple_klar_plus:
+                opciones_disponibles.append({
+                    "sofipo": "Klar",
+                    "producto": "Inversión Flexible",
+                    "tasa": 8.5,
+                    "limite": None,
+                    "minimo": 100,
+                    "prioridad": 9,
+                    "liquidez": "Inmediata",
+                    "tipo": "vista",
+                    "razon": "⚡ 8.5% sin límite 💧 A LA VISTA",
+                    "emoji": "⚡"
+                })
+            
+            # ================================================================
+            # DISTRIBUIR CAPITAL OPTIMIZANDO RENDIMIENTO
+            # ================================================================
+            
+            # Ordenar opciones por tasa descendente (no por prioridad fija)
+            opciones_disponibles.sort(key=lambda x: (-x['tasa'], x['prioridad']))
+            
             distribucion_agresiva = []
             saldo_restante = monto_total
             
-            # 1. DiDi Ahorro: Invertir hasta $10,000 al 16% (PRIORIDAD 1 - A LA VISTA)
-            if usa_didi and saldo_restante > 0:
-                monto_didi = min(10000, saldo_restante)
+            for opcion in opciones_disponibles:
+                if saldo_restante <= 0:
+                    break
+                
+                # Verificar si cumple mínimo
+                if saldo_restante < opcion['minimo']:
+                    continue
+                
+                # Calcular cuánto asignar
+                if opcion['limite'] is None:
+                    # Sin límite: asignar todo el saldo restante
+                    monto_asignar = saldo_restante
+                else:
+                    # Con límite: asignar hasta el límite o lo que quede
+                    monto_asignar = min(opcion['limite'], saldo_restante)
+                
+                # Agregar a la distribución
                 distribucion_agresiva.append({
-                    "sofipo": "DiDi",
-                    "producto": "DiDi Ahorro",
-                    "monto": monto_didi,
-                    "tasa": 16.0,
-                    "razon": "🚗 16% primeros $10k (después 8.5%) 💧 A LA VISTA"
+                    "sofipo": opcion['sofipo'],
+                    "producto": opcion['producto'],
+                    "monto": monto_asignar,
+                    "tasa": opcion['tasa'],
+                    "razon": opcion['razon'],
+                    "emoji": opcion['emoji']
                 })
-                saldo_restante -= monto_didi
-            
-            # 2. Ualá Plus: SOLO si cumples requisitos (PRIORIDAD 2 - A LA VISTA)
-            if usa_uala and cumple_uala_plus and saldo_restante > 0:
-                monto_uala = min(50000, saldo_restante)
-                distribucion_agresiva.append({
-                    "sofipo": "Ualá",
-                    "producto": "Cuenta Plus",
-                    "monto": monto_uala,
-                    "tasa": 16.0,
-                    "razon": "🔴 16% hasta $50k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
-                })
-                saldo_restante -= monto_uala
-            
-            # 3. Klar Inversión Flexible Max: SOLO si cumples requisitos (PRIORIDAD 3 - A LA VISTA)
-            if usa_klar and cumple_klar_plus and saldo_restante > 0:
-                monto_klar = saldo_restante
-                if monto_klar >= 100:
-                    distribucion_agresiva.append({
-                        "sofipo": "Klar",
-                        "producto": "Inversión Flexible Max",
-                        "monto": monto_klar,
-                        "tasa": 15.0,
-                        "razon": "⚡ 15% liquidez inmediata ✅ Tienes Plus/Platino 💧 A LA VISTA"
-                    })
-                    saldo_restante -= monto_klar
-            
-            # 4. Nu México Cajita Turbo: Hasta $25,000 al 15% (PRIORIDAD 4 - A LA VISTA)
-            if usa_nu and saldo_restante > 0:
-                monto_nu_turbo = min(25000, saldo_restante)
-                if monto_nu_turbo > 0:
-                    distribucion_agresiva.append({
-                        "sofipo": "Nu México",
-                        "producto": "Cajita Turbo",
-                        "monto": monto_nu_turbo,
-                        "tasa": 15.0,
-                        "razon": "💜 15% hasta $25k liquidez inmediata 💧 A LA VISTA"
-                    })
-                    saldo_restante -= monto_nu_turbo
-            
-            # 5. Mercado Pago: SOLO si cumples requisitos al 13% (PRIORIDAD 5 - A LA VISTA)
-            if usa_mp and cumple_mercadopago and saldo_restante > 0:
-                monto_mp = min(25000, saldo_restante)
-                distribucion_agresiva.append({
-                    "sofipo": "Mercado Pago",
-                    "producto": "Cuenta Remunerada",
-                    "monto": monto_mp,
-                    "tasa": 13.0,
-                    "razon": "💙 13% hasta $25k ✅ Cumples requisito de $3k/mes 💧 A LA VISTA"
-                })
-                saldo_restante -= monto_mp
-            
-            # 6. DiDi Ahorro Base: Después de los primeros $10k al 8.5% (PRIORIDAD 6 - A LA VISTA)
-            if usa_didi and saldo_restante > 0:
-                distribucion_agresiva.append({
-                    "sofipo": "DiDi",
-                    "producto": "DiDi Ahorro",
-                    "monto": saldo_restante,
-                    "tasa": 8.5,
-                    "razon": "🚗 8.5% después de $10k 💧 A LA VISTA"
-                })
-                saldo_restante -= saldo_restante
-            
-            # 7. Stori 90 días: Al 10% (PRIORIDAD 7 - PLAZO FIJO - solo si NO está en modo vista)
-            if not solo_vista and usa_stori and saldo_restante > 0:
-                distribucion_agresiva.append({
-                    "sofipo": "Stori",
-                    "producto": "90 días",
-                    "monto": saldo_restante,
-                    "tasa": 10.0,
-                    "razon": "🟦 10% plazo 90 días 📅 PLAZO FIJO"
-                })
-                saldo_restante -= saldo_restante
-            
-            # 8. Finsus: Si aún queda saldo y otras opciones están excluidas (RESPALDO - PLAZO FIJO - solo si NO está en modo vista)
-            if not solo_vista and usa_finsus and saldo_restante > 0:
-                distribucion_agresiva.append({
-                    "sofipo": "Finsus",
-                    "producto": "Apartado 360 días",
-                    "monto": saldo_restante,
-                    "tasa": 10.09,
-                    "razon": "🟢 10.09% plazo 360 días 📅 PLAZO FIJO"
-                })
-                saldo_restante -= saldo_restante
+                
+                saldo_restante -= monto_asignar
             
             # Advertencia si quedan fondos sin asignar
             if saldo_restante > 0:
