@@ -3186,7 +3186,43 @@ def main():
                         help="Cuánto más ganas con aportaciones vs solo capital inicial"
                     )
                 
+                # Mensaje con formato corregido (sin itálicas accidentales)
                 st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
+                
+                # Explicar estrategia de distribución de aportaciones
+                st.markdown("##### 📋 Estrategia de Distribución de Aportaciones")
+                
+                if estrategia_aportacion == "Misma distribución que capital inicial":
+                    st.caption("🔄 **Estrategia Seleccionada:** Misma distribución que capital inicial")
+                    st.markdown("Cada aportación se distribuye proporcionalmente igual que tu inversión inicial:")
+                    
+                    # Calcular distribución proporcional
+                    for sofipo_key, inv_data in inversiones_seleccionadas.items():
+                        porcentaje = (inv_data['monto'] / total_invertido * 100) if total_invertido > 0 else 0
+                        st.markdown(f"• **{inv_data['sofipo']}**: {porcentaje:.1f}% → ${aportacion_monto * (porcentaje/100):,.0f} por aportación")
+                
+                elif estrategia_aportacion == "Solo productos de mayor rendimiento":
+                    st.caption("📈 **Estrategia Seleccionada:** Solo productos de mayor rendimiento")
+                    
+                    # Ordenar inversiones por tasa
+                    inversiones_ordenadas = sorted(
+                        inversiones_seleccionadas.items(),
+                        key=lambda x: x[1]['producto_info']['tasa_base'],
+                        reverse=True
+                    )
+                    
+                    st.markdown("Las aportaciones se destinan a los productos con mejores tasas:")
+                    for i, (sofipo_key, inv_data) in enumerate(inversiones_ordenadas[:3], 1):
+                        tasa = inv_data['producto_info']['tasa_base']
+                        st.markdown(f"• **{i}. {inv_data['sofipo']} - {inv_data['producto']}**: {tasa}% GAT")
+                
+                else:  # Distribución inteligente automática
+                    st.caption("🤖 **Estrategia Seleccionada:** Distribución inteligente automática")
+                    st.markdown("Las aportaciones se distribuyen automáticamente para:")
+                    st.markdown("• Maximizar rendimiento total")
+                    st.markdown("• Mantener diversificación (mínimo 3 SOFIPOs)")
+                    st.markdown("• Balancear liquidez y plazo fijo")
+                    st.markdown("• Respetar límites máximos por producto")
         
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES
