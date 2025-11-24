@@ -2093,8 +2093,10 @@ def main():
     # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
     # ========================================================================
     
-    with st.expander("💡 Recomendaciones de Inversión", expanded=False):
-        st.markdown("Basadas en tu capital y preferencias, estas son las estrategias optimizadas:")
+    # Solo mostrar recomendaciones si hay capital disponible
+    if monto_total > 0:
+        with st.expander("💡 Recomendaciones de Inversión", expanded=False):
+            st.markdown("Basadas en tu capital y preferencias, estas son las estrategias optimizadas:")
         
         tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
         
@@ -2358,7 +2360,7 @@ def main():
                 st.error("⚠️ No hay recomendaciones disponibles. Has excluido todas las SOFIPOs. Activa al menos una para ver recomendaciones.")
             
             for i, dist in enumerate(distribucion_agresiva, 1):
-                porcentaje = (dist['monto'] / monto_total * 100)
+                porcentaje = (dist['monto'] / monto_total * 100) if monto_total > 0 else 0
                 col1, col2, col3 = st.columns([2, 2, 1])
                 
                 with col1:
@@ -2384,7 +2386,7 @@ def main():
                 ganancia_12m += interes
             
             ganancia_12m = int(ganancia_12m)
-            tasa_ponderada_agresiva = (ganancia_12m / monto_total) * 100
+            tasa_ponderada_agresiva = (ganancia_12m / monto_total * 100) if monto_total > 0 else 0
             
             st.success(f"🎯 **Con esta estrategia agresiva obtendrás:**")
             col1, col2 = st.columns(2)
