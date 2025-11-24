@@ -3494,7 +3494,7 @@ def main():
                     if st.session_state.get("usa_nu", True):
                         productos_ficticios.append({"key": "nu_turbo", "sofipo": "Nu México", "producto": "Cajita Turbo", "tasa": 15.0, "limite": 25000})
                     if st.session_state.get("usa_klar", True) and st.session_state.get("cumple_klar_plus", False):
-                        productos_ficticios.append({"key": "klar_max", "sofipo": "Klar", "producto": "Inversión Max", "tasa": 15.0, "limite": 10000})
+                        productos_ficticios.append({"key": "klar_max", "sofipo": "Klar", "producto": "Inversión Max", "tasa": 15.0, "limite": None})
                     if st.session_state.get("usa_mercadopago", True) and st.session_state.get("cumple_mercadopago", False):
                         productos_ficticios.append({"key": "mp_rendimiento", "sofipo": "Mercado Pago", "producto": "Mercado Pago Rendimiento", "tasa": 13.0, "limite": None})
                     if st.session_state.get("usa_uala", True) and st.session_state.get("cumple_uala_plus", False):
