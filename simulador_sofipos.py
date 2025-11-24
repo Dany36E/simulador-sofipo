@@ -2787,11 +2787,13 @@ def main():
                 st.dataframe(df_resultados, width="stretch", hide_index=True)
         
         # ====================================================================
-        # 📊 DASHBOARD EJECUTIVO - TU PORTAFOLIO EN 30 SEGUNDOS
+        # DASHBOARD EJECUTIVO MOVIDO AL FINAL
         # ====================================================================
+        # El dashboard ejecutivo se mostrará DESPUÉS de calcular todo (capital + aportaciones)
+        # para mostrar métricas precisas del portafolio final
         
-        # Solo mostrar Dashboard Ejecutivo si hay capital invertido
-        if total_invertido > 0:
+        # ELIMINADO TEMPORALMENTE - Se recalculará al final con datos reales
+        if False:  # Deshabilitado - se reemplazará con dashboard unificado al final
             st.markdown("---")
             st.markdown("### 📊 Dashboard Ejecutivo")
             st.caption("🚀 Tu portafolio en 30 segundos")
@@ -2998,8 +3000,10 @@ def main():
             st.markdown("---")
         
         # ====================================================================
-        # VISUALIZACIONES PROFESIONALES
+        # SECCIÓN UNIFICADA: VISUALIZACIÓN Y ANÁLISIS
         # ====================================================================
+        # Esta sección manejará TANTO capital inicial COMO aportaciones
+        # mostrando el resultado final consolidado
         
         # Mostrar visualizaciones si hay proyecciones o aportaciones activas
         if len(proyecciones_todas) > 0 or (total_invertido == 0 and aportaciones_activas and aportacion_monto > 0):
@@ -3800,16 +3804,234 @@ def main():
                                 
                                 porcentaje = (monto / total_final) * 100
                                 st.markdown(f"**{nombre}**: \${monto:,.0f} ({porcentaje:.1f}%)")
+                
+                # ====================================================================
+                # DASHBOARD EJECUTIVO UNIFICADO
+                # ====================================================================
+                # Ahora que tenemos los datos REALES del portafolio final,
+                # mostramos el dashboard con métricas precisas
+                
+                st.markdown("---")
+                st.markdown("### 📊 Dashboard Ejecutivo - Tu Portafolio Final")
+                st.caption("🚀 Análisis completo después de capital inicial + aportaciones")
+                
+                # Calcular métricas del portafolio FINAL
+                total_final = sum(acumulados_por_producto.values())
+                
+                # Contar SOFIPOs únicas en el portafolio final
+                num_sofipos_final = len([m for m in acumulados_por_producto.values() if m > 0])
+                
+                # Calcular concentración máxima
+                if total_final > 0:
+                    concentracion_maxima = max(acumulados_por_producto.values()) / total_final * 100
+                else:
+                    concentracion_maxima = 0
+                
+                # Calcular tasa ponderada final
+                if total_invertido > 0:
+                    # Con capital inicial: usar rendimiento calculado antes
+                    tasa_final = rendimiento_ponderado
+                else:
+                    # Solo aportaciones: calcular tasa efectiva
+                    aportaciones_totales = periodo_simulacion * num_aportaciones_por_mes * aportacion_monto
+                    if aportaciones_totales > 0:
+                        tasa_final = (intereses_acumulados_total / aportaciones_totales) * (12 / periodo_simulacion) * 100
+                    else:
+                        tasa_final = 0
+                
+                # ====================================================================
+                # SISTEMA DE SCORE INTELIGENTE (0-100)
+                # ====================================================================
+                
+                score_total = 0
+                componentes_score = []
+                
+                # 1. RENDIMIENTO (40 puntos máximo)
+                if tasa_final >= 15:
+                    score_rendimiento = 40
+                    nivel_rendimiento = "Excelente"
+                elif tasa_final >= 14:
+                    score_rendimiento = 35
+                    nivel_rendimiento = "Muy Bueno"
+                elif tasa_final >= 13:
+                    score_rendimiento = 30
+                    nivel_rendimiento = "Bueno"
+                elif tasa_final >= 12:
+                    score_rendimiento = 25
+                    nivel_rendimiento = "Aceptable"
+                else:
+                    score_rendimiento = int((tasa_final / 12) * 25)
+                    nivel_rendimiento = "Mejorable"
+                
+                score_total += score_rendimiento
+                componentes_score.append(("Rendimiento", score_rendimiento, 40, nivel_rendimiento))
+                
+                # 2. PROTECCIÓN IPAB (25 puntos máximo)
+                montos_por_sofipo_final = {}
+                for key, monto in acumulados_por_producto.items():
+                    if monto > 0:
+                        if total_invertido == 0:
+                            prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
+                            if prod_info:
+                                sofipo_nombre = prod_info["sofipo"]
+                        else:
+                            inv_data = inversiones_seleccionadas.get(key)
+                            if inv_data:
+                                sofipo_nombre = inv_data["sofipo"]
+                        
+                        if sofipo_nombre not in montos_por_sofipo_final:
+                            montos_por_sofipo_final[sofipo_nombre] = 0
+                        montos_por_sofipo_final[sofipo_nombre] += monto
+                
+                proteccion_ipab_completa = all(monto <= 200000 for monto in montos_por_sofipo_final.values())
+                
+                if proteccion_ipab_completa:
+                    score_ipab = 25
+                    nivel_ipab = "100% Protegido"
+                else:
+                    monto_protegido = sum(min(m, 200000) for m in montos_por_sofipo_final.values())
+                    porcentaje_protegido = (monto_protegido / total_final * 100) if total_final > 0 else 0
+                    score_ipab = int((porcentaje_protegido / 100) * 25)
+                    nivel_ipab = f"{porcentaje_protegido:.0f}% Protegido"
+                
+                score_total += score_ipab
+                componentes_score.append(("Protección IPAB", score_ipab, 25, nivel_ipab))
+                
+                # 3. DIVERSIFICACIÓN (20 puntos máximo)
+                if num_sofipos_final >= 5:
+                    score_diversificacion = 20
+                    nivel_diversificacion = "Excelente"
+                elif num_sofipos_final >= 3:
+                    score_diversificacion = 16
+                    nivel_diversificacion = "Muy Buena"
+                elif num_sofipos_final >= 2:
+                    score_diversificacion = 12
+                    nivel_diversificacion = "Buena"
+                else:
+                    score_diversificacion = 8
+                    nivel_diversificacion = "Básica"
+                
+                score_total += score_diversificacion
+                componentes_score.append(("Diversificación", score_diversificacion, 20, nivel_diversificacion))
+                
+                # 4. CONCENTRACIÓN (15 puntos máximo)
+                if concentracion_maxima <= 30:
+                    score_concentracion = 15
+                    nivel_concentracion = "Excelente"
+                elif concentracion_maxima <= 50:
+                    score_concentracion = 12
+                    nivel_concentracion = "Buena"
+                elif concentracion_maxima <= 70:
+                    score_concentracion = 8
+                    nivel_concentracion = "Moderada"
+                else:
+                    score_concentracion = 4
+                    nivel_concentracion = "Alta"
+                
+                score_total += score_concentracion
+                componentes_score.append(("Concentración", score_concentracion, 15, nivel_concentracion))
+                
+                # ====================================================================
+                # SEMÁFORO DE RIESGO
+                # ====================================================================
+                
+                if score_total >= 85:
+                    semaforo = "🟢"
+                    semaforo_texto = "EXCELENTE"
+                    semaforo_color = "#22c55e"
+                    mensaje_riesgo = "Tu portafolio está muy bien optimizado"
+                elif score_total >= 70:
+                    semaforo = "🟢"
+                    semaforo_texto = "BUENO"
+                    semaforo_color = "#84cc16"
+                    mensaje_riesgo = "Portafolio sólido con buen balance"
+                elif score_total >= 55:
+                    semaforo = "🟡"
+                    semaforo_texto = "ACEPTABLE"
+                    semaforo_color = "#eab308"
+                    mensaje_riesgo = "Considera mejorar algunos aspectos"
+                else:
+                    semaforo = "🔴"
+                    semaforo_texto = "MEJORABLE"
+                    semaforo_color = "#ef4444"
+                    mensaje_riesgo = "Hay áreas importantes que optimizar"
+                
+                # Mostrar Dashboard
+                col_score, col_msg = st.columns([1, 2])
+                
+                with col_score:
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 20px; background: {semaforo_color}15; border-radius: 10px; border: 2px solid {semaforo_color};">
+                        <div style="font-size: 48px; font-weight: bold; color: {semaforo_color};">
+                            {score_total}/100
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 10px;">
+                            {semaforo} {semaforo_texto}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_msg:
+                    st.info(f"**Score de Calidad del Portafolio**\n\n{mensaje_riesgo}")
+                
+                # Desglose del score
+                st.markdown("#### 📋 Desglose del Score")
+                
+                for comp in componentes_score:
+                    col_nombre, col_progreso = st.columns([1, 3])
+                    with col_nombre:
+                        st.markdown(f"**{comp[0]}**")
+                    with col_progreso:
+                        st.progress(
+                            comp[1] / comp[2],
+                            text=f"{comp[1]}/{comp[2]} pts - {comp[3]}"
+                        )
+                    st.caption(f"_{comp[3]}_")
+                    st.markdown("")
+                
+                # KPIs principales
+                st.markdown("#### 📊 Métricas Clave")
+                
+                col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+                
+                with col_kpi1:
+                    st.metric(
+                        label="📈 Tasa Efectiva",
+                        value=f"{tasa_final:.2f}%",
+                        delta="Anual"
+                    )
+                
+                with col_kpi2:
+                    st.metric(
+                        label="🏦 SOFIPOs",
+                        value=f"{num_sofipos_final}",
+                        delta=nivel_diversificacion
+                    )
+                
+                with col_kpi3:
+                    st.metric(
+                        label="🛡️ IPAB",
+                        value=f"{nivel_ipab}",
+                        delta="Protección"
+                    )
+                
+                with col_kpi4:
+                    st.metric(
+                        label="📊 Concentración",
+                        value=f"{concentracion_maxima:.0f}%",
+                        delta=nivel_concentracion
+                    )
         
         # ====================================================================
-        # ANÁLISIS Y RECOMENDACIONES
+        # ANÁLISIS Y RECOMENDACIONES (SIMPLIFICADO)
         # ====================================================================
         
         st.divider()
-        st.header("3️⃣ Análisis de Riesgo y Recomendaciones")
+        st.header("3️⃣ Recomendaciones Personalizadas")
         
-        # Realizar análisis de diversificación
-        analisis = analizar_diversificacion(inversiones_seleccionadas)
+        # Realizar análisis de diversificación (solo si hay capital inicial)
+        if total_invertido > 0:
+            analisis = analizar_diversificacion(inversiones_seleccionadas)
         if analisis:
             recomendaciones = generar_recomendaciones(
                 analisis, 
@@ -3818,31 +4040,6 @@ def main():
                 cumple_mercadopago,
                 cumple_uala_plus
             )
-            
-            # Mostrar métricas de diversificación
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric(
-                    "🏦 SOFIPOs utilizadas",
-                    f"{analisis['num_sofipos']}/7",
-                    help="Número de SOFIPOs diferentes en tu portafolio"
-                )
-            
-            with col2:
-                st.metric(
-                    "📊 Concentración máxima",
-                    f"{analisis['max_concentracion']:.1f}%",
-                    delta="Óptimo: <50%" if analisis['max_concentracion'] < 50 else "Alto riesgo",
-                    delta_color="normal" if analisis['max_concentracion'] < 50 else "inverse"
-                )
-            
-            with col3:
-                st.metric(
-                    "💧 Liquidez inmediata",
-                    f"{analisis['porcentaje_liquido']:.1f}%",
-                    help="Porcentaje disponible sin penalización"
-                )
             
             # Mostrar alertas críticas (si hay)
             if recomendaciones["alertas"]:
@@ -3853,7 +4050,7 @@ def main():
             
             # Mostrar oportunidades (top 3)
             if recomendaciones["oportunidades"]:
-                st.markdown("### 💡 Oportunidades según tus preferencias:")
+                st.markdown("### 💡 Oportunidades de Mejora")
                 
                 oportunidades_html = ""
                 for i, opp in enumerate(recomendaciones["oportunidades"], 1):
@@ -3861,6 +4058,8 @@ def main():
                     oportunidades_html += f"**{i}.** **{opp['sofipo']} {opp['producto']}** - {opp['detalle']}{requisito_txt}\n\n"
                 
                 st.markdown(oportunidades_html)
+        else:
+            st.info("💡 Las recomendaciones están optimizadas para cuando tienes capital inicial distribuido. Con solo aportaciones, enfócate en maximizar la tasa de rendimiento seleccionando los productos con mejor GAT.")
         
         # ====================================================================
         # INFORMACIÓN ADICIONAL
