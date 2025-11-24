@@ -3313,7 +3313,7 @@ def main():
                 )
             )
             
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             
             # Tab 2: Distribución Final (se llenará después de calcular todo)
             
