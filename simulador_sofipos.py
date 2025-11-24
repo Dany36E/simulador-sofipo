@@ -3621,7 +3621,7 @@ def main():
                         
                         if total_invertido == 0:
                             sofipo_key = item["key"]
-                            limite = item.get("limite", float('inf'))
+                            limite = item.get("limite") or float('inf')
                             tasa_anual = item["tasa"]
                             nombre_corto = item["sofipo"]
                         else:
@@ -3629,6 +3629,10 @@ def main():
                             limite = inv_data['producto_info'].get('limite_maximo') or inv_data['producto_info'].get('limite_max') or inv_data['producto_info'].get('limite_premium') or float('inf')
                             tasa_anual = inv_data['tasa']
                             nombre_corto = inv_data['sofipo']
+                        
+                        # Convertir None a infinito para productos sin límite
+                        if limite is None:
+                            limite = float('inf')
                         
                         # Calcular cuánto se puede aportar a este producto
                         espacio_disponible = max(0, limite - acumulados_por_producto.get(sofipo_key, 0))
