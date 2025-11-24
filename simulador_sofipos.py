@@ -1685,12 +1685,16 @@ def main():
         st.markdown("### 🎯 ¿Cuánto quieres invertir?")
         monto_total = st.number_input(
             "Monto total disponible (MXN)",
-            min_value=1000,
+            min_value=0,
             value=st.session_state.get("monto_total_input", 50000),
             step=5000,
-            help="Este es el capital que tienes disponible para distribuir entre SOFIPOs",
+            help="Capital inicial disponible. Puedes empezar desde $0 si solo quieres simular aportaciones recurrentes",
             key="monto_total_input"
         )
+        
+        # Mostrar mensaje informativo si está en $0
+        if monto_total == 0:
+            st.info("💡 **Modo: Solo Aportaciones Recurrentes** - Activa las aportaciones abajo para simular crecimiento desde cero")
     
     with col2:
         st.markdown("### 📅 Plazo")
@@ -2619,24 +2623,34 @@ def main():
     # CÁLCULOS Y RESULTADOS
     # ========================================================================
     
-    if len(inversiones_seleccionadas) > 0:
+    # Verificar si hay algo que simular (inversiones O aportaciones)
+    tiene_inversiones = len(inversiones_seleccionadas) > 0
+    tiene_aportaciones = aportaciones_activas and aportacion_monto > 0
+    
+    if tiene_inversiones or (monto_total == 0 and tiene_aportaciones):
         st.divider()
         st.markdown("## 📊 Tus Resultados")
         
-        # Validar que no exceda el monto total
-        total_asignado = sum([inv["monto"] for inv in inversiones_seleccionadas.values()])
+        # Si hay capital inicial, validar distribución
+        if monto_total > 0:
+            # Validar que no exceda el monto total
+            total_asignado = sum([inv["monto"] for inv in inversiones_seleccionadas.values()])
+            
+            if total_asignado > monto_total:
+                st.error(f"⚠️ **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
+                return
+            
+            diferencia = monto_total - total_asignado
+            if diferencia > 0:
+                st.warning(f"ℹ️ Tienes **${diferencia:,.0f}** sin asignar. ¿Quieres agregarlo a alguna SOFIPO?")
+        elif not tiene_inversiones and tiene_aportaciones:
+            # Modo solo aportaciones: crear una inversión virtual para proyección
+            st.info("💡 **Simulación desde $0** - Se proyectará el crecimiento solo con aportaciones recurrentes. Selecciona productos arriba para ver dónde se invertirán las aportaciones.")
         
-        if total_asignado > monto_total:
-            st.error(f"⚠️ **Cuidado:** Has asignado ${total_asignado:,.0f} pero solo tienes ${monto_total:,.0f}. Ajusta los montos.")
-            return
-        
-        diferencia = monto_total - total_asignado
-        if diferencia > 0:
-            st.warning(f"ℹ️ Tienes **${diferencia:,.0f}** sin asignar. ¿Quieres agregarlo a alguna SOFIPO?")
-        
-        # Calcular rendimientos para cada inversión
+        # Calcular rendimientos para cada inversión (skip si no hay inversiones)
         resultados = []
         proyecciones_todas = []
+        total_invertido = sum([inv["monto"] for inv in inversiones_seleccionadas.values()]) if inversiones_seleccionadas else 0
         
         for inversion_key, inversion in inversiones_seleccionadas.items():
             monto = inversion['monto']
@@ -2716,7 +2730,7 @@ def main():
         # RESUMEN VISUAL SIMPLIFICADO
         # ====================================================================
         
-        total_invertido = sum([inv['monto'] for inv in inversiones_seleccionadas.values()])
+        total_invertido = sum([inv['monto'] for inv in inversiones_seleccionadas.values()]) if inversiones_seleccionadas else 0
         
         # Calcular ganancia total y GAT ponderado
         ganancia_total = 0
@@ -2726,15 +2740,19 @@ def main():
         
         # CORRECCIÓN FINANCIERA: Calcular la tasa efectiva anualizada correctamente
         # Si el periodo es < 12 meses, necesitamos calcular la tasa equivalente anual
-        if periodo_simulacion == 12:
-            # Para 12 meses, es directo
-            rendimiento_ponderado = (ganancia_total / total_invertido) * 100
+        if total_invertido > 0:
+            if periodo_simulacion == 12:
+                # Para 12 meses, es directo
+                rendimiento_ponderado = (ganancia_total / total_invertido) * 100
+            else:
+                # Para otros periodos, calcular tasa equivalente anual
+                # (1 + r_periodo) = (1 + r_anual)^(periodo/12)
+                # r_anual = (1 + r_periodo)^(12/periodo) - 1
+                rendimiento_periodo = ganancia_total / total_invertido
+                rendimiento_ponderado = ((1 + rendimiento_periodo) ** (12 / periodo_simulacion) - 1) * 100
         else:
-            # Para otros periodos, calcular tasa equivalente anual
-            # (1 + r_periodo) = (1 + r_anual)^(periodo/12)
-            # r_anual = (1 + r_periodo)^(12/periodo) - 1
-            rendimiento_periodo = ganancia_total / total_invertido
-            rendimiento_ponderado = ((1 + rendimiento_periodo) ** (12 / periodo_simulacion) - 1) * 100
+            # Modo $0: Sin capital inicial, solo aportaciones
+            rendimiento_ponderado = 0
         
         # Métricas principales en cards grandes
         st.markdown("### 📈 Resultado de tu inversión")
@@ -2756,251 +2774,282 @@ def main():
             st.metric("Terminas con", f"${total_invertido + ganancia_total:,.0f}")
             st.markdown('</div>', unsafe_allow_html=True)
         
-        # GAT Ponderado destacado
-        st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
+        # GAT Ponderado destacado (solo si hay capital invertido)
+        if total_invertido > 0:
+            st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
         
-        # Tabla detallada en expander
-        with st.expander("? Ver desglose detallado por SOFIPO"):
-            df_resultados = pd.DataFrame(resultados)
-            st.dataframe(df_resultados, width="stretch", hide_index=True)
+        # Tabla detallada en expander (solo si hay productos)
+        if resultados:
+            with st.expander("🔍 Ver desglose detallado por SOFIPO"):
+                df_resultados = pd.DataFrame(resultados)
+                st.dataframe(df_resultados, width="stretch", hide_index=True)
         
         # ====================================================================
         # 📊 DASHBOARD EJECUTIVO - TU PORTAFOLIO EN 30 SEGUNDOS
         # ====================================================================
         
-        st.markdown("---")
-        st.markdown("### 📊 Dashboard Ejecutivo")
-        st.caption("🚀 Tu portafolio en 30 segundos")
-        
-        # Calcular métricas para el score
-        num_sofipos = len(inversiones_seleccionadas)
-        
-        # Calcular montos por SOFIPO para verificar protección IPAB
-        montos_por_sofipo = {}
-        for inversion_key, inversion in inversiones_seleccionadas.items():
-            sofipo = inversion['sofipo']
-            monto = inversion['monto']
-            if sofipo not in montos_por_sofipo:
-                montos_por_sofipo[sofipo] = 0
-            montos_por_sofipo[sofipo] += monto
-        
-        proteccion_ipab_completa = all(monto <= 200000 for monto in montos_por_sofipo.values())
-        
-        # Calcular porcentaje de liquidez
-        monto_liquido = sum(
-            inv['monto'] for inv in inversiones_seleccionadas.values() 
-            if inv['producto_info']['tipo'] in ['vista', 'vista_hibrida']
-        )
-        porcentaje_liquidez = (monto_liquido / total_invertido * 100) if total_invertido > 0 else 0
-        
-        # ====================================================================
-        # SISTEMA DE SCORE INTELIGENTE (0-100)
-        # ====================================================================
-        
-        score_total = 0
-        componentes_score = []
-        
-        # 1. RENDIMIENTO (40 puntos máximo) - El más importante
-        if rendimiento_ponderado >= 15:
-            score_rendimiento = 40
-            nivel_rendimiento = "Excelente"
-        elif rendimiento_ponderado >= 14:
-            score_rendimiento = 35
-            nivel_rendimiento = "Muy Bueno"
-        elif rendimiento_ponderado >= 13:
-            score_rendimiento = 30
-            nivel_rendimiento = "Bueno"
-        elif rendimiento_ponderado >= 12:
-            score_rendimiento = 25
-            nivel_rendimiento = "Aceptable"
-        else:
-            score_rendimiento = int((rendimiento_ponderado / 12) * 25)
-            nivel_rendimiento = "Mejorable"
-        
-        score_total += score_rendimiento
-        componentes_score.append(("Rendimiento", score_rendimiento, 40, nivel_rendimiento))
-        
-        # 2. PROTECCIÓN IPAB (25 puntos máximo)
-        if proteccion_ipab_completa:
-            score_ipab = 25
-            nivel_ipab = "100% Protegido"
-        else:
-            # Calcular qué porcentaje del total está protegido
-            monto_protegido = sum(min(m, 200000) for m in montos_por_sofipo.values())
-            porcentaje_protegido = (monto_protegido / total_invertido * 100) if total_invertido > 0 else 0
-            score_ipab = int((porcentaje_protegido / 100) * 25)
-            nivel_ipab = f"{porcentaje_protegido:.0f}% Protegido"
-        
-        score_total += score_ipab
-        componentes_score.append(("Protección IPAB", score_ipab, 25, nivel_ipab))
-        
-        # 3. LIQUIDEZ (20 puntos máximo)
-        if porcentaje_liquidez >= 80:
-            score_liquidez = 20
-            nivel_liquidez = "Muy Alta"
-        elif porcentaje_liquidez >= 50:
-            score_liquidez = 15
-            nivel_liquidez = "Balanceada"
-        elif porcentaje_liquidez >= 30:
-            score_liquidez = 10
-            nivel_liquidez = "Moderada"
-        else:
-            score_liquidez = int((porcentaje_liquidez / 30) * 10)
-            nivel_liquidez = "Baja"
-        
-        score_total += score_liquidez
-        componentes_score.append(("Liquidez", score_liquidez, 20, nivel_liquidez))
-        
-        # 4. DIVERSIFICACIÓN (15 puntos máximo) - Peso reducido para no penalizar tanto
-        if num_sofipos >= 5:
-            score_diversificacion = 15
-            nivel_diversificacion = "Excelente"
-        elif num_sofipos >= 3:
-            score_diversificacion = 12
-            nivel_diversificacion = "Buena"
-        elif num_sofipos >= 2:
-            score_diversificacion = 9
-            nivel_diversificacion = "Aceptable"
-        else:
-            score_diversificacion = 6
-            nivel_diversificacion = "Básica"
-        
-        score_total += score_diversificacion
-        componentes_score.append(("Diversificación", score_diversificacion, 15, nivel_diversificacion))
-        
-        # ====================================================================
-        # SEMÁFORO DE RIESGO
-        # ====================================================================
-        
-        if score_total >= 85:
-            semaforo = "🟢"
-            semaforo_texto = "EXCELENTE"
-            semaforo_color = "#22c55e"
-            mensaje_riesgo = "Tu portafolio está muy bien optimizado"
-        elif score_total >= 70:
-            semaforo = "🟢"
-            semaforo_texto = "BUENO"
-            semaforo_color = "#84cc16"
-            mensaje_riesgo = "Portafolio sólido con buen balance"
-        elif score_total >= 55:
-            semaforo = "🟡"
-            semaforo_texto = "ACEPTABLE"
-            semaforo_color = "#eab308"
-            mensaje_riesgo = "Considera mejorar algunos aspectos"
-        else:
-            semaforo = "🔴"
-            semaforo_texto = "MEJORABLE"
-            semaforo_color = "#ef4444"
-            mensaje_riesgo = "Hay áreas importantes que optimizar"
-        
-        # ====================================================================
-        # MOSTRAR DASHBOARD EN TARJETA ÚNICA (VERSIÓN NATIVA STREAMLIT)
-        # ====================================================================
-        
-        # Contenedor principal con estilo
-        dashboard_container = st.container()
-        
-        with dashboard_container:
-            # Header del dashboard
-            col_score, col_msg = st.columns([1, 2])
-            
-            with col_score:
-                st.markdown(f"""
-                <div style="text-align: center; padding: 20px; background: {semaforo_color}15; border-radius: 10px; border: 2px solid {semaforo_color};">
-                    <div style="font-size: 48px; font-weight: bold; color: {semaforo_color};">
-                        {score_total}/100
-                    </div>
-                    <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 10px;">
-                        {semaforo} {semaforo_texto}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col_msg:
-                st.info(f"**Score de Calidad del Portafolio**\n\n{mensaje_riesgo}")
-            
-            # Desglose del score
+        # Solo mostrar Dashboard Ejecutivo si hay capital invertido
+        if total_invertido > 0:
             st.markdown("---")
-            st.markdown("### 📋 Desglose del Score")
+            st.markdown("### 📊 Dashboard Ejecutivo")
+            st.caption("🚀 Tu portafolio en 30 segundos")
             
-            for comp in componentes_score:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.markdown(f"**{comp[0]}**")
-                    st.progress(comp[1] / comp[2])
-                with col2:
-                    st.metric(
-                        label="Puntos",
-                        value=f"{comp[1]}/{comp[2]}",
-                        delta=comp[3]
-                    )
-                st.caption(f"_{comp[3]}_")
-                st.markdown("")  # Espacio
-        
-        # ====================================================================
-        # KPIs PRINCIPALES EN FORMATO COMPACTO
-        # ====================================================================
-        
-        col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
-        
-        with col_kpi1:
-            st.metric(
-                label="📈 GAT Ponderado",
-                value=f"{rendimiento_ponderado:.2f}%",
-                delta="Anual"
+            # Calcular métricas para el score
+            num_sofipos = len(inversiones_seleccionadas)
+            
+            # Calcular montos por SOFIPO para verificar protección IPAB
+            montos_por_sofipo = {}
+            for inversion_key, inversion in inversiones_seleccionadas.items():
+                sofipo = inversion['sofipo']
+                monto = inversion['monto']
+                if sofipo not in montos_por_sofipo:
+                    montos_por_sofipo[sofipo] = 0
+                montos_por_sofipo[sofipo] += monto
+            
+            proteccion_ipab_completa = all(monto <= 200000 for monto in montos_por_sofipo.values())
+            
+            # Calcular porcentaje de liquidez
+            monto_liquido = sum(
+                inv['monto'] for inv in inversiones_seleccionadas.values() 
+                if inv['producto_info']['tipo'] in ['vista', 'vista_hibrida']
             )
-        
-        with col_kpi2:
-            st.metric(
-                label="🏦 SOFIPOs",
-                value=f"{num_sofipos}",
-                delta=nivel_diversificacion
-            )
-        
-        with col_kpi3:
-            st.metric(
-                label="🛡️ IPAB",
-                value=f"{nivel_ipab}",
-                delta="Protección"
-            )
-        
-        with col_kpi4:
-            st.metric(
-                label="💧 Liquidez",
-                value=f"{porcentaje_liquidez:.0f}%",
-                delta=nivel_liquidez
-            )
-        
-        st.markdown("---")
+            porcentaje_liquidez = (monto_liquido / total_invertido * 100) if total_invertido > 0 else 0
+            
+            # ====================================================================
+            # SISTEMA DE SCORE INTELIGENTE (0-100)
+            # ====================================================================
+            
+            score_total = 0
+            componentes_score = []
+            
+            # 1. RENDIMIENTO (40 puntos máximo) - El más importante
+            if rendimiento_ponderado >= 15:
+                score_rendimiento = 40
+                nivel_rendimiento = "Excelente"
+            elif rendimiento_ponderado >= 14:
+                score_rendimiento = 35
+                nivel_rendimiento = "Muy Bueno"
+            elif rendimiento_ponderado >= 13:
+                score_rendimiento = 30
+                nivel_rendimiento = "Bueno"
+            elif rendimiento_ponderado >= 12:
+                score_rendimiento = 25
+                nivel_rendimiento = "Aceptable"
+            else:
+                score_rendimiento = int((rendimiento_ponderado / 12) * 25)
+                nivel_rendimiento = "Mejorable"
+            
+            score_total += score_rendimiento
+            componentes_score.append(("Rendimiento", score_rendimiento, 40, nivel_rendimiento))
+            
+            # 2. PROTECCIÓN IPAB (25 puntos máximo)
+            if proteccion_ipab_completa:
+                score_ipab = 25
+                nivel_ipab = "100% Protegido"
+            else:
+                # Calcular qué porcentaje del total está protegido
+                monto_protegido = sum(min(m, 200000) for m in montos_por_sofipo.values())
+                porcentaje_protegido = (monto_protegido / total_invertido * 100) if total_invertido > 0 else 0
+                score_ipab = int((porcentaje_protegido / 100) * 25)
+                nivel_ipab = f"{porcentaje_protegido:.0f}% Protegido"
+            
+            score_total += score_ipab
+            componentes_score.append(("Protección IPAB", score_ipab, 25, nivel_ipab))
+            
+            # 3. LIQUIDEZ (20 puntos máximo)
+            if porcentaje_liquidez >= 80:
+                score_liquidez = 20
+                nivel_liquidez = "Muy Alta"
+            elif porcentaje_liquidez >= 50:
+                score_liquidez = 15
+                nivel_liquidez = "Balanceada"
+            elif porcentaje_liquidez >= 30:
+                score_liquidez = 10
+                nivel_liquidez = "Moderada"
+            else:
+                score_liquidez = int((porcentaje_liquidez / 30) * 10)
+                nivel_liquidez = "Baja"
+            
+            score_total += score_liquidez
+            componentes_score.append(("Liquidez", score_liquidez, 20, nivel_liquidez))
+            
+            # 4. DIVERSIFICACIÓN (15 puntos máximo) - Peso reducido para no penalizar tanto
+            if num_sofipos >= 5:
+                score_diversificacion = 15
+                nivel_diversificacion = "Excelente"
+            elif num_sofipos >= 3:
+                score_diversificacion = 12
+                nivel_diversificacion = "Buena"
+            elif num_sofipos >= 2:
+                score_diversificacion = 9
+                nivel_diversificacion = "Aceptable"
+            else:
+                score_diversificacion = 6
+                nivel_diversificacion = "Básica"
+            
+            score_total += score_diversificacion
+            componentes_score.append(("Diversificación", score_diversificacion, 15, nivel_diversificacion))
+            
+            # ====================================================================
+            # SEMÁFORO DE RIESGO
+            # ====================================================================
+            
+            if score_total >= 85:
+                semaforo = "🟢"
+                semaforo_texto = "EXCELENTE"
+                semaforo_color = "#22c55e"
+                mensaje_riesgo = "Tu portafolio está muy bien optimizado"
+            elif score_total >= 70:
+                semaforo = "🟢"
+                semaforo_texto = "BUENO"
+                semaforo_color = "#84cc16"
+                mensaje_riesgo = "Portafolio sólido con buen balance"
+            elif score_total >= 55:
+                semaforo = "🟡"
+                semaforo_texto = "ACEPTABLE"
+                semaforo_color = "#eab308"
+                mensaje_riesgo = "Considera mejorar algunos aspectos"
+            else:
+                semaforo = "🔴"
+                semaforo_texto = "MEJORABLE"
+                semaforo_color = "#ef4444"
+                mensaje_riesgo = "Hay áreas importantes que optimizar"
+            
+            # ====================================================================
+            # MOSTRAR DASHBOARD EN TARJETA ÚNICA (VERSIÓN NATIVA STREAMLIT)
+            # ====================================================================
+            
+            # Contenedor principal con estilo
+            dashboard_container = st.container()
+            
+            with dashboard_container:
+                # Header del dashboard
+                col_score, col_msg = st.columns([1, 2])
+                
+                with col_score:
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 20px; background: {semaforo_color}15; border-radius: 10px; border: 2px solid {semaforo_color};">
+                        <div style="font-size: 48px; font-weight: bold; color: {semaforo_color};">
+                            {score_total}/100
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: {semaforo_color}; margin-top: 10px;">
+                            {semaforo} {semaforo_texto}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_msg:
+                    st.info(f"**Score de Calidad del Portafolio**\n\n{mensaje_riesgo}")
+                
+                # Desglose del score
+                st.markdown("---")
+                st.markdown("### 📋 Desglose del Score")
+                
+                for comp in componentes_score:
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.markdown(f"**{comp[0]}**")
+                        st.progress(comp[1] / comp[2])
+                    with col2:
+                        st.metric(
+                            label="Puntos",
+                            value=f"{comp[1]}/{comp[2]}",
+                            delta=comp[3]
+                        )
+                    st.caption(f"_{comp[3]}_")
+                    st.markdown("")  # Espacio
+            
+            # ====================================================================
+            # KPIs PRINCIPALES EN FORMATO COMPACTO
+            # ====================================================================
+            
+            col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+            
+            with col_kpi1:
+                st.metric(
+                    label="📈 GAT Ponderado",
+                    value=f"{rendimiento_ponderado:.2f}%",
+                    delta="Anual"
+                )
+            
+            with col_kpi2:
+                st.metric(
+                    label="🏦 SOFIPOs",
+                    value=f"{num_sofipos}",
+                    delta=nivel_diversificacion
+                )
+            
+            with col_kpi3:
+                st.metric(
+                    label="🛡️ IPAB",
+                    value=f"{nivel_ipab}",
+                    delta="Protección"
+                )
+            
+            with col_kpi4:
+                st.metric(
+                    label="💧 Liquidez",
+                    value=f"{porcentaje_liquidez:.0f}%",
+                    delta=nivel_liquidez
+                )
+            
+            st.markdown("---")
         
         # ====================================================================
         # VISUALIZACIONES PROFESIONALES
         # ====================================================================
         
-        if len(proyecciones_todas) > 0:
+        # Mostrar visualizaciones si hay proyecciones o aportaciones activas
+        if len(proyecciones_todas) > 0 or (total_invertido == 0 and aportaciones_activas and aportacion_monto > 0):
             st.markdown("---")
             st.markdown("## 📊 Visualización de tu Inversión")
             
-            # Combinar todas las proyecciones
-            df_proyecciones_completo = pd.concat(proyecciones_todas, ignore_index=True)
-            
-            # Agrupar por mes y sumar TODO
-            df_total = df_proyecciones_completo.groupby('Mes').agg({
-                'Capital Inicial': 'sum',
-                'Intereses Generados': 'sum',
-                'Total Acumulado': 'sum'
-            }).reset_index()
-            
-            # Si hay aportaciones activas, generar proyección con aportaciones
-            if aportaciones_activas and aportacion_monto > 0:
+            # Caso especial: Solo aportaciones sin capital inicial
+            if total_invertido == 0 and aportaciones_activas and aportacion_monto > 0:
+                st.info(f"💡 **Simulación desde $0** - Proyectando con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f} a tasa promedio del mercado (15% anual)")
+                
+                # Generar proyección solo con aportaciones
+                # Usar la tasa más alta disponible de los productos habilitados
+                tasa_referencia = 15.0  # Tasa promedio conservadora
+                
                 df_total_con_aportaciones = generar_proyeccion_con_aportaciones(
-                    capital_inicial=total_invertido,
-                    tasa_anual=rendimiento_ponderado,
+                    capital_inicial=0,
+                    tasa_anual=tasa_referencia,
                     tipo_calculo="compuesto",
                     meses=periodo_simulacion,
                     aportacion=aportacion_monto,
                     frecuencia=frecuencia_aportacion
                 )
+                # No hay proyección sin aportaciones, por lo que df_total será None
+                df_total = None
+            
+            # Caso normal: Hay capital inicial
+            elif len(proyecciones_todas) > 0:
+                # Combinar todas las proyecciones
+                df_proyecciones_completo = pd.concat(proyecciones_todas, ignore_index=True)
+                
+                # Agrupar por mes y sumar TODO
+                df_total = df_proyecciones_completo.groupby('Mes').agg({
+                    'Capital Inicial': 'sum',
+                    'Intereses Generados': 'sum',
+                    'Total Acumulado': 'sum'
+                }).reset_index()
+                
+                # Si hay aportaciones activas, generar proyección con aportaciones
+                if aportaciones_activas and aportacion_monto > 0:
+                    df_total_con_aportaciones = generar_proyeccion_con_aportaciones(
+                        capital_inicial=total_invertido,
+                        tasa_anual=rendimiento_ponderado,
+                        tipo_calculo="compuesto",
+                        meses=periodo_simulacion,
+                        aportacion=aportacion_monto,
+                        frecuencia=frecuencia_aportacion
+                    )
+                else:
+                    df_total_con_aportaciones = None
+            else:
+                df_total = None
+                df_total_con_aportaciones = None
             
             # Dos columnas para las visualizaciones
             col_viz1, col_viz2 = st.columns([1.5, 1])
@@ -3061,31 +3110,32 @@ def main():
                         )
                     ))
                     
-                    # Línea SIN aportaciones (para comparar)
-                    fig.add_trace(go.Scatter(
-                        x=df_total['Mes'],
-                        y=df_total['Total Acumulado'],
-                        mode='lines+markers',
-                        name='Sin Aportaciones',
-                        line=dict(
-                            width=2.5,
-                            color='#667eea',
-                            shape='spline',
-                            dash='dash'
-                        ),
-                        marker=dict(
-                            size=7,
-                            color='#667eea',
-                            symbol='circle',
-                            line=dict(color='white', width=1.5)
-                        ),
-                        hovertemplate=(
-                            '<b style="color:#667eea;">Sin Aportaciones</b><br>' +
-                            '<b>Mes %{x}</b><br>' +
-                            'Total: <b>$%{y:,.0f}</b><br>' +
-                            '<extra></extra>'
-                        )
-                    ))
+                    # Línea SIN aportaciones (para comparar) - solo si hay capital inicial
+                    if df_total is not None:
+                        fig.add_trace(go.Scatter(
+                            x=df_total['Mes'],
+                            y=df_total['Total Acumulado'],
+                            mode='lines+markers',
+                            name='Sin Aportaciones',
+                            line=dict(
+                                width=2.5,
+                                color='#667eea',
+                                shape='spline',
+                                dash='dash'
+                            ),
+                            marker=dict(
+                                size=7,
+                                color='#667eea',
+                                symbol='circle',
+                                line=dict(color='white', width=1.5)
+                            ),
+                            hovertemplate=(
+                                '<b style="color:#667eea;">Sin Aportaciones</b><br>' +
+                                '<b>Mes %{x}</b><br>' +
+                                'Total: <b>$%{y:,.0f}</b><br>' +
+                                '<extra></extra>'
+                            )
+                        ))
                 else:
                     # Gráfico normal sin aportaciones
                     # Área de relleno con gradiente
@@ -3126,19 +3176,20 @@ def main():
                         )
                     ))
                 
-                # Línea de capital inicial (más sutil)
-                fig.add_trace(go.Scatter(
-                    x=df_total['Mes'],
-                    y=[total_invertido] * len(df_total),
-                    mode='lines',
-                    name='Capital Inicial',
-                    line=dict(
-                        width=2,
-                        color='rgba(150, 150, 150, 0.4)',
-                        dash='dot'
-                    ),
-                    hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
-                ))
+                # Línea de capital inicial (más sutil) - solo si hay capital
+                if total_invertido > 0 and df_total is not None:
+                    fig.add_trace(go.Scatter(
+                        x=df_total['Mes'],
+                        y=[total_invertido] * len(df_total),
+                        mode='lines',
+                        name='Capital Inicial',
+                        line=dict(
+                            width=2,
+                            color='rgba(150, 150, 150, 0.4)',
+                            dash='dot'
+                        ),
+                        hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
+                    ))
                 
                 # Anotación profesional al final
                 if aportaciones_activas and aportacion_monto > 0:
@@ -3165,46 +3216,48 @@ def main():
                         borderpad=4
                     )
                     
-                    # Anotación para SIN aportaciones (más pequeña)
-                    total_final_correcto = total_invertido + ganancia_total
-                    fig.add_annotation(
-                        x=df_total['Mes'].iloc[-1],
-                        y=df_total['Total Acumulado'].iloc[-1],
-                        text=f"<b>${total_final_correcto:,.0f}</b>",
-                        showarrow=True,
-                        arrowhead=2,
-                        arrowsize=1,
-                        arrowwidth=2,
-                        arrowcolor="#667eea",
-                        ax=-40,
-                        ay=30,
-                        font=dict(size=11, color="#667eea", family="Arial"),
-                        bgcolor="rgba(255,255,255,0.85)",
-                        bordercolor="#667eea",
-                        borderwidth=1.5,
-                        borderpad=3
-                    )
+                    # Anotación para SIN aportaciones (más pequeña) - solo si hay capital inicial
+                    if df_total is not None:
+                        total_final_correcto = total_invertido + ganancia_total
+                        fig.add_annotation(
+                            x=df_total['Mes'].iloc[-1],
+                            y=df_total['Total Acumulado'].iloc[-1],
+                            text=f"<b>${total_final_correcto:,.0f}</b>",
+                            showarrow=True,
+                            arrowhead=2,
+                            arrowsize=1,
+                            arrowwidth=2,
+                            arrowcolor="#667eea",
+                            ax=-40,
+                            ay=30,
+                            font=dict(size=11, color="#667eea", family="Arial"),
+                            bgcolor="rgba(255,255,255,0.85)",
+                            bordercolor="#667eea",
+                            borderwidth=1.5,
+                            borderpad=3
+                        )
                 else:
                     # Anotación normal sin aportaciones
-                    total_final_correcto = total_invertido + ganancia_total
-                    
-                    fig.add_annotation(
-                        x=df_total['Mes'].iloc[-1],
-                        y=df_total['Total Acumulado'].iloc[-1],
-                        text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
-                        showarrow=True,
-                        arrowhead=2,
-                        arrowsize=1,
-                        arrowwidth=2,
-                        arrowcolor="#667eea",
-                        ax=40,
-                        ay=-40,
-                        font=dict(size=12, color="#667eea", family="Arial"),
-                        bgcolor="rgba(255,255,255,0.9)",
-                        bordercolor="#667eea",
-                        borderwidth=2,
-                        borderpad=4
-                    )
+                    if df_total is not None:
+                        total_final_correcto = total_invertido + ganancia_total
+                        
+                        fig.add_annotation(
+                            x=df_total['Mes'].iloc[-1],
+                            y=df_total['Total Acumulado'].iloc[-1],
+                            text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
+                            showarrow=True,
+                            arrowhead=2,
+                            arrowsize=1,
+                            arrowwidth=2,
+                            arrowcolor="#667eea",
+                            ax=40,
+                            ay=-40,
+                            font=dict(size=12, color="#667eea", family="Arial"),
+                            bgcolor="rgba(255,255,255,0.9)",
+                            bordercolor="#667eea",
+                            borderwidth=2,
+                            borderpad=4
+                        )
                 
                 fig.update_layout(
                     height=450,
