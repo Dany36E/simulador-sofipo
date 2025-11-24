@@ -3538,36 +3538,29 @@ def main():
                     st.caption("🤖 **Estrategia Seleccionada:** Distribución inteligente automática")
                 
                 # Mostrar distribución detallada en expander
-                with st.expander("🔍 Ver distribución detallada de cada aportación", expanded=False):
-                    st.markdown(f"**Monto por aportación:** ${aportacion_monto:,.0f}")
+                with st.expander("🔍 Cómo funciona la distribución inteligente", expanded=False):
+                    st.markdown(f"**Monto por aportación:** \\${aportacion_monto:,.0f}")
                     st.markdown("---")
                     
-                    # Mostrar cada mensaje de la distribución
-                    for mensaje in mensajes_distribucion:
-                        st.markdown(mensaje)
+                    st.info("""
+                    **📊 Distribución Dinámica Inteligente**
                     
-                    # Resumen de la distribución
-                    st.markdown("---")
-                    st.markdown("**📊 Resumen de distribución:**")
-                    total_distribuido = sum(distribucion_aportacion.values())
+                    La distribución de tus aportaciones se recalcula **cada mes** automáticamente:
                     
-                    for sofipo_key, monto_aport in distribucion_aportacion.items():
-                        if monto_aport > 0:
-                            # Manejar modo $0 (productos ficticios) vs modo normal
-                            if total_invertido == 0:
-                                # Buscar en productos ficticios
-                                prod_info = next((p for p in productos_ficticios if p["key"] == sofipo_key), None)
-                                if prod_info:
-                                    porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
-                                    st.markdown(f"• **{prod_info['sofipo']} - {prod_info['producto']}**: \\${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
-                            else:
-                                # Modo normal: usar inversiones seleccionadas
-                                inv_data = inversiones_seleccionadas[sofipo_key]
-                                porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
-                                st.markdown(f"• **{inv_data['sofipo']} - {inv_data['producto']}**: \\${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
+                    1. **Prioriza mejores tasas**: Primero llena productos con mayor rendimiento
+                    2. **Respeta límites máximos**: DiDi $10k, Nu $25k, Klar $10k, etc.
+                    3. **Redistribuye automáticamente**: Cuando un producto alcanza su límite, el dinero va al siguiente mejor
+                    4. **Maximiza tu rendimiento**: Siempre aprovecha las mejores oportunidades disponibles
                     
-                    if total_distribuido < aportacion_monto:
-                        st.warning(f"⚠️ Solo se pueden distribuir \\${total_distribuido:,.0f} de \\${aportacion_monto:,.0f} debido a límites máximos de productos.")
+                    **Ejemplo:** Si tienes aportaciones de $5,000 quincenales ($10,000/mes):
+                    - **Mes 1:** $10k → DiDi 16% (cabe todo)
+                    - **Mes 2:** DiDi ya tiene $10k → $10k va a Nu 15%
+                    - **Mes 3:** Nu recibe $10k más (ya tiene $20k)
+                    - **Mes 4:** Nu alcanza límite $25k → $5k a Nu + $5k a Klar 15%
+                    - Y así sucesivamente...
+                    
+                    ✨ **La tabla mes a mes te muestra exactamente cómo se distribuye cada aportación**
+                    """)
                 
                 # ============================================================
                 # PROYECCIÓN MES A MES DE APORTACIONES
@@ -3607,40 +3600,66 @@ def main():
                 for mes in range(1, periodo_simulacion + 1):
                     fila_mes = {"Mes": mes}
                     
-                    # Agregar aportación del mes (distribuida)
-                    for sofipo_key, monto_aport_unitaria in distribucion_aportacion.items():
-                        if monto_aport_unitaria > 0:
-                            # Monto aportado este mes = aportación unitaria * frecuencia
-                            aportacion_mes = monto_aport_unitaria * num_aportaciones_por_mes
-                            
-                            # Obtener datos del producto según el modo
-                            if total_invertido == 0:
-                                # Modo $0: usar productos ficticios
-                                prod_info = productos_info[sofipo_key]
-                                limite = prod_info["limite"] if prod_info["limite"] else float('inf')
-                                tasa_anual = prod_info["tasa"]
-                                nombre_corto = prod_info["sofipo"]
-                            else:
-                                # Modo normal: usar inversiones seleccionadas
-                                inv_data = inversiones_seleccionadas[sofipo_key]
-                                limite = inv_data['producto_info'].get('limite_maximo') or inv_data['producto_info'].get('limite_max') or inv_data['producto_info'].get('limite_premium') or float('inf')
-                                tasa_anual = inv_data['tasa']
-                                nombre_corto = inv_data['sofipo']
-                            
-                            # Si excede el límite, solo agregar hasta el límite
-                            if acumulados_por_producto[sofipo_key] + aportacion_mes > limite:
-                                aportacion_mes = max(0, limite - acumulados_por_producto[sofipo_key])
-                            
-                            # Calcular interés del mes sobre saldo acumulado
-                            interes_mes = calcular_interes_compuesto(acumulados_por_producto[sofipo_key], tasa_anual, 30)
-                            
-                            # Actualizar acumulado
-                            acumulados_por_producto[sofipo_key] += interes_mes + aportacion_mes
-                            
-                            # Guardar en fila
-                            fila_mes[f"{nombre_corto} Aportado"] = aportacion_mes
-                            fila_mes[f"{nombre_corto} Interés"] = interes_mes
-                            fila_mes[f"{nombre_corto} Total"] = acumulados_por_producto[sofipo_key]
+                    # DISTRIBUCIÓN DINÁMICA: Recalcular cada mes según límites disponibles
+                    monto_total_mes = aportacion_monto * num_aportaciones_por_mes
+                    monto_restante_mes = monto_total_mes
+                    distribucion_mes = {}
+                    
+                    # Ordenar productos por tasa descendente para priorizar mejores rendimientos
+                    if total_invertido == 0:
+                        productos_ordenados = sorted(productos_ficticios, key=lambda x: -x["tasa"])
+                    else:
+                        productos_ordenados = sorted(
+                            [(k, v) for k, v in inversiones_seleccionadas.items()],
+                            key=lambda x: -x[1]['tasa']
+                        )
+                    
+                    # Distribuir dinero disponible priorizando mejores tasas y respetando límites
+                    for item in productos_ordenados:
+                        if monto_restante_mes <= 0:
+                            break
+                        
+                        if total_invertido == 0:
+                            sofipo_key = item["key"]
+                            limite = item.get("limite", float('inf'))
+                            tasa_anual = item["tasa"]
+                            nombre_corto = item["sofipo"]
+                        else:
+                            sofipo_key, inv_data = item
+                            limite = inv_data['producto_info'].get('limite_maximo') or inv_data['producto_info'].get('limite_max') or inv_data['producto_info'].get('limite_premium') or float('inf')
+                            tasa_anual = inv_data['tasa']
+                            nombre_corto = inv_data['sofipo']
+                        
+                        # Calcular cuánto se puede aportar a este producto
+                        espacio_disponible = max(0, limite - acumulados_por_producto.get(sofipo_key, 0))
+                        monto_a_aportar = min(espacio_disponible, monto_restante_mes)
+                        
+                        if monto_a_aportar > 0:
+                            distribucion_mes[sofipo_key] = {
+                                "monto": monto_a_aportar,
+                                "tasa": tasa_anual,
+                                "nombre": nombre_corto,
+                                "limite": limite
+                            }
+                            monto_restante_mes -= monto_a_aportar
+                    
+                    # Aplicar distribución calculada para este mes
+                    for sofipo_key, info_dist in distribucion_mes.items():
+                        aportacion_mes = info_dist["monto"]
+                        tasa_anual = info_dist["tasa"]
+                        nombre_corto = info_dist["nombre"]
+                        
+                        # Calcular interés del mes sobre saldo acumulado
+                        saldo_actual = acumulados_por_producto.get(sofipo_key, 0)
+                        interes_mes = calcular_interes_compuesto(saldo_actual, tasa_anual, 30)
+                        
+                        # Actualizar acumulado
+                        acumulados_por_producto[sofipo_key] = saldo_actual + interes_mes + aportacion_mes
+                        
+                        # Guardar en fila
+                        fila_mes[f"{nombre_corto} Aportado"] = aportacion_mes
+                        fila_mes[f"{nombre_corto} Interés"] = interes_mes
+                        fila_mes[f"{nombre_corto} Total"] = acumulados_por_producto[sofipo_key]
                     
                     # Calcular totales
                     fila_mes["Total Aportado Mes"] = sum([v for k, v in fila_mes.items() if "Aportado" in k])
