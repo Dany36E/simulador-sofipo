@@ -3553,9 +3553,18 @@ def main():
                     
                     for sofipo_key, monto_aport in distribucion_aportacion.items():
                         if monto_aport > 0:
-                            inv_data = inversiones_seleccionadas[sofipo_key]
-                            porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
-                            st.markdown(f"• **{inv_data['sofipo']} - {inv_data['producto']}**: ${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
+                            # Manejar modo $0 (productos ficticios) vs modo normal
+                            if total_invertido == 0:
+                                # Buscar en productos ficticios
+                                prod_info = next((p for p in productos_ficticios if p["key"] == sofipo_key), None)
+                                if prod_info:
+                                    porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
+                                    st.markdown(f"• **{prod_info['sofipo']} - {prod_info['producto']}**: \\${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
+                            else:
+                                # Modo normal: usar inversiones seleccionadas
+                                inv_data = inversiones_seleccionadas[sofipo_key]
+                                porcentaje_aport = (monto_aport / total_distribuido * 100) if total_distribuido > 0 else 0
+                                st.markdown(f"• **{inv_data['sofipo']} - {inv_data['producto']}**: \\${monto_aport:,.0f} ({porcentaje_aport:.1f}%)")
                     
                     if total_distribuido < aportacion_monto:
                         st.warning(f"⚠️ Solo se pueden distribuir \\${total_distribuido:,.0f} de \\${aportacion_monto:,.0f} debido a límites máximos de productos.")
