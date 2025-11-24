@@ -3057,328 +3057,261 @@ def main():
                 df_total = None
                 df_total_con_aportaciones = None
             
-            # Dos columnas para las visualizaciones
-            col_viz1, col_viz2 = st.columns([1.5, 1])
+            # Mostrar proyección a ancho completo (el pie chart se mostrará después)
+            titulo_grafica = "### 📈 Proyección de Crecimiento"
+            if aportaciones_activas and aportacion_monto > 0:
+                # Calcular frecuencia para mostrar
+                frecuencias_texto = {
+                    "Semanal": f"${aportacion_monto:,.0f}/semana",
+                    "Quincenal": f"${aportacion_monto:,.0f}/quincena",
+                    "Mensual": f"${aportacion_monto:,.0f}/mes"
+                }
+                titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
             
-            with col_viz1:
-                titulo_grafica = "### 📈 Proyección de Crecimiento"
-                if aportaciones_activas and aportacion_monto > 0:
-                    # Calcular frecuencia para mostrar
-                    frecuencias_texto = {
-                        "Semanal": f"${aportacion_monto:,.0f}/semana",
-                        "Quincenal": f"${aportacion_monto:,.0f}/quincena",
-                        "Mensual": f"${aportacion_monto:,.0f}/mes"
-                    }
-                    titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+            st.markdown(titulo_grafica)
+            
+            # Crear gráfico profesional con gradiente
+            fig = go.Figure()
+            
+            # Si hay aportaciones, mostrar comparación
+            if aportaciones_activas and aportacion_monto > 0:
+                # Área de relleno para CON aportaciones
+                fig.add_trace(go.Scatter(
+                    x=df_total_con_aportaciones['Mes'],
+                    y=df_total_con_aportaciones['Total Acumulado'],
+                    mode='lines',
+                    name='Con Aportaciones (área)',
+                    line=dict(width=0),
+                    fillcolor='rgba(67, 233, 123, 0.3)',
+                    fill='tozeroy',
+                    showlegend=False,
+                    hoverinfo='skip'
+                ))
                 
-                st.markdown(titulo_grafica)
+                # Línea principal CON aportaciones
+                fig.add_trace(go.Scatter(
+                    x=df_total_con_aportaciones['Mes'],
+                    y=df_total_con_aportaciones['Total Acumulado'],
+                    mode='lines+markers',
+                    name='Con Aportaciones',
+                    line=dict(
+                        width=3.5,
+                        color='#43e97b',
+                        shape='spline',
+                    ),
+                    marker=dict(
+                        size=9,
+                        color='#43e97b',
+                        symbol='circle',
+                        line=dict(color='white', width=2)
+                    ),
+                    hovertemplate=(
+                        '<b style="color:#43e97b;">Con Aportaciones</b><br>' +
+                        '<b>Mes %{x}</b><br>' +
+                        'Total: <b>$%{y:,.0f}</b><br>' +
+                        '<extra></extra>'
+                    )
+                ))
                 
-                # Crear gráfico profesional con gradiente
-                fig = go.Figure()
-                
-                # Si hay aportaciones, mostrar comparación
-                if aportaciones_activas and aportacion_monto > 0:
-                    # Área de relleno para CON aportaciones
+                # Línea SIN aportaciones (para comparar) - solo si hay capital inicial
+                if df_total is not None:
                     fig.add_trace(go.Scatter(
-                        x=df_total_con_aportaciones['Mes'],
-                        y=df_total_con_aportaciones['Total Acumulado'],
-                        mode='lines',
-                        name='Con Aportaciones (área)',
-                        line=dict(width=0),
-                        fillcolor='rgba(67, 233, 123, 0.3)',
-                        fill='tozeroy',
-                        showlegend=False,
-                        hoverinfo='skip'
-                    ))
-                    
-                    # Línea principal CON aportaciones
-                    fig.add_trace(go.Scatter(
-                        x=df_total_con_aportaciones['Mes'],
-                        y=df_total_con_aportaciones['Total Acumulado'],
+                        x=df_total['Mes'],
+                        y=df_total['Total Acumulado'],
                         mode='lines+markers',
-                        name='Con Aportaciones',
+                        name='Sin Aportaciones',
                         line=dict(
-                            width=3.5,
-                            color='#43e97b',
+                            width=2.5,
+                            color='#667eea',
                             shape='spline',
+                            dash='dash'
                         ),
                         marker=dict(
-                            size=9,
-                            color='#43e97b',
+                            size=7,
+                            color='#667eea',
                             symbol='circle',
-                            line=dict(color='white', width=2)
+                            line=dict(color='white', width=1.5)
                         ),
                         hovertemplate=(
-                            '<b style="color:#43e97b;">Con Aportaciones</b><br>' +
+                            '<b style="color:#667eea;">Sin Aportaciones</b><br>' +
                             '<b>Mes %{x}</b><br>' +
                             'Total: <b>$%{y:,.0f}</b><br>' +
                             '<extra></extra>'
                         )
                     ))
-                    
-                    # Línea SIN aportaciones (para comparar) - solo si hay capital inicial
-                    if df_total is not None:
-                        fig.add_trace(go.Scatter(
-                            x=df_total['Mes'],
-                            y=df_total['Total Acumulado'],
-                            mode='lines+markers',
-                            name='Sin Aportaciones',
-                            line=dict(
-                                width=2.5,
-                                color='#667eea',
-                                shape='spline',
-                                dash='dash'
-                            ),
-                            marker=dict(
-                                size=7,
-                                color='#667eea',
-                                symbol='circle',
-                                line=dict(color='white', width=1.5)
-                            ),
-                            hovertemplate=(
-                                '<b style="color:#667eea;">Sin Aportaciones</b><br>' +
-                                '<b>Mes %{x}</b><br>' +
-                                'Total: <b>$%{y:,.0f}</b><br>' +
-                                '<extra></extra>'
-                            )
-                        ))
-                else:
-                    # Gráfico normal sin aportaciones
-                    # Área de relleno con gradiente
-                    fig.add_trace(go.Scatter(
-                        x=df_total['Mes'],
-                        y=df_total['Total Acumulado'],
-                        mode='lines',
-                        name='Crecimiento',
-                        line=dict(width=0),
-                        fillcolor='rgba(102, 126, 234, 0.3)',
-                        fill='tozeroy',
-                        showlegend=False,
-                        hoverinfo='skip'
-                    ))
-                    
-                    # Línea principal con gradiente profesional
-                    fig.add_trace(go.Scatter(
-                        x=df_total['Mes'],
-                        y=df_total['Total Acumulado'],
-                        mode='lines+markers',
-                        name='Total del Portafolio',
-                        line=dict(
-                            width=3.5,
-                            color='#667eea',
-                            shape='spline',  # Línea suavizada
-                        ),
-                        marker=dict(
-                            size=9,
-                            color='#667eea',
-                            symbol='circle',
-                            line=dict(color='white', width=2)
-                        ),
-                        hovertemplate=(
-                            '<b style="color:#667eea;">Total Acumulado</b><br>' +
-                            '<b>Mes %{x}</b><br>' +
-                            'Monto: <b>$%{y:,.0f}</b><br>' +
-                            '<extra></extra>'
-                        )
-                    ))
+            else:
+                # Gráfico normal sin aportaciones
+                # Área de relleno con gradiente
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=df_total['Total Acumulado'],
+                    mode='lines',
+                    name='Crecimiento',
+                    line=dict(width=0),
+                    fillcolor='rgba(102, 126, 234, 0.3)',
+                    fill='tozeroy',
+                    showlegend=False,
+                    hoverinfo='skip'
+                ))
                 
-                # Línea de capital inicial (más sutil) - solo si hay capital
-                if total_invertido > 0 and df_total is not None:
-                    fig.add_trace(go.Scatter(
-                        x=df_total['Mes'],
-                        y=[total_invertido] * len(df_total),
-                        mode='lines',
-                        name='Capital Inicial',
-                        line=dict(
-                            width=2,
-                            color='rgba(150, 150, 150, 0.4)',
-                            dash='dot'
-                        ),
-                        hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
-                    ))
+                # Línea principal con gradiente profesional
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=df_total['Total Acumulado'],
+                    mode='lines+markers',
+                    name='Total del Portafolio',
+                    line=dict(
+                        width=3.5,
+                        color='#667eea',
+                        shape='spline',  # Línea suavizada
+                    ),
+                    marker=dict(
+                        size=9,
+                        color='#667eea',
+                        symbol='circle',
+                        line=dict(color='white', width=2)
+                    ),
+                    hovertemplate=(
+                        '<b style="color:#667eea;">Total Acumulado</b><br>' +
+                        '<b>Mes %{x}</b><br>' +
+                        'Monto: <b>$%{y:,.0f}</b><br>' +
+                        '<extra></extra>'
+                    )
+                ))
+            
+            # Línea de capital inicial (más sutil) - solo si hay capital
+            if total_invertido > 0 and df_total is not None:
+                fig.add_trace(go.Scatter(
+                    x=df_total['Mes'],
+                    y=[total_invertido] * len(df_total),
+                    mode='lines',
+                    name='Capital Inicial',
+                    line=dict(
+                        width=2,
+                        color='rgba(150, 150, 150, 0.4)',
+                        dash='dot'
+                    ),
+                    hovertemplate='Capital Inicial: $%{y:,.0f}<extra></extra>'
+                ))
+            
+            # Anotación profesional al final
+            if aportaciones_activas and aportacion_monto > 0:
+                # Anotación para CON aportaciones
+                total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
+                aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
+                intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
                 
-                # Anotación profesional al final
-                if aportaciones_activas and aportacion_monto > 0:
-                    # Anotación para CON aportaciones
-                    total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
-                    aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
-                    intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
-                    
+                fig.add_annotation(
+                    x=df_total_con_aportaciones['Mes'].iloc[-1],
+                    y=total_final_con_aport,
+                    text=f"<b>${total_final_con_aport:,.0f}</b><br>+${intereses_con_aport:,.0f} intereses",
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowsize=1,
+                    arrowwidth=2,
+                    arrowcolor="#43e97b",
+                    ax=40,
+                    ay=-50,
+                    font=dict(size=12, color="#43e97b", family="Arial"),
+                    bgcolor="rgba(255,255,255,0.9)",
+                    bordercolor="#43e97b",
+                    borderwidth=2,
+                    borderpad=4
+                )
+                
+                # Anotación para SIN aportaciones (más pequeña) - solo si hay capital inicial
+                if df_total is not None:
+                    total_final_correcto = total_invertido + ganancia_total
                     fig.add_annotation(
-                        x=df_total_con_aportaciones['Mes'].iloc[-1],
-                        y=total_final_con_aport,
-                        text=f"<b>${total_final_con_aport:,.0f}</b><br>+${intereses_con_aport:,.0f} intereses",
+                        x=df_total['Mes'].iloc[-1],
+                        y=df_total['Total Acumulado'].iloc[-1],
+                        text=f"<b>${total_final_correcto:,.0f}</b>",
                         showarrow=True,
                         arrowhead=2,
                         arrowsize=1,
                         arrowwidth=2,
-                        arrowcolor="#43e97b",
+                        arrowcolor="#667eea",
+                        ax=-40,
+                        ay=30,
+                        font=dict(size=11, color="#667eea", family="Arial"),
+                        bgcolor="rgba(255,255,255,0.85)",
+                        bordercolor="#667eea",
+                        borderwidth=1.5,
+                        borderpad=3
+                    )
+            else:
+                # Anotación normal sin aportaciones
+                if df_total is not None:
+                    total_final_correcto = total_invertido + ganancia_total
+                    
+                    fig.add_annotation(
+                        x=df_total['Mes'].iloc[-1],
+                        y=df_total['Total Acumulado'].iloc[-1],
+                        text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
+                        showarrow=True,
+                        arrowhead=2,
+                        arrowsize=1,
+                        arrowwidth=2,
+                        arrowcolor="#667eea",
                         ax=40,
-                        ay=-50,
-                        font=dict(size=12, color="#43e97b", family="Arial"),
+                        ay=-40,
+                        font=dict(size=12, color="#667eea", family="Arial"),
                         bgcolor="rgba(255,255,255,0.9)",
-                        bordercolor="#43e97b",
+                        bordercolor="#667eea",
                         borderwidth=2,
                         borderpad=4
                     )
-                    
-                    # Anotación para SIN aportaciones (más pequeña) - solo si hay capital inicial
-                    if df_total is not None:
-                        total_final_correcto = total_invertido + ganancia_total
-                        fig.add_annotation(
-                            x=df_total['Mes'].iloc[-1],
-                            y=df_total['Total Acumulado'].iloc[-1],
-                            text=f"<b>${total_final_correcto:,.0f}</b>",
-                            showarrow=True,
-                            arrowhead=2,
-                            arrowsize=1,
-                            arrowwidth=2,
-                            arrowcolor="#667eea",
-                            ax=-40,
-                            ay=30,
-                            font=dict(size=11, color="#667eea", family="Arial"),
-                            bgcolor="rgba(255,255,255,0.85)",
-                            bordercolor="#667eea",
-                            borderwidth=1.5,
-                            borderpad=3
-                        )
-                else:
-                    # Anotación normal sin aportaciones
-                    if df_total is not None:
-                        total_final_correcto = total_invertido + ganancia_total
-                        
-                        fig.add_annotation(
-                            x=df_total['Mes'].iloc[-1],
-                            y=df_total['Total Acumulado'].iloc[-1],
-                            text=f"<b>${total_final_correcto:,.0f}</b><br>+${ganancia_total:,.0f}",
-                            showarrow=True,
-                            arrowhead=2,
-                            arrowsize=1,
-                            arrowwidth=2,
-                            arrowcolor="#667eea",
-                            ax=40,
-                            ay=-40,
-                            font=dict(size=12, color="#667eea", family="Arial"),
-                            bgcolor="rgba(255,255,255,0.9)",
-                            bordercolor="#667eea",
-                            borderwidth=2,
-                            borderpad=4
-                        )
-                
-                fig.update_layout(
-                    height=450,
-                    margin=dict(l=20, r=20, t=40, b=20),
-                    hovermode='x unified',
-                    template="plotly_white" if not modo_oscuro else "plotly_dark",
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(
-                        size=12,
-                        color='#333333' if not modo_oscuro else '#c9d1d9',
-                        family="Arial"
-                    ),
-                    xaxis=dict(
-                        title="<b>Periodo (Meses)</b>",
-                        showgrid=True,
-                        gridwidth=1,
-                        gridcolor='rgba(200,200,200,0.2)',
-                        zeroline=False,
-                        showline=True,
-                        linewidth=2,
-                        linecolor='rgba(200,200,200,0.3)'
-                    ),
-                    yaxis=dict(
-                        title="<b>Monto Total (MXN)</b>",
-                        showgrid=True,
-                        gridwidth=1,
-                        gridcolor='rgba(200,200,200,0.2)',
-                        zeroline=False,
-                        showline=True,
-                        linewidth=2,
-                        linecolor='rgba(200,200,200,0.3)',
-                        tickformat="$,.0f"
-                    ),
-                    showlegend=True,
-                    legend=dict(
-                        orientation="h",
-                        yanchor="top",
-                        y=-0.15,
-                        xanchor="center",
-                        x=0.5,
-                        bgcolor='rgba(255,255,255,0.8)' if not modo_oscuro else 'rgba(30,30,30,0.8)',
-                        bordercolor='rgba(200,200,200,0.3)',
-                        borderwidth=1,
-                        font=dict(size=11)
-                    )
-                )
-                
-                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             
-            with col_viz2:
-                st.markdown("### 🎯 Distribución del Portafolio")
-                
-                # Calcular distribución por SOFIPO
-                distribucion_sofipos = {}
-                for inv_key, inv_data in inversiones_seleccionadas.items():
-                    sofipo = inv_data['sofipo']
-                    monto = inv_data['monto']
-                    if sofipo not in distribucion_sofipos:
-                        distribucion_sofipos[sofipo] = 0
-                    distribucion_sofipos[sofipo] += monto
-                
-                # Crear pie chart profesional
-                colores_profesionales = [
-                    '#667eea', '#764ba2', '#f093fb', '#4facfe',
-                    '#43e97b', '#fa709a', '#fee140', '#30cfd0'
-                ]
-                
-                fig_pie = go.Figure(data=[go.Pie(
-                    labels=list(distribucion_sofipos.keys()),
-                    values=list(distribucion_sofipos.values()),
-                    hole=0.5,  # Donut chart
-                    marker=dict(
-                        colors=colores_profesionales[:len(distribucion_sofipos)],
-                        line=dict(color='white', width=3)
-                    ),
-                    textinfo='label+percent',
-                    textfont=dict(size=13, color='white', family="Arial"),
-                    hovertemplate=(
-                        '<b>%{label}</b><br>' +
-                        'Monto: $%{value:,.0f}<br>' +
-                        'Porcentaje: %{percent}<br>' +
-                        '<extra></extra>'
-                    ),
-                    pull=[0.05] * len(distribucion_sofipos)  # Separar ligeramente
-                )])
-                
-                # Anotación central del donut
-                fig_pie.add_annotation(
-                    text=f"<b>${total_invertido:,.0f}</b><br><span style='font-size:11px;'>Total Invertido</span>",
-                    x=0.5, y=0.5,
-                    font=dict(size=16, color='#667eea', family="Arial"),
-                    showarrow=False
+            fig.update_layout(
+                height=450,
+                margin=dict(l=20, r=20, t=40, b=20),
+                hovermode='x unified',
+                template="plotly_white" if not modo_oscuro else "plotly_dark",
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(
+                    size=12,
+                    color='#333333' if not modo_oscuro else '#c9d1d9',
+                    family="Arial"
+                ),
+                xaxis=dict(
+                    title="<b>Periodo (Meses)</b>",
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(200,200,200,0.2)',
+                    zeroline=False,
+                    showline=True,
+                    linewidth=2,
+                    linecolor='rgba(200,200,200,0.3)'
+                ),
+                yaxis=dict(
+                    title="<b>Monto Total (MXN)</b>",
+                    showgrid=True,
+                    gridwidth=1,
+                    gridcolor='rgba(200,200,200,0.2)',
+                    zeroline=False,
+                    showline=True,
+                    linewidth=2,
+                    linecolor='rgba(200,200,200,0.3)',
+                    tickformat="$,.0f"
+                ),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="top",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                    bgcolor='rgba(255,255,255,0.8)' if not modo_oscuro else 'rgba(30,30,30,0.8)',
+                    bordercolor='rgba(200,200,200,0.3)',
+                    borderwidth=1,
+                    font=dict(size=11)
                 )
-                
-                fig_pie.update_layout(
-                    height=450,
-                    margin=dict(l=20, r=20, t=20, b=20),
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(size=12, family="Arial"),
-                    showlegend=True,
-                    legend=dict(
-                        orientation="v",
-                        yanchor="middle",
-                        y=0.5,
-                        xanchor="left",
-                        x=1.05,
-                        bgcolor='rgba(255,255,255,0.8)' if not modo_oscuro else 'rgba(30,30,30,0.8)',
-                        bordercolor='rgba(200,200,200,0.3)',
-                        borderwidth=1,
-                        font=dict(size=11)
-                    )
-                )
-                
-                st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
+            )
+            
+            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+            
+            # PIE CHART ELIMINADO - La distribución final se mostrará después de la tabla
             
             # ====================================================================
             # DESGLOSE DETALLADO (OPCIONAL - EN EXPANDER)
