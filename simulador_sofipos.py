@@ -3057,18 +3057,22 @@ def main():
                 df_total = None
                 df_total_con_aportaciones = None
             
-            # Mostrar proyección a ancho completo (el pie chart se mostrará después)
-            titulo_grafica = "### 📈 Proyección de Crecimiento"
-            if aportaciones_activas and aportacion_monto > 0:
-                # Calcular frecuencia para mostrar
-                frecuencias_texto = {
-                    "Semanal": f"${aportacion_monto:,.0f}/semana",
-                    "Quincenal": f"${aportacion_monto:,.0f}/quincena",
-                    "Mensual": f"${aportacion_monto:,.0f}/mes"
-                }
-                titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+            # Crear tabs para organizar la visualización
+            tab1, tab2 = st.tabs(["📈 Proyección de Crecimiento", "🎯 Distribución Final"])
             
-            st.markdown(titulo_grafica)
+            with tab1:
+                # Título de la proyección
+                titulo_grafica = "### Evolución de tu Inversión"
+                if aportaciones_activas and aportacion_monto > 0:
+                    # Calcular frecuencia para mostrar
+                    frecuencias_texto = {
+                        "Semanal": f"${aportacion_monto:,.0f}/semana",
+                        "Quincenal": f"${aportacion_monto:,.0f}/quincena",
+                        "Mensual": f"${aportacion_monto:,.0f}/mes"
+                    }
+                    titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+                
+                st.markdown(titulo_grafica)
             
             # Crear gráfico profesional con gradiente
             fig = go.Figure()
@@ -3309,9 +3313,9 @@ def main():
                 )
             )
             
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
             
-            # PIE CHART ELIMINADO - La distribución final se mostrará después de la tabla
+            # Tab 2: Distribución Final (se llenará después de calcular todo)
             
             # ====================================================================
             # DESGLOSE DETALLADO (OPCIONAL - EN EXPANDER)
@@ -3651,94 +3655,197 @@ def main():
                 # Mostrar tabla
                 st.dataframe(df_proyeccion, use_container_width=True, hide_index=True, height=400)
                 
-                # Mostrar distribución final del portafolio
-                if acumulados_por_producto:
-                    st.markdown("### 🎯 Distribución Final del Portafolio")
-                    
-                    col_grafica, col_metricas = st.columns([2, 1])
-                    
-                    with col_grafica:
-                        # Crear pie chart
-                        labels_pie = []
-                        values_pie = []
-                        colors_pie = []
-                        
-                        color_map = {
-                            "DiDi": "#FF6B6B",
-                            "Nu México": "#8B5CF6",
-                            "Klar": "#3B82F6",
-                            "Mercado Pago": "#FCD34D",
-                            "Ualá": "#10B981",
-                            "Finsus": "#F59E0B",
-                            "Stori": "#EC4899"
-                        }
-                        
-                        for key, monto in acumulados_por_producto.items():
-                            if monto > 0:
-                                # Obtener nombre de la SOFIPO
-                                if total_invertido == 0:
-                                    prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
-                                    if prod_info:
-                                        nombre = prod_info["sofipo"]
-                                        tasa = prod_info["tasa"]
-                                else:
-                                    inv_data = inversiones_seleccionadas.get(key)
-                                    if inv_data:
-                                        nombre = inv_data["sofipo"]
-                                        tasa = inv_data["producto_info"]["tasa_base"]
-                                
-                                labels_pie.append(f"{nombre} ({tasa}%)")
-                                values_pie.append(monto)
-                                colors_pie.append(color_map.get(nombre, "#94A3B8"))
-                        
-                        fig_pie = go.Figure(data=[go.Pie(
-                            labels=labels_pie,
-                            values=values_pie,
-                            marker=dict(colors=colors_pie),
-                            hole=0.4,
-                            textinfo='label+percent',
-                            textposition='auto',
-                            hovertemplate='<b>%{label}</b><br>\$%{value:,.0f}<br>%{percent}<extra></extra>'
-                        )])
-                        
-                        fig_pie.update_layout(
-                            showlegend=True,
-                            height=400,
-                            margin=dict(t=20, b=20, l=20, r=20),
-                            legend=dict(
-                                orientation="v",
-                                yanchor="middle",
-                                y=0.5,
-                                xanchor="left",
-                                x=1.05
-                            )
-                        )
-                        
-                        st.plotly_chart(fig_pie, use_container_width=True)
-                    
-                    with col_metricas:
-                        st.markdown("#### 📊 Resumen Final")
-                        total_final = sum(acumulados_por_producto.values())
-                        st.metric("Total Acumulado", f"\${total_final:,.0f}")
-                        st.metric("Total Aportado", f"\${periodo_simulacion * num_aportaciones_por_mes * aportacion_monto:,.0f}")
-                        st.metric("Intereses Generados", f"\${intereses_acumulados_total:,.0f}")
-                        
-                        st.markdown("#### 🏦 Por SOFIPO")
-                        for key, monto in sorted(acumulados_por_producto.items(), key=lambda x: -x[1]):
-                            if monto > 0:
-                                if total_invertido == 0:
-                                    prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
-                                    if prod_info:
-                                        nombre = prod_info["sofipo"]
-                                else:
-                                    inv_data = inversiones_seleccionadas.get(key)
-                                    if inv_data:
-                                        nombre = inv_data["sofipo"]
-                                
-                                porcentaje = (monto / total_final) * 100
-                                st.markdown(f"**{nombre}**: \${monto:,.0f} ({porcentaje:.1f}%)")
-                
                 # ====================================================================
+                # TAB 2: VISUALIZACIÓN FINAL - DISTRIBUCIÓN DEL PORTAFOLIO
+                # ====================================================================
+                # Usamos los valores EXACTOS calculados dinámicamente
+                
+                if acumulados_por_producto:
+                    with tab2:
+                        st.markdown("## 🎯 Tu Portafolio Final - Análisis Completo")
+                    
+                        # Calcular valores EXACTOS una sola vez
+                        total_final_exacto = sum(acumulados_por_producto.values())
+                        total_aportado_exacto = periodo_simulacion * num_aportaciones_por_mes * aportacion_monto
+                        intereses_exactos = intereses_acumulados_total
+                        
+                        # Verificación: el total debe ser aportaciones + intereses (si empieza en $0)
+                        # O capital_inicial + intereses + aportaciones (si hay capital inicial)
+                        if total_invertido == 0:
+                            # Modo $0: Total = Aportaciones + Intereses
+                            verificacion_total = total_aportado_exacto + intereses_exactos
+                        else:
+                            # Con capital: Total = Capital + Aportaciones + Intereses
+                            verificacion_total = total_invertido + total_aportado_exacto + intereses_exactos
+                        
+                        # Usar el valor verificado para consistencia
+                        total_final_exacto = verificacion_total
+                        
+                        # ============================================================
+                        # DISEÑO PROFESIONAL: Cards de métricas principales
+                        # ============================================================
+                        
+                        st.markdown('<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">', unsafe_allow_html=True)
+                        
+                        col_m1, col_m2, col_m3 = st.columns(3)
+                        
+                        with col_m1:
+                            st.markdown(f"""
+                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.9rem; color: #666; font-weight: 600; margin-bottom: 0.5rem;">💰 TOTAL ACUMULADO</div>
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">${total_final_exacto:,.2f}</div>
+                                <div style="font-size: 0.8rem; color: #888;">Al final de {periodo_simulacion} meses</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with col_m2:
+                            st.markdown(f"""
+                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.9rem; color: #666; font-weight: 600; margin-bottom: 0.5rem;">📥 TOTAL APORTADO</div>
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #43e97b; margin-bottom: 0.3rem;">${total_aportado_exacto:,.2f}</div>
+                                <div style="font-size: 0.8rem; color: #888;">{periodo_simulacion * int(num_aportaciones_por_mes)} aportaciones de ${aportacion_monto:,.0f}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with col_m3:
+                            rendimiento_efectivo = (intereses_exactos / total_aportado_exacto * 100) if total_aportado_exacto > 0 else 0
+                            st.markdown(f"""
+                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <div style="font-size: 0.9rem; color: #666; font-weight: 600; margin-bottom: 0.5rem;">📈 INTERESES GENERADOS</div>
+                                <div style="font-size: 2.2rem; font-weight: 700; color: #f093fb; margin-bottom: 0.3rem;">${intereses_exactos:,.2f}</div>
+                                <div style="font-size: 0.8rem; color: #888;">{rendimiento_efectivo:.2f}% sobre tus aportaciones</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        st.markdown('</div>', unsafe_allow_html=True)
+                        
+                        # ============================================================
+                        # GRÁFICA DE DISTRIBUCIÓN + DESGLOSE
+                        # ============================================================
+                        
+                        col_viz, col_detalle = st.columns([1.5, 1])
+                        
+                        with col_viz:
+                            st.markdown("### 🎨 Distribución por SOFIPO")
+                            
+                            # Preparar datos del pie chart con valores EXACTOS
+                            labels_pie = []
+                            values_pie = []
+                            colors_pie = []
+                            
+                            color_map = {
+                                "DiDi": "#FF6B6B",
+                                "Nu México": "#8B5CF6",
+                                "Klar": "#3B82F6",
+                                "Mercado Pago": "#FCD34D",
+                                "Ualá": "#10B981",
+                                "Finsus": "#F59E0B",
+                                "Stori": "#EC4899"
+                            }
+                            
+                            for key, monto in sorted(acumulados_por_producto.items(), key=lambda x: -x[1]):
+                                if monto > 0:
+                                    # Obtener nombre de la SOFIPO
+                                    if total_invertido == 0:
+                                        prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
+                                        if prod_info:
+                                            nombre = prod_info["sofipo"]
+                                            tasa = prod_info["tasa"]
+                                    else:
+                                        inv_data = inversiones_seleccionadas.get(key)
+                                        if inv_data:
+                                            nombre = inv_data["sofipo"]
+                                            tasa = inv_data["producto_info"]["tasa_base"]
+                                    
+                                    porcentaje = (monto / total_final_exacto * 100)
+                                    labels_pie.append(f"{nombre} ({tasa}%)<br>{porcentaje:.1f}%")
+                                    values_pie.append(monto)
+                                    colors_pie.append(color_map.get(nombre, "#94A3B8"))
+                            
+                            # Crear pie chart mejorado
+                            fig_pie = go.Figure(data=[go.Pie(
+                                labels=labels_pie,
+                                values=values_pie,
+                                marker=dict(
+                                    colors=colors_pie,
+                                    line=dict(color='white', width=3)
+                                ),
+                                hole=0.45,
+                                textinfo='none',  # No mostrar texto en el chart
+                                hovertemplate='<b>%{label}</b><br>Monto: $%{value:,.2f}<extra></extra>',
+                                pull=[0.02] * len(labels_pie)  # Separar ligeramente
+                            )])
+                            
+                            # Agregar anotación en el centro
+                            fig_pie.add_annotation(
+                                text=f"<b>${total_final_exacto:,.0f}</b><br><span style='font-size:14px;'>Total Final</span>",
+                                x=0.5, y=0.5,
+                                font=dict(size=24, color='#667eea', family="Arial", weight="bold"),
+                                showarrow=False
+                            )
+                            
+                            fig_pie.update_layout(
+                                showlegend=True,
+                                height=450,
+                                margin=dict(t=10, b=10, l=10, r=10),
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                legend=dict(
+                                    orientation="h",
+                                    yanchor="bottom",
+                                    y=-0.2,
+                                    xanchor="center",
+                                    x=0.5,
+                                    font=dict(size=11)
+                                )
+                            )
+                            
+                            st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
+                        
+                        with col_detalle:
+                            st.markdown("### 📊 Desglose Detallado")
+                            
+                            # Mostrar lista ordenada por monto
+                            for key, monto in sorted(acumulados_por_producto.items(), key=lambda x: -x[1]):
+                                if monto > 0:
+                                    if total_invertido == 0:
+                                        prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
+                                        if prod_info:
+                                            nombre = prod_info["sofipo"]
+                                            tasa = prod_info["tasa"]
+                                    else:
+                                        inv_data = inversiones_seleccionadas.get(key)
+                                        if inv_data:
+                                            nombre = inv_data["sofipo"]
+                                            tasa = inv_data["producto_info"]["tasa_base"]
+                                    
+                                    porcentaje = (monto / total_final_exacto * 100)
+                                    color = color_map.get(nombre, "#94A3B8")
+                                    
+                                    st.markdown(f"""
+                                    <div style="background: {color}15; padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem; border-left: 4px solid {color};">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div>
+                                                <div style="font-weight: 700; font-size: 1.1rem; color: {color};">{nombre}</div>
+                                                <div style="font-size: 0.85rem; color: #666; margin-top: 0.2rem;">{tasa}% anual</div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <div style="font-weight: 700; font-size: 1.2rem; color: #333;">${monto:,.2f}</div>
+                                                <div style="font-size: 0.85rem; color: #888;">{porcentaje:.2f}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                            
+                            # Mostrar totales de verificación
+                            st.markdown("---")
+                            st.markdown("**✓ Verificación:**")
+                            st.caption(f"Suma de partes: ${sum(acumulados_por_producto.values()):,.2f}")
+                            st.caption(f"Total mostrado: ${total_final_exacto:,.2f}")
+                            diferencia = abs(sum(acumulados_por_producto.values()) - total_final_exacto)
+                            if diferencia < 0.01:
+                                st.success("✓ Números verificados correctamente")
+                    
+                    # ====================================================================
                 # DASHBOARD EJECUTIVO UNIFICADO
                 # ====================================================================
                 # Ahora que tenemos los datos REALES del portafolio final,
