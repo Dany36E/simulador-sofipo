@@ -3637,7 +3637,7 @@ def main():
                         else:
                             productos_ordenados = sorted(
                                 [(k, v) for k, v in inversiones_seleccionadas.items()],
-                                key=lambda x: -x[1]['tasa']
+                                key=lambda x: -x[1]['producto_info']['tasa_base']
                             )
                         
                         # Primero calcular intereses sobre saldos actuales
@@ -3655,7 +3655,7 @@ def main():
                                         intereses_periodo += interes
                                 else:
                                     inv_data = inversiones_seleccionadas[key]
-                                    tasa = inv_data['tasa']
+                                    tasa = inv_data['producto_info']['tasa_base']
                                     interes = calcular_interes_compuesto(acumulados_por_producto[key], tasa, dias)
                                     acumulados_por_producto[key] += interes
                                     intereses_periodo += interes
@@ -3675,7 +3675,7 @@ def main():
                             else:
                                 sofipo_key, inv_data = item
                                 limite = inv_data['producto_info'].get('limite_maximo') or inv_data['producto_info'].get('limite_max') or inv_data['producto_info'].get('limite_premium') or float('inf')
-                                nombre_sofipo = f"{inv_data['sofipo']} ({inv_data['tasa']}%)"
+                                nombre_sofipo = f"{inv_data['sofipo']} ({inv_data['producto_info']['tasa_base']}%)"
                             
                             if limite is None:
                                 limite = float('inf')
@@ -3748,7 +3748,7 @@ def main():
                                     inv_data = inversiones_seleccionadas.get(key)
                                     if inv_data:
                                         nombre = inv_data["sofipo"]
-                                        tasa = inv_data["tasa"]
+                                        tasa = inv_data["producto_info"]["tasa_base"]
                                 
                                 labels_pie.append(f"{nombre} ({tasa}%)")
                                 values_pie.append(monto)
