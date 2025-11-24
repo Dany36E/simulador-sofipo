@@ -3380,22 +3380,24 @@ def main():
             # DESGLOSE DETALLADO (OPCIONAL - EN EXPANDER)
             # ====================================================================
             
-            st.markdown("---")
-            st.subheader("📋 Desglose Mensual Detallado")
-            
-            for inversion_key, df_proyeccion in zip(
-                df_proyecciones_completo['SOFIPO'].unique(),
-                proyecciones_todas
-            ):
-                with st.expander(f"📊 {inversion_key}"):
-                    # Formatear el dataframe
-                    df_display = df_proyeccion.copy()
-                    df_display['Capital Inicial'] = df_display['Capital Inicial'].apply(lambda x: f"${x:,.2f}")
-                    df_display['Intereses Generados'] = df_display['Intereses Generados'].apply(lambda x: f"${x:,.2f}")
-                    df_display['Total Acumulado'] = df_display['Total Acumulado'].apply(lambda x: f"${x:,.2f}")
-                    df_display = df_display.drop('SOFIPO', axis=1)
-                    
-                    st.dataframe(df_display, width="stretch", hide_index=True)
+            # Solo mostrar desglose si hay inversiones (no solo aportaciones)
+            if len(proyecciones_todas) > 0 and total_invertido > 0:
+                st.markdown("---")
+                st.subheader("📋 Desglose Mensual Detallado")
+                
+                for inversion_key, df_proyeccion in zip(
+                    df_proyecciones_completo['SOFIPO'].unique(),
+                    proyecciones_todas
+                ):
+                    with st.expander(f"📊 {inversion_key}"):
+                        # Formatear el dataframe
+                        df_display = df_proyeccion.copy()
+                        df_display['Capital Inicial'] = df_display['Capital Inicial'].apply(lambda x: f"${x:,.2f}")
+                        df_display['Intereses Generados'] = df_display['Intereses Generados'].apply(lambda x: f"${x:,.2f}")
+                        df_display['Total Acumulado'] = df_display['Total Acumulado'].apply(lambda x: f"${x:,.2f}")
+                        df_display = df_display.drop('SOFIPO', axis=1)
+                        
+                        st.dataframe(df_display, width="stretch", hide_index=True)
             
             # ====================================================================
             # IMPACTO DE APORTACIONES RECURRENTES
@@ -3411,7 +3413,12 @@ def main():
                 total_final_con_aport = df_total_con_aportaciones['Total Acumulado'].iloc[-1]
                 aportaciones_totales = df_total_con_aportaciones['Aportaciones Acumuladas'].iloc[-1]
                 intereses_con_aport = df_total_con_aportaciones['Intereses Generados'].iloc[-1]
-                ganancia_extra_por_aportaciones = total_final_con_aport - total_final_sin_aport
+                
+                # Si hay capital inicial, calcular ganancia extra; si no, solo mostrar total acumulado
+                if total_invertido > 0:
+                    ganancia_extra_por_aportaciones = total_final_con_aport - total_final_sin_aport
+                else:
+                    ganancia_extra_por_aportaciones = total_final_con_aport  # Todo es ganancia desde $0
                 
                 col_a1, col_a2, col_a3, col_a4 = st.columns(4)
                 
@@ -3430,23 +3437,41 @@ def main():
                     )
                 
                 with col_a3:
-                    st.metric(
-                        "Total Final",
-                        f"${total_final_con_aport:,.0f}",
-                        delta=f"+${ganancia_extra_por_aportaciones:,.0f} vs sin aportaciones",
-                        delta_color="normal"
-                    )
+                    if total_invertido > 0:
+                        st.metric(
+                            "Total Final",
+                            f"${total_final_con_aport:,.0f}",
+                            delta=f"+${ganancia_extra_por_aportaciones:,.0f} vs sin aportaciones",
+                            delta_color="normal"
+                        )
+                    else:
+                        st.metric(
+                            "Total Final",
+                            f"${total_final_con_aport:,.0f}",
+                            help="Capital acumulado desde $0 con aportaciones"
+                        )
                 
                 with col_a4:
-                    porcentaje_extra = (ganancia_extra_por_aportaciones / total_final_sin_aport * 100) if total_final_sin_aport > 0 else 0
-                    st.metric(
-                        "Crecimiento Extra",
-                        f"{porcentaje_extra:.1f}%",
-                        help="Cuánto más ganas con aportaciones vs solo capital inicial"
-                    )
+                    if total_invertido > 0:
+                        porcentaje_extra = (ganancia_extra_por_aportaciones / total_final_sin_aport * 100) if total_final_sin_aport > 0 else 0
+                        st.metric(
+                            "Crecimiento Extra",
+                            f"{porcentaje_extra:.1f}%",
+                            help="Cuánto más ganas con aportaciones vs solo capital inicial"
+                        )
+                    else:
+                        rendimiento_efectivo = (intereses_con_aport / aportaciones_totales * 100) if aportaciones_totales > 0 else 0
+                        st.metric(
+                            "Rendimiento",
+                            f"{rendimiento_efectivo:.1f}%",
+                            help="Intereses generados sobre aportaciones totales"
+                        )
                 
                 # Mensaje con formato corregido (sin itálicas accidentales)
-                st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
+                if total_invertido > 0:
+                    st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
+                else:
+                    st.info(f"💡 **Iniciando desde $0 con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, acumularías ${total_final_con_aport:,.0f} en {periodo_simulacion} meses** (${aportaciones_totales:,.0f} aportado + ${intereses_con_aport:,.0f} intereses)")
                 
                 # Explicar estrategia de distribución de aportaciones
                 st.markdown("##### 📋 Estrategia de Distribución de Aportaciones")
