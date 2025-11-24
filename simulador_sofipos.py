@@ -3469,9 +3469,9 @@ def main():
                 
                 # Mensaje con formato corregido (sin itálicas accidentales)
                 if total_invertido > 0:
-                    st.info(f"💡 **Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses**")
+                    st.info(f"💡 Con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, ganarías ${ganancia_extra_por_aportaciones:,.0f} MÁS en {periodo_simulacion} meses")
                 else:
-                    st.info(f"💡 **Iniciando desde $0 con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, acumularías ${total_final_con_aport:,.0f} en {periodo_simulacion} meses** (${aportaciones_totales:,.0f} aportado + ${intereses_con_aport:,.0f} intereses)")
+                    st.info(f"💡 Iniciando desde $0 con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f}, acumularías ${total_final_con_aport:,.0f} en {periodo_simulacion} meses ({aportaciones_totales:,.0f} aportado + ${intereses_con_aport:,.0f} intereses)")
                 
                 # Explicar estrategia de distribución de aportaciones
                 st.markdown("##### 📋 Estrategia de Distribución de Aportaciones")
