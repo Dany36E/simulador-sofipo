@@ -3514,6 +3514,77 @@ def main():
                     
                     if total_distribuido < aportacion_monto:
                         st.warning(f"⚠️ Solo se pueden distribuir ${total_distribuido:,.0f} de ${aportacion_monto:,.0f} debido a límites máximos de productos.")
+                
+                # ============================================================
+                # PROYECCIÓN MES A MES DE APORTACIONES
+                # ============================================================
+                st.markdown("---")
+                st.markdown("##### 📅 Proyección Mes a Mes de Aportaciones")
+                st.caption("Detalle de cómo se distribuirá cada aportación y el crecimiento acumulado por producto")
+                
+                # Calcular aportaciones por mes según frecuencia
+                aportaciones_por_mes_dict = {
+                    "Semanal": 4.33,
+                    "Quincenal": 2,
+                    "Mensual": 1
+                }
+                num_aportaciones_por_mes = aportaciones_por_mes_dict[frecuencia_aportacion]
+                
+                # Crear proyección mes a mes
+                proyeccion_mensual = []
+                acumulados_por_producto = {key: inv['monto'] for key, inv in inversiones_seleccionadas.items()}
+                
+                for mes in range(1, periodo_simulacion + 1):
+                    fila_mes = {"Mes": mes}
+                    
+                    # Agregar aportación del mes (distribuida)
+                    for sofipo_key, monto_aport_unitaria in distribucion_aportacion.items():
+                        if monto_aport_unitaria > 0:
+                            # Monto aportado este mes = aportación unitaria * frecuencia
+                            aportacion_mes = monto_aport_unitaria * num_aportaciones_por_mes
+                            
+                            # Verificar límites antes de agregar
+                            inv_data = inversiones_seleccionadas[sofipo_key]
+                            limite = inv_data['producto_info'].get('limite_maximo') or inv_data['producto_info'].get('limite_max') or inv_data['producto_info'].get('limite_premium') or float('inf')
+                            
+                            # Si excede el límite, solo agregar hasta el límite
+                            if acumulados_por_producto[sofipo_key] + aportacion_mes > limite:
+                                aportacion_mes = max(0, limite - acumulados_por_producto[sofipo_key])
+                            
+                            # Calcular interés del mes sobre saldo acumulado
+                            tasa_anual = inv_data['tasa']
+                            interes_mes = calcular_interes_compuesto(acumulados_por_producto[sofipo_key], tasa_anual, 30)
+                            
+                            # Actualizar acumulado
+                            acumulados_por_producto[sofipo_key] += interes_mes + aportacion_mes
+                            
+                            # Guardar en fila
+                            nombre_corto = f"{inv_data['sofipo']}"
+                            fila_mes[f"{nombre_corto} Aportado"] = aportacion_mes
+                            fila_mes[f"{nombre_corto} Interés"] = interes_mes
+                            fila_mes[f"{nombre_corto} Total"] = acumulados_por_producto[sofipo_key]
+                    
+                    # Calcular totales
+                    fila_mes["Total Aportado Mes"] = sum([v for k, v in fila_mes.items() if "Aportado" in k])
+                    fila_mes["Total Interés Mes"] = sum([v for k, v in fila_mes.items() if "Interés" in k])
+                    fila_mes["Total Acumulado"] = sum(acumulados_por_producto.values())
+                    
+                    proyeccion_mensual.append(fila_mes)
+                
+                # Crear DataFrame
+                df_proyeccion_mensual = pd.DataFrame(proyeccion_mensual)
+                
+                # Mostrar tabla resumida (solo totales)
+                df_display = df_proyeccion_mensual[["Mes", "Total Aportado Mes", "Total Interés Mes", "Total Acumulado"]].copy()
+                df_display["Total Aportado Mes"] = df_display["Total Aportado Mes"].apply(lambda x: f"${x:,.0f}")
+                df_display["Total Interés Mes"] = df_display["Total Interés Mes"].apply(lambda x: f"${x:,.0f}")
+                df_display["Total Acumulado"] = df_display["Total Acumulado"].apply(lambda x: f"${x:,.0f}")
+                
+                st.dataframe(df_display, use_container_width=True, hide_index=True)
+                
+                # Detalle completo por producto en expander
+                with st.expander("🔍 Ver detalle completo por producto"):
+                    st.dataframe(df_proyeccion_mensual, use_container_width=True, hide_index=True)
         
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES
