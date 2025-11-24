@@ -3008,7 +3008,7 @@ def main():
             
             # Caso especial: Solo aportaciones sin capital inicial
             if total_invertido == 0 and aportaciones_activas and aportacion_monto > 0:
-                st.info(f"💡 **Simulación desde $0** - Proyectando con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f} a tasa promedio del mercado (15% anual)")
+                st.info(f"💡 Iniciando desde \$0 con aportaciones {frecuencia_aportacion.lower()}es de \${aportacion_monto:,.0f} a tasa promedio del mercado (15% anual)")
                 
                 # Generar proyección solo con aportaciones
                 # Usar la tasa más alta disponible de los productos habilitados
@@ -3713,6 +3713,93 @@ def main():
                 
                 # Mostrar tabla
                 st.dataframe(df_proyeccion, use_container_width=True, hide_index=True, height=400)
+                
+                # Mostrar distribución final del portafolio
+                if acumulados_por_producto:
+                    st.markdown("### 🎯 Distribución Final del Portafolio")
+                    
+                    col_grafica, col_metricas = st.columns([2, 1])
+                    
+                    with col_grafica:
+                        # Crear pie chart
+                        labels_pie = []
+                        values_pie = []
+                        colors_pie = []
+                        
+                        color_map = {
+                            "DiDi": "#FF6B6B",
+                            "Nu México": "#8B5CF6",
+                            "Klar": "#3B82F6",
+                            "Mercado Pago": "#FCD34D",
+                            "Ualá": "#10B981",
+                            "Finsus": "#F59E0B",
+                            "Stori": "#EC4899"
+                        }
+                        
+                        for key, monto in acumulados_por_producto.items():
+                            if monto > 0:
+                                # Obtener nombre de la SOFIPO
+                                if total_invertido == 0:
+                                    prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
+                                    if prod_info:
+                                        nombre = prod_info["sofipo"]
+                                        tasa = prod_info["tasa"]
+                                else:
+                                    inv_data = inversiones_seleccionadas.get(key)
+                                    if inv_data:
+                                        nombre = inv_data["sofipo"]
+                                        tasa = inv_data["tasa"]
+                                
+                                labels_pie.append(f"{nombre} ({tasa}%)")
+                                values_pie.append(monto)
+                                colors_pie.append(color_map.get(nombre, "#94A3B8"))
+                        
+                        fig_pie = go.Figure(data=[go.Pie(
+                            labels=labels_pie,
+                            values=values_pie,
+                            marker=dict(colors=colors_pie),
+                            hole=0.4,
+                            textinfo='label+percent',
+                            textposition='auto',
+                            hovertemplate='<b>%{label}</b><br>\$%{value:,.0f}<br>%{percent}<extra></extra>'
+                        )])
+                        
+                        fig_pie.update_layout(
+                            showlegend=True,
+                            height=400,
+                            margin=dict(t=20, b=20, l=20, r=20),
+                            legend=dict(
+                                orientation="v",
+                                yanchor="middle",
+                                y=0.5,
+                                xanchor="left",
+                                x=1.05
+                            )
+                        )
+                        
+                        st.plotly_chart(fig_pie, use_container_width=True)
+                    
+                    with col_metricas:
+                        st.markdown("#### 📊 Resumen Final")
+                        total_final = sum(acumulados_por_producto.values())
+                        st.metric("Total Acumulado", f"\${total_final:,.0f}")
+                        st.metric("Total Aportado", f"\${periodo_simulacion * num_aportaciones_por_mes * aportacion_monto:,.0f}")
+                        st.metric("Intereses Generados", f"\${intereses_acumulados_total:,.0f}")
+                        
+                        st.markdown("#### 🏦 Por SOFIPO")
+                        for key, monto in sorted(acumulados_por_producto.items(), key=lambda x: -x[1]):
+                            if monto > 0:
+                                if total_invertido == 0:
+                                    prod_info = next((p for p in productos_ficticios if p["key"] == key), None)
+                                    if prod_info:
+                                        nombre = prod_info["sofipo"]
+                                else:
+                                    inv_data = inversiones_seleccionadas.get(key)
+                                    if inv_data:
+                                        nombre = inv_data["sofipo"]
+                                
+                                porcentaje = (monto / total_final) * 100
+                                st.markdown(f"**{nombre}**: \${monto:,.0f} ({porcentaje:.1f}%)")
         
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES
