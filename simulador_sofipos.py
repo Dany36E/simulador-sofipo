@@ -1777,14 +1777,246 @@ def main():
     
     if st.session_state.modo_simulador == "objetivo":
         st.markdown("## 🎯 Calculadora de Objetivo - ¿Cuánto necesito invertir?")
-        st.markdown("**Vamos a calcular cuánto capital o aportaciones necesitas para alcanzar tu meta**")
+        st.markdown("**Vamos a calcular cuánto capital o aportaciones necesitas para alcanzar tu meta de ganancia**")
         
-        # Aquí irá la calculadora de objetivo (la moveré del Paso 3 en el siguiente commit)
-        st.info("🚧 Calculando la mejor estrategia para tu objetivo...")
+        st.divider()
         
-        # TODO: Mover aquí la lógica completa de la calculadora de objetivo
-        st.warning("⚠️ Esta funcionalidad está en proceso de implementación. Por favor usa el modo 'Distribuir mi dinero'.")
-        st.stop()
+        # Paso 1: Configurar preferencias básicas primero
+        st.markdown("### ⚙️ Paso 1: Configura tus preferencias")
+        
+        col_pref1, col_pref2 = st.columns(2)
+        
+        with col_pref1:
+            st.markdown("**🏦 ¿Qué SOFIPOs quieres usar?**")
+            usa_nu_obj = st.checkbox("💜 Nu México", value=True, key="usa_nu_obj", help="15% hasta $25k")
+            usa_didi_obj = st.checkbox("🚗 DiDi", value=True, key="usa_didi_obj", help="16% los primeros $10k")
+            usa_klar_obj = st.checkbox("💙 Klar", value=True, key="usa_klar_obj", help="15% con Klar Plus")
+            usa_uala_obj = st.checkbox("🔴 Ualá", value=True, key="usa_uala_obj", help="16% hasta $50k con Plus")
+        
+        with col_pref2:
+            st.markdown("**📦 Más opciones**")
+            usa_mp_obj = st.checkbox("💛 Mercado Pago", value=True, key="usa_mp_obj", help="13% con $3k/mes")
+            usa_stori_obj = st.checkbox("🟠 Stori", value=True, key="usa_stori_obj", help="Hasta 11% (plazo fijo)")
+            usa_finsus_obj = st.checkbox("🟢 Finsus", value=True, key="usa_finsus_obj", help="10.09% (plazo fijo)")
+            solo_vista_obj = st.checkbox("💧 Solo productos A LA VISTA", value=True, key="solo_vista_obj", 
+                                        help="Sin plazos fijos, puedes retirar cuando quieras")
+        
+        st.markdown("**✅ ¿Cumples algún requisito especial?**")
+        col_req1, col_req2 = st.columns(2)
+        
+        with col_req1:
+            cumple_klar_plus_obj = st.checkbox("✨ Klar Plus/Platino", value=False, key="cumple_klar_plus_obj")
+            cumple_uala_plus_obj = st.checkbox("💳 Ualá Plus ($3k/mes)", value=False, key="cumple_uala_plus_obj")
+        
+        with col_req2:
+            cumple_mercadopago_obj = st.checkbox("💰 Mercado Pago ($3k/mes)", value=False, key="cumple_mercadopago_obj")
+        
+        st.divider()
+        
+        # Paso 2: Definir meta
+        st.markdown("### 🎯 Paso 2: Define tu meta de ganancia")
+        
+        col1, col2 = st.columns([2, 3])
+        
+        with col1:
+            objetivo_tipo = st.radio(
+                "**Quiero ganar:**",
+                options=["mensual", "anual"],
+                format_func=lambda x: "📅 Por mes" if x == "mensual" else "📅 Por año",
+                horizontal=True,
+                key="objetivo_tipo_obj"
+            )
+            
+            objetivo_ganancia = st.number_input(
+                f"Ganancia deseada ({objetivo_tipo})",
+                min_value=100,
+                value=1000 if objetivo_tipo == "mensual" else 12000,
+                step=100 if objetivo_tipo == "mensual" else 1000,
+                help=f"¿Cuánto quieres ganar {'al mes' if objetivo_tipo == 'mensual' else 'al año'}?",
+                key="objetivo_ganancia_obj"
+            )
+        
+        with col2:
+            st.info(f"🎯 **Tu objetivo:** Ganar ${objetivo_ganancia:,.0f} {'al mes' if objetivo_tipo == 'mensual' else 'al año'}")
+            if objetivo_tipo == "mensual":
+                st.caption(f"💡 Equivalente anual: ${objetivo_ganancia * 12:,.0f}")
+        
+        # Convertir ganancia a anual
+        if objetivo_tipo == "mensual":
+            ganancia_anual_objetivo = objetivo_ganancia * 12
+        else:
+            ganancia_anual_objetivo = objetivo_ganancia
+        
+        st.divider()
+        
+        # Calcular con botón
+        if st.button("🧮 Calcular Capital Necesario", use_container_width=True, type="primary", key="btn_calcular_obj"):
+            
+            # Función para calcular distribución ÓPTIMA
+            def calcular_tasa_ponderada_real_obj(monto_prueba):
+                productos_disponibles = []
+                
+                if usa_nu_obj:
+                    productos_disponibles.append({"sofipo": "Nu México", "producto": "Cajita Turbo", "tasa": 15.0, "maximo": 25000, "tipo": "vista", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Nu México", "producto": "Dinero en Cajita", "tasa": 7.5, "maximo": None, "tipo": "vista", "requisito": None})
+                
+                if usa_didi_obj:
+                    productos_disponibles.append({"sofipo": "DiDi", "producto": "DiDi Ahorro (primeros $10k)", "tasa": 16.0, "maximo": 10000, "tipo": "vista", "requisito": None})
+                    productos_disponibles.append({"sofipo": "DiDi", "producto": "DiDi Ahorro (después de $10k)", "tasa": 8.5, "maximo": None, "tipo": "vista", "requisito": None})
+                
+                if usa_stori_obj and not solo_vista_obj:
+                    productos_disponibles.append({"sofipo": "Stori", "producto": "28 días", "tasa": 9.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Stori", "producto": "90 días", "tasa": 10.0, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Stori", "producto": "180 días", "tasa": 10.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Stori", "producto": "360 días", "tasa": 11.0, "maximo": None, "tipo": "plazo", "requisito": None})
+                
+                if usa_klar_obj:
+                    productos_disponibles.append({"sofipo": "Klar", "producto": "Cuenta (Base)", "tasa": 8.5, "maximo": None, "tipo": "vista", "requisito": None})
+                    if cumple_klar_plus_obj:
+                        productos_disponibles.append({"sofipo": "Klar", "producto": "Inversión Flexible Max", "tasa": 15.0, "maximo": None, "tipo": "vista", "requisito": "Klar Plus"})
+                
+                if usa_uala_obj:
+                    productos_disponibles.append({"sofipo": "Ualá", "producto": "Cuenta Base", "tasa": 7.75, "maximo": 30000, "tipo": "vista", "requisito": None})
+                    if cumple_uala_plus_obj:
+                        productos_disponibles.append({"sofipo": "Ualá", "producto": "Cuenta Plus", "tasa": 16.0, "maximo": 50000, "tipo": "vista", "requisito": "Ualá Plus"})
+                
+                if usa_mp_obj:
+                    if cumple_mercadopago_obj:
+                        productos_disponibles.append({"sofipo": "Mercado Pago", "producto": "Cuenta Remunerada", "tasa": 13.0, "maximo": 25000, "tipo": "vista", "requisito": "$3k/mes"})
+                    else:
+                        productos_disponibles.append({"sofipo": "Mercado Pago", "producto": "Cuenta Remunerada Base", "tasa": 10.0, "maximo": None, "tipo": "vista", "requisito": None})
+                
+                if usa_finsus_obj and not solo_vista_obj:
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 28 días", "tasa": 9.5, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 91 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 360 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
+                
+                if not productos_disponibles:
+                    return 0, []
+                
+                productos_ordenados = sorted(productos_disponibles, key=lambda x: x["tasa"], reverse=True)
+                
+                distribucion = []
+                saldo = monto_prueba
+                
+                for producto in productos_ordenados:
+                    if saldo <= 0:
+                        break
+                    
+                    if producto["maximo"] is not None:
+                        monto_asignar = min(producto["maximo"], saldo)
+                    else:
+                        monto_asignar = saldo
+                    
+                    if monto_asignar > 0:
+                        distribucion.append({
+                            "sofipo": producto["sofipo"],
+                            "producto": producto["producto"],
+                            "monto": monto_asignar,
+                            "tasa": producto["tasa"],
+                            "tipo": producto["tipo"],
+                            "requisito": producto["requisito"]
+                        })
+                        saldo -= monto_asignar
+                        
+                        if producto["maximo"] is None:
+                            break
+                
+                if distribucion:
+                    rendimiento_total = 0
+                    dias_simulacion = 12 * 30
+                    for d in distribucion:
+                        interes = calcular_interes_compuesto(d["monto"], d["tasa"], dias_simulacion)
+                        rendimiento_total += interes
+                    tasa_ponderada = (rendimiento_total / monto_prueba) * 100 if monto_prueba > 0 else 0
+                    return tasa_ponderada, distribucion
+                else:
+                    return 0, []
+            
+            # Calcular
+            tasa_referencia, _ = calcular_tasa_ponderada_real_obj(100000)
+            
+            if tasa_referencia == 0:
+                st.error("⚠️ No hay SOFIPOs disponibles con tu configuración. Activa al menos una SOFIPO.")
+            else:
+                capital_estimado = (ganancia_anual_objetivo / tasa_referencia) * 100
+                capital_min = max(1000, capital_estimado * 0.5)
+                capital_max = capital_estimado * 2
+                capital_necesario = capital_estimado
+                iteraciones = 0
+                max_iteraciones = 30
+                
+                while iteraciones < max_iteraciones and capital_max - capital_min > 10:
+                    capital_prueba = (capital_min + capital_max) / 2
+                    tasa_ponderada, dist = calcular_tasa_ponderada_real_obj(capital_prueba)
+                    ganancia_estimada = capital_prueba * tasa_ponderada / 100
+                    diferencia = abs(ganancia_estimada - ganancia_anual_objetivo)
+                    
+                    if diferencia < 10:
+                        capital_necesario = capital_prueba
+                        break
+                    elif ganancia_estimada < ganancia_anual_objetivo:
+                        capital_min = capital_prueba
+                    else:
+                        capital_max = capital_prueba
+                    
+                    capital_necesario = capital_prueba
+                    iteraciones += 1
+                
+                tasa_real, distribucion_final = calcular_tasa_ponderada_real_obj(capital_necesario)
+                ganancia_anual_real = capital_necesario * tasa_real / 100
+                ganancia_mensual_real = ganancia_anual_real / 12
+                
+                # Mostrar resultados
+                st.markdown("---")
+                st.markdown("### 🎯 Resultado: Tu Estrategia Personalizada")
+                
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric("💰 Capital Necesario", f"${capital_necesario:,.0f}", help="Monto que necesitas invertir")
+                
+                with col2:
+                    st.metric("💵 Ganancia Anual", f"${ganancia_anual_real:,.0f}", delta=f"{tasa_real:.2f}%")
+                
+                with col3:
+                    st.metric("📅 Ganancia Mensual", f"${ganancia_mensual_real:,.0f}", 
+                             delta=f"~{ganancia_mensual_real/capital_necesario*100:.2f}%/mes")
+                
+                with col4:
+                    sofipos_count = len(set([d["sofipo"] for d in distribucion_final]))
+                    st.metric("🏦 SOFIPOs", f"{sofipos_count}", help="En tu distribución")
+                
+                if distribucion_final:
+                    st.markdown("#### 📊 Distribución Sugerida")
+                    for i, item in enumerate(distribucion_final, 1):
+                        porcentaje = (item["monto"] / capital_necesario * 100)
+                        dias_simulacion = 12 * 30
+                        ganancia_item = calcular_interes_compuesto(item["monto"], item["tasa"], dias_simulacion)
+                        tipo_icon = "💧" if item.get("tipo") == "vista" else "📅"
+                        requisito_text = f" ✅ {item['requisito']}" if item.get("requisito") else ""
+                        
+                        st.markdown(f"{i}. {tipo_icon} **{item['sofipo']} - {item['producto']}** {requisito_text}")
+                        st.markdown(f"   └─ **${item['monto']:,.0f}** al **{item['tasa']}%** = **${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
+                
+                if capital_necesario > 200000:
+                    st.warning("⚠️ **Capital alto**: Recuerda que el IPAB protege hasta $200k por institución.")
+                
+                # Botón para aplicar la estrategia
+                st.markdown("---")
+                col_btn1, col_btn2 = st.columns([3, 1])
+                with col_btn1:
+                    if st.button("🚀 Aplicar esta estrategia y ver simulación completa", use_container_width=True, type="primary", key="btn_aplicar_obj"):
+                        st.session_state["estrategia_objetivo_pendiente"] = {
+                            "capital": int(capital_necesario),
+                            "distribucion": distribucion_final,
+                            "nombre": "Estrategia desde Objetivo"
+                        }
+                        st.session_state.modo_simulador = "distribucion"
+                        st.success("✅ Estrategia aplicada. Cambiando a modo Distribución...")
+                        st.rerun()
+        
+        st.stop()  # No mostrar el resto del flujo en modo objetivo
     
     # ========================================================================
     # MODO DISTRIBUCIÓN: CONFIGURACIÓN RÁPIDA (PASOS 1-4)
@@ -2030,13 +2262,16 @@ def main():
         else:
             st.info("ℹ️ Verás todos los productos (incluyendo plazos fijos que dan mejores rendimientos pero no puedes tocar el dinero por un tiempo)")
     
+    # NOTA: La calculadora de objetivo fue movida al modo "objetivo" al inicio
+    
     st.divider()
     
     # ========================================================================
-    # CALCULADORA DE OBJETIVO INVERSO (CON TASAS REALES)
+    # OCULTAR CALCULADORA - AHORA ESTÁ EN MODO OBJETIVO
     # ========================================================================
     
-    with st.expander("🎯 Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
+    if False:  # Calculadora movida al modo objetivo
+        with st.expander("🎯 Calculadora de Objetivo: ¿Cuánto necesito invertir?", expanded=False):
         st.markdown("**Calcula cuánto capital necesitas para alcanzar tu meta de ganancia usando tasas reales y tus preferencias**")
         
         col1, col2 = st.columns(2)
