@@ -1798,8 +1798,6 @@ def main():
             usa_mp_obj = st.checkbox("💛 Mercado Pago", value=True, key="usa_mp_obj", help="13% con $3k/mes")
             usa_stori_obj = st.checkbox("🟠 Stori", value=True, key="usa_stori_obj", help="Hasta 11% (plazo fijo)")
             usa_finsus_obj = st.checkbox("🟢 Finsus", value=True, key="usa_finsus_obj", help="10.09% (plazo fijo)")
-            solo_vista_obj = st.checkbox("💧 Solo productos A LA VISTA", value=True, key="solo_vista_obj", 
-                                        help="Sin plazos fijos, puedes retirar cuando quieras")
         
         st.markdown("**✅ ¿Cumples algún requisito especial?**")
         col_req1, col_req2 = st.columns(2)
@@ -1810,6 +1808,19 @@ def main():
         
         with col_req2:
             cumple_mercadopago_obj = st.checkbox("💰 Mercado Pago ($3k/mes)", value=False, key="cumple_mercadopago_obj")
+        
+        st.markdown("**💧 ¿Necesitas tu dinero disponible en cualquier momento?**")
+        solo_vista_obj = st.checkbox(
+            "💧 Solo productos A LA VISTA (sin plazo fijo)",
+            value=True, 
+            key="solo_vista_obj",
+            help="Activa esto si necesitas poder retirar tu dinero cuando quieras. Los rendimientos serán un poco menores pero tendrás liquidez total."
+        )
+        
+        if solo_vista_obj:
+            st.info("✅ Perfecto. Solo verás productos donde puedes retirar tu dinero cuando quieras.")
+        else:
+            st.info("ℹ️ Verás todos los productos (incluyendo plazos fijos que dan mejores rendimientos pero no puedes tocar el dinero por un tiempo)")
         
         st.divider()
         
