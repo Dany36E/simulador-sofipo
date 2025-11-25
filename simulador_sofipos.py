@@ -2824,19 +2824,23 @@ def main():
                     )
                     
                     if modo_input == "💵 Monto ($)":
+                        # Determinar valor inicial: usar el guardado en session_state o el default
+                        monto_key = f"monto_{sofipo_name}_{producto_seleccionado}"
+                        valor_inicial = st.session_state.get(monto_key, min(max(10000, producto_info['minimo']), monto_total))
+                        
                         # Monto a invertir
                         monto = st.number_input(
                             "¿Cuánto invertirás aquí?",
                             min_value=producto_info['minimo'],
-                            value=min(max(10000, producto_info['minimo']), monto_total),
+                            value=valor_inicial,
                             step=1000,
-                            key=f"monto_{sofipo_name}_{producto_seleccionado}",
+                            key=monto_key,
                             help=f"Mínimo: ${producto_info['minimo']:,} MXN"
                         )
                         
                         # Porcentaje del total
                         porcentaje = (monto / monto_total * 100) if monto_total > 0 else 0
-                        st.caption(f"📊 Representa el **{porcentaje:.1f}%** de tu capital total")
+                        st.caption(f"📊Representa el **{porcentaje:.1f}%** de tu capital total")
                     else:
                         # Input de porcentaje
                         porcentaje_input = st.number_input(
