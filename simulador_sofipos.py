@@ -4218,6 +4218,135 @@ def main():
                             value=f"{concentracion_maxima:.0f}%",
                             delta=nivel_concentracion
                         )
+            else:
+                # ================================================================
+                # TAB 2: DISTRIBUCIÓN FINAL - SIN APORTACIONES (solo capital inicial)
+                # ================================================================
+                with tab2:
+                    st.markdown("## 🎯 Tu Portafolio Final - Análisis Completo")
+                
+                    # Calcular valores finales
+                    total_final_sin_aport = total_invertido + ganancia_total
+                    
+                    # Cards de métricas principales
+                    st.markdown('<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">', unsafe_allow_html=True)
+                    
+                    col_m1, col_m2 = st.columns(2)
+                    
+                    with col_m1:
+                        st.markdown(f"""
+                        <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.9rem; color: #666; font-weight: 600; margin-bottom: 0.5rem;">💰 TOTAL ACUMULADO</div>
+                            <div style="font-size: 2.2rem; font-weight: 700; color: #667eea; margin-bottom: 0.3rem;">${total_final_sin_aport:,.2f}</div>
+                            <div style="font-size: 0.8rem; color: #888;">Al final de {periodo_simulacion} meses</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with col_m2:
+                        rendimiento_porcentaje = (ganancia_total / total_invertido * 100) if total_invertido > 0 else 0
+                        st.markdown(f"""
+                        <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.9rem; color: #666; font-weight: 600; margin-bottom: 0.5rem;">📈 INTERESES GENERADOS</div>
+                            <div style="font-size: 2.2rem; font-weight: 700; color: #f093fb; margin-bottom: 0.3rem;">${ganancia_total:,.2f}</div>
+                            <div style="font-size: 0.8rem; color: #888;">{rendimiento_porcentaje:.2f}% sobre tu capital inicial</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # Gráfica de distribución + desglose
+                    col_viz, col_detalle = st.columns([1.5, 1])
+                    
+                    with col_viz:
+                        st.markdown("### 🎨 Distribución por SOFIPO")
+                        
+                        # Preparar datos del pie chart
+                        labels_pie = []
+                        values_pie = []
+                        colors_pie = []
+                        
+                        color_map = {
+                            "DiDi": "#FF6B6B",
+                            "Nu México": "#8B5CF6",
+                            "Klar": "#3B82F6",
+                            "Mercado Pago": "#FCD34D",
+                            "Ualá": "#10B981",
+                            "Finsus": "#F59E0B",
+                            "Stori": "#EC4899"
+                        }
+                        
+                        for key, inv_data in sorted(inversiones_seleccionadas.items(), key=lambda x: -x[1]['monto']):
+                            monto_inicial = inv_data['monto']
+                            # Calcular monto final con intereses
+                            tasa = inv_data['producto_info']['tasa_base']
+                            interes = calcular_interes_compuesto(monto_inicial, tasa, periodo_simulacion * 30)
+                            monto_final = monto_inicial + interes
+                            
+                            porcentaje = (monto_final / total_final_sin_aport * 100)
+                            nombre = inv_data["sofipo"]
+                            labels_pie.append(f"{nombre} ({tasa}%)<br>{porcentaje:.1f}%")
+                            values_pie.append(monto_final)
+                            colors_pie.append(color_map.get(nombre, "#94A3B8"))
+                        
+                        # Crear pie chart
+                        fig_pie = go.Figure(data=[go.Pie(
+                            labels=labels_pie,
+                            values=values_pie,
+                            marker=dict(
+                                colors=colors_pie,
+                                line=dict(color='white', width=3)
+                            ),
+                            hole=0.45,
+                            textinfo='none',
+                            hovertemplate='<b>%{label}</b><br>Monto: $%{value:,.2f}<extra></extra>',
+                            pull=[0.02] * len(labels_pie)
+                        )])
+                        
+                        # Anotación en el centro
+                        fig_pie.add_annotation(
+                            text=f"<b>${total_final_sin_aport:,.0f}</b><br><span style='font-size:14px;'>Total Final</span>",
+                            x=0.5, y=0.5,
+                            font=dict(size=24, color='#667eea', family="Arial", weight="bold"),
+                            showarrow=False
+                        )
+                        
+                        fig_pie.update_layout(
+                            showlegend=True,
+                            height=450,
+                            margin=dict(t=10, b=10, l=10, r=10),
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            legend=dict(
+                                orientation="h",
+                                yanchor="bottom",
+                                y=-0.2,
+                                xanchor="center",
+                                x=0.5,
+                                font=dict(size=11)
+                            )
+                        )
+                        
+                        st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
+                    
+                    with col_detalle:
+                        st.markdown("### 📊 Desglose Detallado")
+                        
+                        for key, inv_data in sorted(inversiones_seleccionadas.items(), key=lambda x: -x[1]['monto']):
+                            monto_inicial = inv_data['monto']
+                            tasa = inv_data['producto_info']['tasa_base']
+                            interes = calcular_interes_compuesto(monto_inicial, tasa, periodo_simulacion * 30)
+                            monto_final = monto_inicial + interes
+                            nombre = inv_data["sofipo"]
+                            producto = inv_data["producto"]
+                            porcentaje = (monto_final / total_final_sin_aport * 100)
+                            
+                            st.markdown(f"""
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid {color_map.get(nombre, '#94A3B8')}; margin-bottom: 0.8rem;">
+                                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem;">{nombre}</div>
+                                <div style="font-size: 0.85rem; color: #888; margin-bottom: 0.5rem;">{producto} · {tasa}% GAT</div>
+                                <div style="font-size: 1.2rem; font-weight: 600; color: {color_map.get(nombre, '#94A3B8')};">${monto_final:,.0f}</div>
+                                <div style="font-size: 0.8rem; color: #666;">{porcentaje:.1f}% del total · +${interes:,.0f} intereses</div>
+                            </div>
+                            """, unsafe_allow_html=True)
             
         # ====================================================================
         # ANÁLISIS Y RECOMENDACIONES (SIMPLIFICADO)
