@@ -1960,9 +1960,9 @@ def main():
                         productos_disponibles.append({"sofipo": "Mercado Pago", "producto": "Cuenta Remunerada Base", "tasa": 10.0, "maximo": None, "tipo": "vista", "requisito": None})
                 
                 if usa_finsus_obj and not solo_vista_obj:
-                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 28 días", "tasa": 9.5, "maximo": None, "tipo": "plazo", "requisito": None})
-                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 91 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
-                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Apartado 360 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Plazo Fijo 30 días", "tasa": 8.09, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Plazo Fijo 90 días", "tasa": 8.39, "maximo": None, "tipo": "plazo", "requisito": None})
+                    productos_disponibles.append({"sofipo": "Finsus", "producto": "Plazo Fijo 360 días", "tasa": 10.09, "maximo": None, "tipo": "plazo", "requisito": None})
                 
                 if not productos_disponibles:
                     return 0, []
@@ -2563,14 +2563,14 @@ def main():
                 if not solo_vista and usa_finsus:
                     opciones_disponibles.append({
                         "sofipo": "Finsus",
-                        "producto": "Apartado 360 días",
+                        "producto": "Plazo Fijo 360 días",
                         "tasa": 10.09,
                         "limite": None,
-                        "minimo": 1000,
+                        "minimo": 0,
                         "prioridad": 7,
                         "liquidez": "360 días",
                         "tipo": "plazo",
-                        "razon": "🟢 10.09% plazo 360 días � PLAZO FIJO",
+                        "razon": "🟢 10.09% plazo 360 días 📅 PLAZO FIJO",
                         "emoji": "🟢"
                     })
                 
