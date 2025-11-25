@@ -1573,7 +1573,81 @@ def main():
     
     # Encabezado centrado
     st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Compara rendimientos de SOFIPOs mexicanas en tiempo real</p>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitle">Descubre cuánto puede crecer tu dinero en las mejores instituciones financieras de México</p>', unsafe_allow_html=True)
+    
+    # ========================================================================
+    # INTRO EXPLICATIVA - UX MEJORADA PARA TODOS
+    # ========================================================================
+    
+    with st.expander("📚 ¿Cómo funciona este simulador? (Haz clic aquí si es tu primera vez)", expanded=False):
+        st.markdown("""
+        ### 👋 ¡Bienvenido!
+        
+        Esta herramienta te ayuda a **calcular cuánto dinero ganarás** al invertir en instituciones financieras mexicanas llamadas **SOFIPOs** 
+        (Sociedades Financieras Populares - como Nu, DiDi, Stori, etc.).
+        
+        #### 🎯 ¿Qué hace este simulador?
+        
+        1. **Te muestra cuánto ganarás** con tu dinero en diferentes plazos (3, 6, 12 o 24 meses)
+        2. **Compara automáticamente** las mejores opciones del mercado
+        3. **Te recomienda estrategias** según tu perfil (conservador, balanceado o agresivo)
+        4. **Simula aportaciones mensuales** para ver cómo crece tu ahorro
+        
+        #### 📖 Conceptos básicos (explicados fácil):
+        
+        - **GAT (Ganancia Anual Total)**: Es el porcentaje que ganas al año. Ejemplo: Si inviertes $10,000 al 15% GAT, ganarás $1,500 en un año.
+        - **A LA VISTA**: Puedes sacar tu dinero cuando quieras, sin esperar.
+        - **PLAZO FIJO**: Tu dinero queda "guardado" por un tiempo (28, 90, 180 o 360 días), pero ganas más intereses.
+        - **Interés Compuesto**: Ganas intereses sobre tus intereses (tu dinero crece más rápido).
+        
+        #### 🚀 ¿Cómo empezar?
+        
+        **Opción 1 - Rápido (Recomendado para principiantes):**
+        1. Ingresa cuánto dinero tienes para invertir
+        2. Abre la sección "💡 Recomendaciones de Inversión" 
+        3. Haz clic en "🚀 Aplicar esta estrategia"
+        4. ¡Listo! Verás tus resultados abajo
+        
+        **Opción 2 - Personalizado:**
+        1. Ingresa tu capital
+        2. Marca las instituciones donde quieres invertir
+        3. Distribuye tu dinero manualmente
+        4. Revisa los resultados
+        
+        ---
+        
+        💡 **Tip**: Si no sabes por dónde empezar, usa la **Estrategia Agresiva** - el simulador distribuirá tu dinero automáticamente en las mejores opciones.
+        """)
+    
+    # ========================================================================
+    # MODO DE USO - SELECTOR VISUAL
+    # ========================================================================
+    
+    st.markdown("### 🎯 ¿Cómo prefieres usar el simulador?")
+    
+    col_modo1, col_modo2 = st.columns(2)
+    
+    with col_modo1:
+        if st.button("🎓 **MODO GUIADO**\n\nÚsalo si es tu primera vez o prefieres que el simulador te ayude paso a paso", 
+                     use_container_width=True, type="primary"):
+            st.session_state["modo_uso"] = "guiado"
+            st.rerun()
+    
+    with col_modo2:
+        if st.button("⚙️ **MODO AVANZADO**\n\nÚsalo si ya conoces las SOFIPOs y quieres control total", 
+                     use_container_width=True):
+            st.session_state["modo_uso"] = "avanzado"
+            st.rerun()
+    
+    # Mostrar modo actual
+    modo_actual = st.session_state.get("modo_uso", "guiado")
+    
+    if modo_actual == "guiado":
+        st.info("📍 **Modo actual:** Guiado - Te ayudaremos paso a paso")
+    else:
+        st.info("📍 **Modo actual:** Avanzado - Control total de configuración")
+    
+    st.divider()
     
     # ========================================================================
     # GUARDAR/CARGAR SIMULACIONES
@@ -1676,148 +1750,253 @@ def main():
     
     
     # ========================================================================
-    # CONFIGURACIÓN RÁPIDA
+    # CONFIGURACIÓN RÁPIDA - DISEÑO INTUITIVO
     # ========================================================================
     
-    col1, col2 = st.columns([2, 1])
+    st.markdown("## 💵 Paso 1: ¿Cuánto dinero tienes?")
+    st.caption("No te preocupes, esto es solo una simulación. Tus datos no se guardan en ningún lado.")
+    
+    col1, col2, col3 = st.columns([3, 2, 2])
     
     with col1:
-        st.markdown("### 🎯 ¿Cuánto quieres invertir?")
         monto_total = st.number_input(
-            "Monto total disponible (MXN)",
+            "💰 Ingresa tu capital inicial (pesos mexicanos)",
             min_value=0,
             value=st.session_state.get("monto_total_input", 50000),
             step=5000,
-            help="Capital inicial disponible. Puedes empezar desde $0 si solo quieres simular aportaciones recurrentes",
+            help="¿Cuánto dinero tienes disponible ahora para invertir? Puedes empezar desde $0 si solo quieres ver cómo crecen las aportaciones mensuales",
             key="monto_total_input"
         )
         
-        # Mostrar mensaje informativo si está en $0
+        # Ejemplos visuales
         if monto_total == 0:
-            st.info("💡 **Modo: Solo Aportaciones Recurrentes** - Activa las aportaciones abajo para simular crecimiento desde cero")
+            st.success("💡 Perfecto! Vamos a simular cómo crecería tu dinero empezando desde cero con aportaciones periódicas")
+        elif monto_total < 10000:
+            st.info("💡 Con $" + f"{monto_total:,}" + " puedes empezar en Nu México, Klar o Mercado Pago")
+        elif monto_total < 50000:
+            st.info("💡 Con $" + f"{monto_total:,}" + " tienes acceso a la mayoría de las mejores opciones")
+        else:
+            st.success("💡 ¡Excelente capital! Podrás diversificar en múltiples instituciones y maximizar ganancias")
     
     with col2:
-        st.markdown("### 📅 Plazo")
         periodo_options = [3, 6, 12, 24]
         default_periodo = st.session_state.get("periodo_simulacion", 12)
         default_index = periodo_options.index(default_periodo) if default_periodo in periodo_options else 2
         periodo_simulacion = st.selectbox(
-            "Simular a:",
+            "📅 ¿Por cuánto tiempo?",
             options=periodo_options,
             index=default_index,
-            format_func=lambda x: f"{x} meses",
+            format_func=lambda x: f"{x} meses ({x//12} año)" if x >= 12 else f"{x} meses",
+            help="El plazo en el que quieres ver crecer tu inversión",
             key="periodo_simulacion"
         )
+        
+        # Mostrar explicación del plazo
+        if periodo_simulacion == 3:
+            st.caption("⏰ Plazo corto - Ideal para probar")
+        elif periodo_simulacion == 6:
+            st.caption("⏰ Medio año - Balance entre tiempo y ganancias")
+        elif periodo_simulacion == 12:
+            st.caption("⏰ 1 año completo - Recomendado para ver el GAT real")
+        else:
+            st.caption("⏰ 2 años - Maximiza el interés compuesto")
     
-    # ========================================================================
-    # APORTACIONES RECURRENTES
-    # ========================================================================
-    
-    st.markdown("### 💰 Aportaciones Recurrentes (Opcional)")
-    
-    col_activar, col_monto, col_frecuencia, col_estrategia = st.columns([1.5, 2, 2, 2.5])
-    
-    with col_activar:
-        aportaciones_activas = st.checkbox(
-            "Activar aportaciones",
-            value=st.session_state.get("aportaciones_activas", False),
-            help="Simula el efecto de agregar dinero periódicamente",
-            key="aportaciones_activas"
+    with col3:
+        # Calculadora rápida de ganancia estimada
+        st.markdown("📊 **Ganancia estimada:**")
+        tasa_promedio = 13.5  # Promedio de mercado
+        ganancia_estimada = monto_total * (tasa_promedio / 100) * (periodo_simulacion / 12)
+        st.metric(
+            label="Con tasa promedio ~13.5%",
+            value=f"${ganancia_estimada:,.0f}",
+            delta=f"+{(ganancia_estimada/monto_total*100):.1f}%" if monto_total > 0 else "0%"
         )
-    
-    with col_monto:
-        aportacion_monto = st.number_input(
-            "Monto por aportación",
-            min_value=0,
-            value=st.session_state.get("aportacion_monto", 2000),
-            step=500,
-            disabled=not aportaciones_activas,
-            key="aportacion_monto"
-        )
-    
-    with col_frecuencia:
-        frecuencia_aportacion = st.selectbox(
-            "Frecuencia",
-            options=["Semanal", "Quincenal", "Mensual"],
-            index=2,  # Default: Mensual
-            disabled=not aportaciones_activas,
-            key="frecuencia_aportacion"
-        )
-    
-    with col_estrategia:
-        estrategia_aportacion = st.selectbox(
-            "Estrategia de inversión",
-            options=[
-                "Misma distribución que capital inicial",
-                "Solo productos de mayor rendimiento",
-                "Distribución inteligente automática"
-            ],
-            index=0,
-            disabled=not aportaciones_activas,
-            help="Define cómo se invertirán las aportaciones recurrentes",
-            key="estrategia_aportacion"
-        )
+        st.caption("*Esto puede mejorar con las estrategias recomendadas")
     
     st.divider()
     
     # ========================================================================
-    # PREFERENCIAS DEL USUARIO
+    # APORTACIONES RECURRENTES - DISEÑO MEJORADO
     # ========================================================================
     
-    st.markdown("### ⚙️ Tus preferencias de inversión")
+    st.markdown("## � Paso 2: ¿Vas a ahorrar dinero cada mes? (Opcional)")
+    st.caption("Las aportaciones periódicas son la forma más efectiva de hacer crecer tu dinero con el tiempo. Si ahorras $2,000 al mes durante un año, habrás guardado $24,000 + intereses!")
     
-    with st.expander("✅ Configurar requisitos que SÍ puedo cumplir", expanded=False):
-        st.markdown("**Marca las opciones que SÍ cumples para obtener mejores recomendaciones:**")
+    aportaciones_activas = st.checkbox(
+        "✅ Sí, quiero simular aportaciones periódicas (semanal, quincenal o mensual)",
+        value=st.session_state.get("aportaciones_activas", False),
+        help="Activa esta opción si planeas agregar dinero regularmente (como cuando ahorras de tu sueldo)",
+        key="aportaciones_activas"
+    )
+    
+    if aportaciones_activas:
+        col_monto, col_frecuencia, col_estrategia = st.columns([2, 2, 3])
+        
+        with col_monto:
+            aportacion_monto = st.number_input(
+                "💵 ¿Cuánto vas a ahorrar cada vez?",
+                min_value=0,
+                value=st.session_state.get("aportacion_monto", 2000),
+                step=500,
+                help="Cantidad que planeas ahorrar en cada periodo",
+                key="aportacion_monto"
+            )
+            
+            # Mostrar total de aportaciones
+            if frecuencia_aportacion := st.session_state.get("frecuencia_aportacion", "Mensual"):
+                if frecuencia_aportacion == "Semanal":
+                    num_aportaciones = int(periodo_simulacion * 4.33)
+                elif frecuencia_aportacion == "Quincenal":
+                    num_aportaciones = periodo_simulacion * 2
+                else:  # Mensual
+                    num_aportaciones = periodo_simulacion
+                
+                total_aportaciones = aportacion_monto * num_aportaciones
+                st.caption(f"📊 Total a aportar: **${total_aportaciones:,}** en {num_aportaciones} aportaciones")
+        
+        with col_frecuencia:
+            frecuencia_aportacion = st.selectbox(
+                "📅 ¿Cada cuánto?",
+                options=["Semanal", "Quincenal", "Mensual"],
+                index=2,  # Default: Mensual
+                help="Con qué frecuencia agregarás dinero",
+                key="frecuencia_aportacion"
+            )
+            
+            # Explicación visual
+            if frecuencia_aportacion == "Semanal":
+                st.caption("⏰ Cada 7 días (~4 veces al mes)")
+            elif frecuencia_aportacion == "Quincenal":
+                st.caption("⏰ Cada 15 días (2 veces al mes)")
+            else:
+                st.caption("⏰ Cada 30 días (1 vez al mes)")
+        
+        with col_estrategia:
+            estrategia_aportacion = st.selectbox(
+                "🎯 ¿Cómo invertir las aportaciones?",
+                options=[
+                    "Misma distribución que capital inicial",
+                    "Solo productos de mayor rendimiento",
+                    "Distribución inteligente automática"
+                ],
+                index=0,
+                help="Misma distribución: Reparte igual que tu capital inicial\nMayor rendimiento: Prioriza las mejores tasas\nInteligente: El sistema optimiza automáticamente",
+                key="estrategia_aportacion"
+            )
+            
+            # Explicación de la estrategia seleccionada
+            if estrategia_aportacion == "Misma distribución que capital inicial":
+                st.caption("📊 Se respetará la misma proporción que tu inversión inicial")
+            elif estrategia_aportacion == "Solo productos de mayor rendimiento":
+                st.caption("🚀 Priorizará las mejores tasas disponibles")
+            else:
+                st.caption("🤖 El sistema distribuirá inteligentemente")
+    else:
+        # Valores por defecto cuando no hay aportaciones
+        aportacion_monto = 0
+        frecuencia_aportacion = "Mensual"
+        estrategia_aportacion = "Misma distribución que capital inicial"
+    
+    st.divider()
+    
+    # ========================================================================
+    # PREFERENCIAS DEL USUARIO - DISEÑO SIMPLIFICADO
+    # ========================================================================
+    
+    st.markdown("## ⚙️ Paso 3: Personaliza tu búsqueda (Opcional)")
+    
+    # Mostrar explicación según el modo
+    if st.session_state.get("modo_uso", "guiado") == "guiado":
+        st.success("💡 **Recomendación:** Puedes saltar este paso e ir directo a las 'Recomendaciones de Inversión' más abajo. El simulador elegirá lo mejor para ti automáticamente.")
+    
+    st.caption("Estas opciones son avanzadas. Solo modifícalas si conoces tu situación específica.")
+    
+    with st.expander("🎖️ ¿Cumples alguno de estos requisitos especiales?", expanded=False):
+        st.markdown("""
+        **Solo marca las opciones si realmente cumples estos requisitos.**
+        
+        Estos te darán acceso a tasas de interés más altas, pero requieren ciertos compromisos:
+        """)
         
         col1, col2 = st.columns(2)
         
         with col1:
             cumple_klar_plus = st.checkbox(
-                "💳 Tengo membresía Klar Plus o Platino",
+                "💳 Tengo Klar Plus o Platino",
                 value=st.session_state.get("cumple_klar_plus", False),
-                help="Necesaria para Klar Inversión Max (15%)",
+                help="Si tienes una membresía pagada de Klar (Plus o Platino), marca esto. Te da acceso a 15% de interés sin límite.",
                 key="cumple_klar_plus"
             )
+            if cumple_klar_plus:
+                st.caption("✅ Tendrás acceso a Klar Max (15% sin límite)")
             
             cumple_mercadopago = st.checkbox(
                 "💰 Puedo depositar $3,000/mes en Mercado Pago",
                 value=st.session_state.get("cumple_mercadopago", False),
-                help="Necesario para obtener el 13% en Mercado Pago",
+                help="¿Puedes depositar o recibir al menos $3,000 pesos al mes en tu cuenta de Mercado Pago? Si sí, obtendrás 13% en vez de 10%",
                 key="cumple_mercadopago"
             )
+            if cumple_mercadopago:
+                st.caption("✅ Obtendrás 13% (en vez de 10%)")
         
         with col2:
             cumple_uala_plus = st.checkbox(
-                "💸 Puedo consumir $3k/mes con Ualá o domiciliar nómina",
+                "💸 Gasto $3k/mes con tarjeta Ualá O tengo mi nómina ahí",
                 value=st.session_state.get("cumple_uala_plus", False),
-                help="Necesario para Ualá Plus (16% hasta $50k)",
+                help="Si gastas $3,000 al mes con las tarjetas de Ualá, o si recibes tu sueldo ahí, marca esto. Te da 16% hasta $50,000",
                 key="cumple_uala_plus"
             )
+            if cumple_uala_plus:
+                st.caption("✅ Tendrás acceso a Ualá Plus (16% hasta $50k)")
     
-    with st.expander("🚫 Excluir SOFIPOs que NO quiero usar", expanded=False):
-        st.markdown("**Desmarca las SOFIPOs que NO quieres que aparezcan en las recomendaciones:**")
+    with st.expander("🚫 ¿Hay instituciones que NO quieres usar?", expanded=False):
+        st.markdown("""
+        **Por defecto, el simulador usa todas las instituciones disponibles.**
+        
+        Desmarca solo las instituciones donde NO quieres invertir (por ejemplo, si no te gusta la app o si ya tuviste una mala experiencia):
+        """)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            usa_nu = st.checkbox("💜 Nu México", value=True, key="usa_nu")
-            usa_didi = st.checkbox("🚗 DiDi", value=True, key="usa_didi")
-            usa_stori = st.checkbox("🟦 Stori", value=True, key="usa_stori")
-            usa_klar = st.checkbox("⚡ Klar", value=True, key="usa_klar")
+            usa_nu = st.checkbox("💜 Nu México (Nubank)", value=True, key="usa_nu", help="Líder en México con app excelente")
+            usa_didi = st.checkbox("🚗 DiDi (la app de transporte)", value=True, key="usa_didi", help="16% los primeros $10,000")
+            usa_stori = st.checkbox("🟦 Stori (tarjeta y ahorro)", value=True, key="usa_stori", help="Hasta 11% a plazo fijo")
+            usa_klar = st.checkbox("⚡ Klar", value=True, key="usa_klar", help="8.5% básico, 15% con Plus")
         
         with col2:
-            usa_uala = st.checkbox("🔴 Ualá", value=True, key="usa_uala")
-            usa_mp = st.checkbox("💙 Mercado Pago", value=True, key="usa_mp")
-            usa_finsus = st.checkbox("🟢 Finsus", value=True, key="usa_finsus")
+            usa_uala = st.checkbox("🔴 Ualá", value=True, key="usa_uala", help="7.75% básico, 16% con Plus")
+            usa_mp = st.checkbox("💙 Mercado Pago", value=True, key="usa_mp", help="10-13% según uso")
+            usa_finsus = st.checkbox("🟢 Finsus", value=True, key="usa_finsus", help="Hasta 10.09% a plazo")
+        
+        # Contador de SOFIPOs activas
+        sofipos_activas = sum([usa_nu, usa_didi, usa_stori, usa_klar, usa_uala, usa_mp, usa_finsus])
+        if sofipos_activas < 3:
+            st.warning(f"⚠️ Solo tienes {sofipos_activas} institución(es) activa(s). Recomendamos al menos 3 para diversificar.")
+        else:
+            st.success(f"✅ {sofipos_activas} instituciones disponibles para diversificar")
     
-    with st.expander("💧 Preferencias de liquidez", expanded=False):
-        st.markdown("**Configura si solo quieres productos con disponibilidad inmediata:**")
+    with st.expander("💧 ¿Necesitas tu dinero disponible en cualquier momento?", expanded=False):
+        st.markdown("""
+        **¿Qué significa esto?**
+        
+        - **A LA VISTA**: Puedes sacar tu dinero cuando quieras (como una cuenta de ahorro normal)
+        - **PLAZO FIJO**: Tu dinero queda "guardado" por un tiempo (28 días, 3 meses, 6 meses, etc.) pero ganas más intereses
+        
+        Si necesitas tu dinero disponible para emergencias, activa la opción de abajo:
+        """)
+        
         solo_vista = st.checkbox(
-            "💧 Solo productos A LA VISTA (sin plazo fijo)",
+            "💧 Solo mostrarme productos A LA VISTA (sin plazo fijo)",
             value=st.session_state.get("solo_vista", False),
-            help="Activar para excluir productos con plazos fijos y solo ver rendimientos líquidos disponibles",
+            help="Activa esto si necesitas poder sacar tu dinero en cualquier momento. Los rendimientos serán un poco menores pero tendrás liquidez total.",
             key="solo_vista"
         )
+        
+        if solo_vista:
+            st.info("✅ Perfecto. Solo verás productos donde puedes retirar tu dinero cuando quieras.")
+        else:
+            st.info("ℹ️ Verás todos los productos (incluyendo plazos fijos que dan mejores rendimientos pero no puedes tocar el dinero por un tiempo)")
     
     st.divider()
     
@@ -2090,13 +2269,26 @@ def main():
     st.divider()
     
     # ========================================================================
-    # ESTRATEGIAS DE OPTIMIZACIÓN (ANTES DE SELECCIONAR)
+    # ESTRATEGIAS DE OPTIMIZACIÓN - SECCIÓN DESTACADA
     # ========================================================================
     
     # Solo mostrar recomendaciones si hay capital disponible
     if monto_total > 0:
-        with st.expander("💡 Recomendaciones de Inversión", expanded=False):
-            st.markdown("Basadas en tu capital y preferencias, estas son las estrategias optimizadas:")
+        st.markdown("## 🎯 Paso 4: Elige cómo invertir tu dinero")
+        st.caption("Estas son estrategias automáticas diseñadas por expertos. Haz clic en una para ver los detalles y aplicarla.")
+        
+        with st.expander("💡 Ver Estrategias Recomendadas (¡RECOMENDADO PARA PRINCIPIANTES!)", expanded=True):
+            st.markdown("""
+            ### 👋 ¿No sabes por dónde empezar?
+            
+            **¡No te preocupes!** Hemos diseñado 3 estrategias automáticas para ti:
+            
+            1. **🛡️ Conservadora**: Para quienes quieren seguridad y poder sacar su dinero en cualquier momento
+            2. **⚖️ Balanceada**: Balance perfecto entre seguridad y ganancias (la más popular)
+            3. **🚀 Agresiva**: Para maximizar ganancias (puede incluir plazos fijos)
+            
+            👉 **Haz clic en cualquier pestaña de abajo y luego en el botón "Aplicar esta estrategia"**
+            """)
             
             tab1, tab2, tab3 = st.tabs(["🛡️ Conservadora", "⚖️ Balanceada", "🚀 Agresiva"])
             
