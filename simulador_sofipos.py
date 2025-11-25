@@ -1790,7 +1790,7 @@ def main():
     # ========================================================================
     
     st.markdown("##  Paso 2: ¿Vas a ahorrar dinero cada mes? (Opcional)")
-    st.caption("Las aportaciones periódicas son la forma más efectiva de hacer crecer tu dinero con el tiempo. Si ahorras $2,000 al mes durante un año, habrás guardado $24,000 + intereses!")
+    st.caption("Las aportaciones periódicas son la forma más efectiva de hacer crecer tu dinero con el tiempo. Si ahorras 2,000 pesos al mes durante un año, habrás guardado 24,000 pesos + intereses!")
     
     aportaciones_activas = st.checkbox(
         "✅ Sí, quiero simular aportaciones periódicas (semanal, quincenal o mensual)",
