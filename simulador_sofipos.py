@@ -763,17 +763,19 @@ def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12, esce
     capital_acumulado = capital
     interes_total_acumulado = 0
     
-    # Definir reducción anual de tasas según escenario
-    reduccion_anual = {
+    # Definir reducción TRIMESTRAL de tasas según escenario
+    # La reducción se aplica cada 3 meses (cada trimestre)
+    reduccion_trimestral = {
         "Optimista": 0,
-        "Realista": 2.0,
-        "Conservador": 3.0
+        "Realista": 0.25,    # Baja 0.25% cada trimestre (1% al año)
+        "Conservador": 0.5   # Baja 0.5% cada trimestre (2% al año)
     }.get(escenario, 0)
     
     for mes in range(meses + 1):
-        # Calcular tasa ajustada según el mes (reducción proporcional)
-        anios_transcurridos = mes / 12
-        tasa_ajustada = max(1.0, tasa_anual - (reduccion_anual * anios_transcurridos))
+        # Calcular cuántos trimestres han pasado (reducción escalonada cada 3 meses)
+        trimestres_completos = mes // 3
+        reduccion_acumulada = reduccion_trimestral * trimestres_completos
+        tasa_ajustada = max(1.0, tasa_anual - reduccion_acumulada)
         
         # Calcular interés del mes actual
         if mes == 0:
@@ -947,11 +949,11 @@ def generar_proyeccion_con_aportaciones(
     """
     proyeccion = []
     
-    # Definir reducción anual de tasas según escenario
-    reduccion_anual = {
+    # Definir reducción TRIMESTRAL de tasas según escenario
+    reduccion_trimestral = {
         "Optimista": 0,
-        "Realista": 2.0,
-        "Conservador": 3.0
+        "Realista": 0.25,    # Baja 0.25% cada trimestre (1% al año)
+        "Conservador": 0.5   # Baja 0.5% cada trimestre (2% al año)
     }.get(escenario, 0)
     
     # Calcular número de aportaciones por mes según frecuencia
@@ -967,9 +969,10 @@ def generar_proyeccion_con_aportaciones(
     total_aportaciones = 0
     
     for mes in range(meses + 1):
-        # Calcular tasa ajustada según el mes
-        anios_transcurridos = mes / 12
-        tasa_ajustada = max(1.0, tasa_anual - (reduccion_anual * anios_transcurridos))
+        # Calcular cuántos trimestres han pasado
+        trimestres_completos = mes // 3
+        reduccion_acumulada = reduccion_trimestral * trimestres_completos
+        tasa_ajustada = max(1.0, tasa_anual - reduccion_acumulada)
         
         # Calcular intereses del mes sobre el capital acumulado
         if mes > 0:
@@ -2151,16 +2154,16 @@ def main():
             "📉 Escenario de tasas",
             options=["Optimista", "Realista", "Conservador"],
             index=1,  # Por defecto "Realista"
-            help="**Optimista**: Tasas constantes\n**Realista**: Tasas bajan 2% anual\n**Conservador**: Tasas bajan 3% anual",
+            help="**Optimista**: Tasas constantes\n**Realista**: -0.25% cada trimestre (1% anual)\n**Conservador**: -0.5% cada trimestre (2% anual)",
             key="escenario_tasas"
         )
         
         if escenario_tasas == "Optimista":
             st.caption("📈 Tasas se mantienen constantes")
         elif escenario_tasas == "Realista":
-            st.caption("📉 Tasas bajan ~2% por año")
+            st.caption("📉 Bajan 0.25% cada 3 meses")
         else:
-            st.caption("📉 Tasas bajan ~3% por año")
+            st.caption("📉 Bajan 0.5% cada 3 meses")
     
     # Calculadora rápida en una nueva fila
     st.markdown("---")
@@ -3067,12 +3070,13 @@ def main():
             
             # Mostrar información del escenario de tasas
             escenario_actual = st.session_state.get("escenario_tasas", "Realista")
-            if escenario_actual == "Realista":
-                if periodo_simulacion >= 12:
-                    st.info(f"📉 **Escenario Realista**: Las tasas bajan ~2% por año. Al final del periodo ({periodo_simulacion} meses), tus tasas promedio serán ~{rendimiento_ponderado - (2.0 * periodo_simulacion / 12):.1f}%")
-            elif escenario_actual == "Conservador":
-                if periodo_simulacion >= 12:
-                    st.warning(f"📉 **Escenario Conservador**: Las tasas bajan ~3% por año. Al final del periodo ({periodo_simulacion} meses), tus tasas promedio serán ~{rendimiento_ponderado - (3.0 * periodo_simulacion / 12):.1f}%")
+            trimestres_periodo = periodo_simulacion // 3
+            if escenario_actual == "Realista" and trimestres_periodo > 0:
+                reduccion_total = 0.25 * trimestres_periodo
+                st.info(f"📉 **Escenario Realista**: Las tasas bajan 0.25% cada trimestre. En {periodo_simulacion} meses ({trimestres_periodo} trimestres), habrán bajado ~{reduccion_total:.2f}%. Tasa final estimada: ~{rendimiento_ponderado - reduccion_total:.1f}%")
+            elif escenario_actual == "Conservador" and trimestres_periodo > 0:
+                reduccion_total = 0.5 * trimestres_periodo
+                st.warning(f"📉 **Escenario Conservador**: Las tasas bajan 0.5% cada trimestre. En {periodo_simulacion} meses ({trimestres_periodo} trimestres), habrán bajado ~{reduccion_total:.2f}%. Tasa final estimada: ~{rendimiento_ponderado - reduccion_total:.1f}%")
         
         # Tabla detallada en expander (solo si hay productos)
         if resultados:
