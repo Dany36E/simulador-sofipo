@@ -2007,8 +2007,25 @@ def main():
                         tipo_icon = "💧" if item.get("tipo") == "vista" else "📅"
                         requisito_text = f" ✅ {item['requisito']}" if item.get("requisito") else ""
                         
+                        # Mostrar nombre y producto
                         st.markdown(f"{i}. {tipo_icon} **{item['sofipo']} - {item['producto']}** {requisito_text}")
-                        st.markdown(f"   └─ **${item['monto']:,.0f}** al **{item['tasa']}%** = **${ganancia_item:,.0f}/año** *({porcentaje:.1f}% del total)*")
+                        
+                        # Usar columnas para mostrar datos con badges
+                        col_d1, col_d2, col_d3, col_d4 = st.columns([2, 1.5, 2, 1.5])
+                        
+                        with col_d1:
+                            st.markdown(f'<div style="background-color: #E3F2FD; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #1976D2; font-weight: 600;">{item["monto"]:,.0f} pesos</div>', unsafe_allow_html=True)
+                        
+                        with col_d2:
+                            st.markdown(f'<div style="background-color: #F3E5F5; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #7B1FA2; font-weight: 600;">al {item["tasa"]}%</div>', unsafe_allow_html=True)
+                        
+                        with col_d3:
+                            st.markdown(f'<div style="background-color: #E8F5E9; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #388E3C; font-weight: 600;">{ganancia_item:,.0f} pesos/año</div>', unsafe_allow_html=True)
+                        
+                        with col_d4:
+                            st.markdown(f'<div style="background-color: #FFF3E0; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #F57C00; font-weight: 600;">{porcentaje:.1f}% total</div>', unsafe_allow_html=True)
+                        
+                        st.markdown("")  # Espacio
                 
                 if capital_necesario > 200000:
                     st.warning("⚠️ **Capital alto**: Recuerda que el IPAB protege hasta $200k por institución.")
