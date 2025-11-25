@@ -2826,7 +2826,7 @@ def main():
                     if modo_input == "💵 Monto ($)":
                         # Determinar valor inicial: usar el guardado en session_state o el default
                         monto_key = f"monto_{sofipo_name}_{producto_seleccionado}"
-                        valor_inicial = st.session_state.get(monto_key, min(max(10000, producto_info['minimo']), monto_total))
+                        valor_inicial = st.session_state.get(monto_key, max(10000, producto_info['minimo']))
                         
                         # Monto a invertir
                         monto = st.number_input(
