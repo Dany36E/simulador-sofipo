@@ -748,26 +748,52 @@ def calcular_interes_simple(capital, tasa_anual, dias):
     interes = capital * tasa_decimal * (dias / 360)  # Año comercial
     return interes
 
-def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12):
+def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12, escenario="Optimista"):
     """
     Genera proyección mes a mes del crecimiento de la inversión
+    
+    Args:
+        capital: Capital inicial
+        tasa_anual: Tasa anual inicial
+        tipo_calculo: "compuesto" o "simple"
+        meses: Número de meses a proyectar
+        escenario: "Optimista" (tasas constantes), "Realista" (-2%/año), "Conservador" (-3%/año)
     """
     proyeccion = []
-    capital_actual = capital
+    capital_acumulado = capital
+    interes_total_acumulado = 0
+    
+    # Definir reducción anual de tasas según escenario
+    reduccion_anual = {
+        "Optimista": 0,
+        "Realista": 2.0,
+        "Conservador": 3.0
+    }.get(escenario, 0)
     
     for mes in range(meses + 1):
-        dias = mes * 30
+        # Calcular tasa ajustada según el mes (reducción proporcional)
+        anios_transcurridos = mes / 12
+        tasa_ajustada = max(1.0, tasa_anual - (reduccion_anual * anios_transcurridos))
         
-        if tipo_calculo == "compuesto":
-            interes_acumulado = calcular_interes_compuesto(capital, tasa_anual, dias)
+        # Calcular interés del mes actual
+        if mes == 0:
+            interes_mes = 0
         else:
-            interes_acumulado = calcular_interes_simple(capital, tasa_anual, dias)
+            dias_mes = 30
+            if tipo_calculo == "compuesto":
+                interes_mes = calcular_interes_compuesto(capital_acumulado, tasa_ajustada, dias_mes)
+            else:
+                interes_mes = calcular_interes_simple(capital_acumulado, tasa_ajustada, dias_mes)
+            
+            capital_acumulado += interes_mes
+            interes_total_acumulado += interes_mes
         
         proyeccion.append({
             "Mes": mes,
             "Capital Inicial": capital,
-            "Intereses Generados": interes_acumulado,
-            "Total Acumulado": capital + interes_acumulado
+            "Intereses Generados": interes_total_acumulado,
+            "Total Acumulado": capital_acumulado,
+            "Tasa Actual": tasa_ajustada
         })
     
     return pd.DataFrame(proyeccion)
@@ -901,7 +927,8 @@ def generar_proyeccion_con_aportaciones(
     tipo_calculo, 
     meses=12, 
     aportacion=0, 
-    frecuencia="Mensual"
+    frecuencia="Mensual",
+    escenario="Optimista"
 ):
     """
     Genera proyección considerando aportaciones recurrentes
@@ -913,11 +940,19 @@ def generar_proyeccion_con_aportaciones(
         meses: Número de meses a simular
         aportacion: Monto de cada aportación
         frecuencia: "Semanal", "Quincenal", o "Mensual"
+        escenario: "Optimista" (tasas constantes), "Realista" (-2%/año), "Conservador" (-3%/año)
     
     Returns:
         DataFrame con proyección detallada mes a mes
     """
     proyeccion = []
+    
+    # Definir reducción anual de tasas según escenario
+    reduccion_anual = {
+        "Optimista": 0,
+        "Realista": 2.0,
+        "Conservador": 3.0
+    }.get(escenario, 0)
     
     # Calcular número de aportaciones por mes según frecuencia
     aportaciones_por_mes = {
@@ -932,13 +967,17 @@ def generar_proyeccion_con_aportaciones(
     total_aportaciones = 0
     
     for mes in range(meses + 1):
+        # Calcular tasa ajustada según el mes
+        anios_transcurridos = mes / 12
+        tasa_ajustada = max(1.0, tasa_anual - (reduccion_anual * anios_transcurridos))
+        
         # Calcular intereses del mes sobre el capital acumulado
         if mes > 0:
             dias_mes = 30
             if tipo_calculo == "compuesto":
-                intereses_mes = calcular_interes_compuesto(capital_acumulado, tasa_anual, dias_mes)
+                intereses_mes = calcular_interes_compuesto(capital_acumulado, tasa_ajustada, dias_mes)
             else:
-                intereses_mes = calcular_interes_simple(capital_acumulado, tasa_anual, dias_mes)
+                intereses_mes = calcular_interes_simple(capital_acumulado, tasa_ajustada, dias_mes)
             
             capital_acumulado += intereses_mes
             
@@ -954,7 +993,8 @@ def generar_proyeccion_con_aportaciones(
             "Capital Inicial": capital_inicial,
             "Aportaciones Acumuladas": total_aportaciones,
             "Intereses Generados": intereses_totales,
-            "Total Acumulado": capital_acumulado
+            "Total Acumulado": capital_acumulado,
+            "Tasa Actual": tasa_ajustada
         })
     
     return pd.DataFrame(proyeccion)
@@ -2106,7 +2146,27 @@ def main():
             st.caption("⏰ 2 años - Maximiza el interés compuesto")
     
     with col3:
-        # Calculadora rápida de ganancia estimada
+        # Selector de escenario de tasas
+        escenario_tasas = st.selectbox(
+            "📉 Escenario de tasas",
+            options=["Optimista", "Realista", "Conservador"],
+            index=1,  # Por defecto "Realista"
+            help="**Optimista**: Tasas constantes\n**Realista**: Tasas bajan 2% anual\n**Conservador**: Tasas bajan 3% anual",
+            key="escenario_tasas"
+        )
+        
+        if escenario_tasas == "Optimista":
+            st.caption("📈 Tasas se mantienen constantes")
+        elif escenario_tasas == "Realista":
+            st.caption("📉 Tasas bajan ~2% por año")
+        else:
+            st.caption("📉 Tasas bajan ~3% por año")
+    
+    # Calculadora rápida en una nueva fila
+    st.markdown("---")
+    col_calc1, col_calc2 = st.columns([2, 1])
+    
+    with col_calc1:
         st.markdown("📊 **Ganancia estimada:**")
         tasa_promedio = 13.5  # Promedio de mercado
         ganancia_estimada = monto_total * (tasa_promedio / 100) * (periodo_simulacion / 12)
@@ -2939,14 +2999,15 @@ def main():
                 "Tipo Interés": tipo_interes
             })
             
-            # Generar proyección mensual
+            # Generar proyección mensual con escenario de tasas
+            escenario_tasas = st.session_state.get("escenario_tasas", "Realista")
             if tipo == "vista" or tipo_interes == "Compuesto (Diario)":
                 proyeccion = generar_proyeccion_mensual(
-                    monto, tasa_efectiva, "compuesto", periodo_simulacion
+                    monto, tasa_efectiva, "compuesto", periodo_simulacion, escenario_tasas
                 )
             else:
                 proyeccion = generar_proyeccion_mensual(
-                    monto, tasa_efectiva, "simple", periodo_simulacion
+                    monto, tasa_efectiva, "simple", periodo_simulacion, escenario_tasas
                 )
             
             proyeccion['SOFIPO'] = inversion_key
@@ -3242,13 +3303,15 @@ def main():
                 # Usar la tasa más alta disponible de los productos habilitados
                 tasa_referencia = 15.0  # Tasa promedio conservadora
                 
+                escenario_tasas = st.session_state.get("escenario_tasas", "Realista")
                 df_total_con_aportaciones = generar_proyeccion_con_aportaciones(
                     capital_inicial=0,
                     tasa_anual=tasa_referencia,
                     tipo_calculo="compuesto",
                     meses=periodo_simulacion,
                     aportacion=aportacion_monto,
-                    frecuencia=frecuencia_aportacion
+                    frecuencia=frecuencia_aportacion,
+                    escenario=escenario_tasas
                 )
                 # No hay proyección sin aportaciones, por lo que df_total será None
                 df_total = None
@@ -3266,6 +3329,7 @@ def main():
                 }).reset_index()
                 
                 # Si hay aportaciones activas, generar proyección con aportaciones
+                escenario_tasas = st.session_state.get("escenario_tasas", "Realista")
                 if aportaciones_activas and aportacion_monto > 0:
                     df_total_con_aportaciones = generar_proyeccion_con_aportaciones(
                         capital_inicial=total_invertido,
@@ -3273,7 +3337,8 @@ def main():
                         tipo_calculo="compuesto",
                         meses=periodo_simulacion,
                         aportacion=aportacion_monto,
-                        frecuencia=frecuencia_aportacion
+                        frecuencia=frecuencia_aportacion,
+                        escenario=escenario_tasas
                     )
                 else:
                     df_total_con_aportaciones = None
