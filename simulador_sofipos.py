@@ -1874,7 +1874,6 @@ def main():
     # ========================================================================
     
     st.markdown("## ⚙️ Paso 3: Personaliza tu búsqueda (Opcional)")
-    st.success("💡 **Recomendación:** Puedes saltar este paso e ir directo a las 'Recomendaciones de Inversión' más abajo. El simulador elegirá lo mejor para ti automáticamente.")
     st.caption("Estas opciones son avanzadas. Solo modifícalas si conoces tu situación específica.")
     
     with st.expander("🎖️ ¿Cumples alguno de estos requisitos especiales?", expanded=False):
