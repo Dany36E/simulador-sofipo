@@ -2010,8 +2010,8 @@ def main():
                         # Mostrar nombre y producto
                         st.markdown(f"{i}. {tipo_icon} **{item['sofipo']} - {item['producto']}** {requisito_text}")
                         
-                        # Usar columnas para mostrar datos con badges
-                        col_d1, col_d2, col_d3, col_d4 = st.columns([2, 1.5, 2, 1.5])
+                        # Usar columnas más compactas con gap pequeño para mostrar datos con badges
+                        col_d1, col_d2, col_d3, col_d4 = st.columns([1.2, 0.8, 1.3, 0.9], gap="small")
                         
                         with col_d1:
                             st.markdown(f'<div style="background-color: #E3F2FD; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #1976D2; font-weight: 600;">{item["monto"]:,.0f} pesos</div>', unsafe_allow_html=True)
