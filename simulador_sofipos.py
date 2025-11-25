@@ -2796,6 +2796,11 @@ def main():
                         help="Selecciona el tipo de inversión"
                     )
                     
+                    # Validar que el producto existe en los datos
+                    if producto_seleccionado not in sofipo_data['productos']:
+                        st.error(f"⚠️ Producto '{producto_seleccionado}' no encontrado en {sofipo_name}")
+                        continue
+                    
                     producto_info = sofipo_data['productos'][producto_seleccionado]
                     
                     # Mostrar tasa
