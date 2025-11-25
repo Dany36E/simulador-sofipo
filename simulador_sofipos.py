@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Simulador de Inversiones Multi-SOFIPO Interactivo
 Desarrollado para analizar y comparar rendimientos de SOFIPOs mexicanas
@@ -1571,7 +1571,7 @@ def main():
         </style>
         """, unsafe_allow_html=True)
     
-    # Encabezado centrado
+    # Encabezado centrado (v2.0 - Simplificado)
     st.markdown('<h1 class="main-header">💰 Simulador de Inversiones</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Descubre cuánto puede crecer tu dinero en las mejores instituciones financieras de México</p>', unsafe_allow_html=True)
     
@@ -1618,36 +1618,6 @@ def main():
         
         💡 **Tip**: Si no sabes por dónde empezar, usa la **Estrategia Agresiva** - el simulador distribuirá tu dinero automáticamente en las mejores opciones.
         """)
-    
-    # ========================================================================
-    # MODO DE USO - SELECTOR VISUAL
-    # ========================================================================
-    
-    st.markdown("### 🎯 ¿Cómo prefieres usar el simulador?")
-    
-    col_modo1, col_modo2 = st.columns(2)
-    
-    with col_modo1:
-        if st.button("🎓 **MODO GUIADO**\n\nÚsalo si es tu primera vez o prefieres que el simulador te ayude paso a paso", 
-                     use_container_width=True, type="primary"):
-            st.session_state["modo_uso"] = "guiado"
-            st.rerun()
-    
-    with col_modo2:
-        if st.button("⚙️ **MODO AVANZADO**\n\nÚsalo si ya conoces las SOFIPOs y quieres control total", 
-                     use_container_width=True):
-            st.session_state["modo_uso"] = "avanzado"
-            st.rerun()
-    
-    # Mostrar modo actual
-    modo_actual = st.session_state.get("modo_uso", "guiado")
-    
-    if modo_actual == "guiado":
-        st.info("📍 **Modo actual:** Guiado - Te ayudaremos paso a paso")
-    else:
-        st.info("📍 **Modo actual:** Avanzado - Control total de configuración")
-    
-    st.divider()
     
     # ========================================================================
     # GUARDAR/CARGAR SIMULACIONES
@@ -1904,11 +1874,7 @@ def main():
     # ========================================================================
     
     st.markdown("## ⚙️ Paso 3: Personaliza tu búsqueda (Opcional)")
-    
-    # Mostrar explicación según el modo
-    if st.session_state.get("modo_uso", "guiado") == "guiado":
-        st.success("💡 **Recomendación:** Puedes saltar este paso e ir directo a las 'Recomendaciones de Inversión' más abajo. El simulador elegirá lo mejor para ti automáticamente.")
-    
+    st.success("💡 **Recomendación:** Puedes saltar este paso e ir directo a las 'Recomendaciones de Inversión' más abajo. El simulador elegirá lo mejor para ti automáticamente.")
     st.caption("Estas opciones son avanzadas. Solo modifícalas si conoces tu situación específica.")
     
     with st.expander("🎖️ ¿Cumples alguno de estos requisitos especiales?", expanded=False):
