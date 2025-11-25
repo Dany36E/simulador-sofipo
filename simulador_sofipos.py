@@ -1718,9 +1718,76 @@ def main():
         
         st.success(f" **Estrategia aplicada:** ${estrategia['capital']:,.0f} distribuidos en {len(estrategia['distribucion'])} productos")
     
+    # ========================================================================
+    # SELECTOR DE MODO: ¿Qué quieres hacer?
+    # ========================================================================
+    
+    st.markdown("## 🚀 ¿Cómo quieres usar el simulador?")
+    st.caption("Elige el camino que mejor se adapte a tu situación:")
+    
+    # Inicializar modo si no existe
+    if "modo_simulador" not in st.session_state:
+        st.session_state.modo_simulador = "distribucion"  # Modo por defecto
+    
+    col_modo1, col_modo2 = st.columns(2)
+    
+    with col_modo1:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎯</div>
+            <div style="color: white; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;">Tengo una meta de dinero</div>
+            <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Quiero saber cuánto necesito invertir para ganar X cantidad</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🎯 Calcular mi objetivo", key="btn_objetivo", use_container_width=True):
+            st.session_state.modo_simulador = "objetivo"
+            st.rerun()
+    
+    with col_modo2:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
+            <div style="color: white; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;">Ya tengo dinero para invertir</div>
+            <div style="color: rgba(255,255,255,0.9); font-size: 0.9rem;">Tengo X dinero y quiero saber cómo distribuirlo</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("💰 Distribuir mi dinero", key="btn_distribucion", use_container_width=True):
+            st.session_state.modo_simulador = "distribucion"
+            st.rerun()
+    
+    # Mostrar modo actual
+    if st.session_state.modo_simulador == "objetivo":
+        st.info("✅ Modo actual: **Calculadora de Objetivo** · Haz clic abajo para cambiar")
+        if st.button("🔄 Cambiar a modo Distribución", key="cambiar_modo"):
+            st.session_state.modo_simulador = "distribucion"
+            st.rerun()
+    else:
+        st.info("✅ Modo actual: **Distribución de Dinero** · Haz clic abajo para cambiar")
+        if st.button("🔄 Cambiar a modo Objetivo", key="cambiar_modo"):
+            st.session_state.modo_simulador = "objetivo"
+            st.rerun()
+    
+    st.divider()
     
     # ========================================================================
-    # CONFIGURACIÓN RÁPIDA - DISEÑO INTUITIVO
+    # MODO OBJETIVO: CALCULADORA DE META
+    # ========================================================================
+    
+    if st.session_state.modo_simulador == "objetivo":
+        st.markdown("## 🎯 Calculadora de Objetivo - ¿Cuánto necesito invertir?")
+        st.markdown("**Vamos a calcular cuánto capital o aportaciones necesitas para alcanzar tu meta**")
+        
+        # Aquí irá la calculadora de objetivo (la moveré del Paso 3 en el siguiente commit)
+        st.info("🚧 Calculando la mejor estrategia para tu objetivo...")
+        
+        # TODO: Mover aquí la lógica completa de la calculadora de objetivo
+        st.warning("⚠️ Esta funcionalidad está en proceso de implementación. Por favor usa el modo 'Distribuir mi dinero'.")
+        st.stop()
+    
+    # ========================================================================
+    # MODO DISTRIBUCIÓN: CONFIGURACIÓN RÁPIDA (PASOS 1-4)
     # ========================================================================
     
     st.markdown("## 💵 Paso 1: ¿Cuánto dinero tienes?")
