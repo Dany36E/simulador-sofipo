@@ -3064,6 +3064,15 @@ def main():
         # GAT Ponderado destacado (solo si hay capital invertido)
         if total_invertido > 0:
             st.success(f"📊 **Tu tasa promedio ponderada es: {rendimiento_ponderado:.2f}% anual**")
+            
+            # Mostrar información del escenario de tasas
+            escenario_actual = st.session_state.get("escenario_tasas", "Realista")
+            if escenario_actual == "Realista":
+                if periodo_simulacion >= 12:
+                    st.info(f"📉 **Escenario Realista**: Las tasas bajan ~2% por año. Al final del periodo ({periodo_simulacion} meses), tus tasas promedio serán ~{rendimiento_ponderado - (2.0 * periodo_simulacion / 12):.1f}%")
+            elif escenario_actual == "Conservador":
+                if periodo_simulacion >= 12:
+                    st.warning(f"📉 **Escenario Conservador**: Las tasas bajan ~3% por año. Al final del periodo ({periodo_simulacion} meses), tus tasas promedio serán ~{rendimiento_ponderado - (3.0 * periodo_simulacion / 12):.1f}%")
         
         # Tabla detallada en expander (solo si hay productos)
         if resultados:
@@ -3350,18 +3359,49 @@ def main():
             tab1, tab2 = st.tabs(["📈 Proyección de Crecimiento", "🎯 Distribución Final"])
             
             with tab1:
-                # Título de la proyección
-                titulo_grafica = "### Evolución de tu Inversión"
-                if aportaciones_activas and aportacion_monto > 0:
-                    # Calcular frecuencia para mostrar
-                    frecuencias_texto = {
-                        "Semanal": f"${aportacion_monto:,.0f}/semana",
-                        "Quincenal": f"${aportacion_monto:,.0f}/quincena",
-                        "Mensual": f"${aportacion_monto:,.0f}/mes"
-                    }
-                    titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+                # Mostrar escenario activo
+                escenario_actual = st.session_state.get("escenario_tasas", "Realista")
+                escenario_colors = {
+                    "Optimista": "#43e97b",
+                    "Realista": "#f7b731", 
+                    "Conservador": "#ff6348"
+                }
+                escenario_iconos = {
+                    "Optimista": "📈",
+                    "Realista": "📊",
+                    "Conservador": "📉"
+                }
                 
-                st.markdown(titulo_grafica)
+                col_titulo, col_escenario = st.columns([3, 1])
+                with col_titulo:
+                    # Título de la proyección
+                    titulo_grafica = "### Evolución de tu Inversión"
+                    if aportaciones_activas and aportacion_monto > 0:
+                        # Calcular frecuencia para mostrar
+                        frecuencias_texto = {
+                            "Semanal": f"${aportacion_monto:,.0f}/semana",
+                            "Quincenal": f"${aportacion_monto:,.0f}/quincena",
+                            "Mensual": f"${aportacion_monto:,.0f}/mes"
+                        }
+                        titulo_grafica += f" (+ {frecuencias_texto[frecuencia_aportacion]})"
+                    
+                    st.markdown(titulo_grafica)
+                
+                with col_escenario:
+                    # Badge del escenario activo
+                    st.markdown(f"""
+                    <div style="background: {escenario_colors[escenario_actual]}20; 
+                                padding: 0.5rem 1rem; 
+                                border-radius: 20px; 
+                                border: 2px solid {escenario_colors[escenario_actual]}; 
+                                text-align: center;
+                                margin-top: 0.5rem;">
+                        <span style="font-size: 1.2rem;">{escenario_iconos[escenario_actual]}</span>
+                        <div style="font-weight: 700; color: {escenario_colors[escenario_actual]};">
+                            {escenario_actual}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
             
             # Crear gráfico profesional con gradiente
             fig = go.Figure()
