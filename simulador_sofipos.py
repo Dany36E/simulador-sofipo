@@ -771,11 +771,18 @@ def generar_proyeccion_mensual(capital, tasa_anual, tipo_calculo, meses=12, esce
         "Conservador": 0.5   # Baja 0.5% cada trimestre (2% al año)
     }.get(escenario, 0)
     
+    # DEBUG: Imprimir info al inicio
+    print(f"DEBUG generar_proyeccion_mensual: escenario={escenario}, reduccion_trimestral={reduccion_trimestral}, tasa_inicial={tasa_anual}")
+    
     for mes in range(meses + 1):
         # Calcular cuántos trimestres han pasado (reducción escalonada cada 3 meses)
         trimestres_completos = mes // 3
         reduccion_acumulada = reduccion_trimestral * trimestres_completos
         tasa_ajustada = max(1.0, tasa_anual - reduccion_acumulada)
+        
+        # DEBUG: Imprimir tasas ajustadas
+        if mes in [0, 3, 6, 9, 12]:
+            print(f"  Mes {mes}: trimestres={trimestres_completos}, reduccion={reduccion_acumulada}, tasa={tasa_ajustada}")
         
         # Calcular interés del mes actual
         if mes == 0:
@@ -3006,6 +3013,10 @@ def main():
             
             # Generar proyección mensual con escenario de tasas
             escenario_tasas = st.session_state.get("escenario_tasas", "Realista")
+            
+            # DEBUG: Mostrar escenario y tasa
+            st.caption(f"🔍 Debug: Escenario={escenario_tasas}, Tasa inicial={tasa_efectiva}%")
+            
             if tipo == "vista" or tipo_interes == "Compuesto (Diario)":
                 proyeccion = generar_proyeccion_mensual(
                     monto, tasa_efectiva, "compuesto", periodo_simulacion, escenario_tasas
