@@ -2149,14 +2149,16 @@ def main():
             st.caption("⏰ 2 años - Maximiza el interés compuesto")
     
     with col3:
-        # Selector de escenario de tasas
+        # Selector de escenario de tasas (sin key para forzar recálculo inmediato)
         escenario_tasas = st.selectbox(
             "📉 Escenario de tasas",
             options=["Optimista", "Realista", "Conservador"],
             index=1,  # Por defecto "Realista"
-            help="**Optimista**: Tasas constantes\n**Realista**: -0.25% cada trimestre (1% anual)\n**Conservador**: -0.5% cada trimestre (2% anual)",
-            key="escenario_tasas"
+            help="**Optimista**: Tasas constantes\n**Realista**: -0.25% cada trimestre (1% anual)\n**Conservador**: -0.5% cada trimestre (2% anual)"
         )
+        
+        # Guardar en session state
+        st.session_state["escenario_tasas"] = escenario_tasas
         
         if escenario_tasas == "Optimista":
             st.caption("📈 Tasas se mantienen constantes")
