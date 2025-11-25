@@ -2010,20 +2010,16 @@ def main():
                         # Mostrar nombre y producto
                         st.markdown(f"{i}. {tipo_icon} **{item['sofipo']} - {item['producto']}** {requisito_text}")
                         
-                        # Usar columnas más compactas con gap pequeño para mostrar datos con badges
-                        col_d1, col_d2, col_d3, col_d4 = st.columns([1.2, 0.8, 1.3, 0.9], gap="small")
-                        
-                        with col_d1:
-                            st.markdown(f'<div style="background-color: #E3F2FD; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #1976D2; font-weight: 600;">{item["monto"]:,.0f} pesos</div>', unsafe_allow_html=True)
-                        
-                        with col_d2:
-                            st.markdown(f'<div style="background-color: #F3E5F5; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #7B1FA2; font-weight: 600;">al {item["tasa"]}%</div>', unsafe_allow_html=True)
-                        
-                        with col_d3:
-                            st.markdown(f'<div style="background-color: #E8F5E9; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #388E3C; font-weight: 600;">{ganancia_item:,.0f} pesos/año</div>', unsafe_allow_html=True)
-                        
-                        with col_d4:
-                            st.markdown(f'<div style="background-color: #FFF3E0; padding: 0.3rem 0.6rem; border-radius: 0.3rem; display: inline-block; color: #F57C00; font-weight: 600;">{porcentaje:.1f}% total</div>', unsafe_allow_html=True)
+                        # Usar flexbox para control total del espaciado
+                        badges_html = f"""
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0;">
+                            <div style="background-color: #E3F2FD; padding: 0.3rem 0.6rem; border-radius: 0.3rem; color: #1976D2; font-weight: 600;">{item["monto"]:,.0f} pesos</div>
+                            <div style="background-color: #F3E5F5; padding: 0.3rem 0.6rem; border-radius: 0.3rem; color: #7B1FA2; font-weight: 600;">al {item["tasa"]}%</div>
+                            <div style="background-color: #E8F5E9; padding: 0.3rem 0.6rem; border-radius: 0.3rem; color: #388E3C; font-weight: 600;">{ganancia_item:,.0f} pesos/año</div>
+                            <div style="background-color: #FFF3E0; padding: 0.3rem 0.6rem; border-radius: 0.3rem; color: #F57C00; font-weight: 600;">{porcentaje:.1f}% total</div>
+                        </div>
+                        """
+                        st.markdown(badges_html, unsafe_allow_html=True)
                         
                         st.markdown("")  # Espacio
                 
