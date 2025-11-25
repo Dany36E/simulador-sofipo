@@ -2740,12 +2740,19 @@ def main():
         # Pre-cargar todos los valores en session_state
         for item in estrategia_aplicada:
             sofipo_name = item['sofipo']
+            producto_nombre = item['producto']
+            monto_valor = item['monto']
+            
             # Marcar checkbox
             st.session_state[f"check_{sofipo_name}"] = True
             # Seleccionar producto
-            st.session_state[f"prod_{sofipo_name}"] = item['producto']
+            st.session_state[f"prod_{sofipo_name}"] = producto_nombre
             # Establecer monto
-            st.session_state[f"monto_{sofipo_name}_{item['producto']}"] = item['monto']
+            key_monto = f"monto_{sofipo_name}_{producto_nombre}"
+            st.session_state[key_monto] = monto_valor
+            
+            # Debug
+            st.caption(f"🔧 Debug: {sofipo_name} - {producto_nombre} → ${monto_valor:,.0f} (key: {key_monto})")
         
         # Limpiar el flag
         st.session_state['aplicar_estrategia'] = False
