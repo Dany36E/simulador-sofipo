@@ -2884,16 +2884,17 @@ def main():
                                 help="Necesitas membresía Plus o Platino para obtener el 15%"
                             )
                 
-                # Guardar inversión
-                inversiones_seleccionadas[f"{sofipo_name} - {producto_seleccionado}"] = {
-                    "sofipo": sofipo_name,
-                    "producto": producto_seleccionado,
-                    "monto": monto,
-                    "producto_info": producto_info,
-                    "cumple_requisito": cumple_requisito,
-                    "liquidez": producto_info['liquidez'],
-                    "tipo": producto_info['tipo']
-                }
+                # Guardar inversión (solo si el producto existe)
+                if producto_seleccionado in sofipo_data['productos']:
+                    inversiones_seleccionadas[f"{sofipo_name} - {producto_seleccionado}"] = {
+                        "sofipo": sofipo_name,
+                        "producto": producto_seleccionado,
+                        "monto": monto,
+                        "producto_info": producto_info,
+                        "cumple_requisito": cumple_requisito,
+                        "liquidez": producto_info['liquidez'],
+                        "tipo": producto_info['tipo']
+                    }
     
     # ========================================================================
     # INDICADOR DE DINERO RESTANTE
@@ -3328,7 +3329,7 @@ def main():
             
             # Caso especial: Solo aportaciones sin capital inicial
             if total_invertido == 0 and aportaciones_activas and aportacion_monto > 0:
-                st.info(f"💡 Iniciando desde \$0 con aportaciones {frecuencia_aportacion.lower()}es de \${aportacion_monto:,.0f} a tasa promedio del mercado (15% anual)")
+                st.info(f"💡 Iniciando desde $0 con aportaciones {frecuencia_aportacion.lower()}es de ${aportacion_monto:,.0f} a tasa promedio del mercado (15% anual)")
                 
                 # Generar proyección solo con aportaciones
                 # Usar la tasa más alta disponible de los productos habilitados
