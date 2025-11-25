@@ -4040,7 +4040,22 @@ def main():
                                         inv_data = inversiones_seleccionadas.get(key)
                                         if inv_data:
                                             nombre = inv_data["sofipo"]
-                                            tasa = inv_data["producto_info"]["tasa_base"]
+                                            producto_info = inv_data["producto_info"]
+                                            
+                                            # Calcular tasa efectiva para productos híbridos
+                                            if producto_info.get("tipo") == "vista_hibrida" and "tasa_premium" in producto_info:
+                                                limite = producto_info.get("limite_premium", 0)
+                                                if monto <= limite:
+                                                    # Todo el monto está en tasa premium
+                                                    tasa = producto_info["tasa_premium"]
+                                                else:
+                                                    # Calcular tasa ponderada
+                                                    monto_premium = limite
+                                                    monto_base = monto - limite
+                                                    tasa_ponderada = (monto_premium * producto_info["tasa_premium"] + monto_base * producto_info["tasa_base"]) / monto
+                                                    tasa = round(tasa_ponderada, 2)
+                                            else:
+                                                tasa = producto_info["tasa_base"]
                                     
                                     porcentaje = (monto / total_final_exacto * 100)
                                     color = color_map.get(nombre, "#94A3B8")
@@ -4399,7 +4414,23 @@ def main():
                         
                         for key, inv_data in sorted(inversiones_seleccionadas.items(), key=lambda x: -x[1]['monto']):
                             monto_inicial = inv_data['monto']
-                            tasa = inv_data['producto_info']['tasa_base']
+                            producto_info = inv_data['producto_info']
+                            
+                            # Calcular tasa efectiva para productos híbridos
+                            if producto_info.get("tipo") == "vista_hibrida" and "tasa_premium" in producto_info:
+                                limite = producto_info.get("limite_premium", 0)
+                                if monto_inicial <= limite:
+                                    # Todo el monto está en tasa premium
+                                    tasa = producto_info["tasa_premium"]
+                                else:
+                                    # Calcular tasa ponderada
+                                    monto_premium = limite
+                                    monto_base = monto_inicial - limite
+                                    tasa_ponderada = (monto_premium * producto_info["tasa_premium"] + monto_base * producto_info["tasa_base"]) / monto_inicial
+                                    tasa = round(tasa_ponderada, 2)
+                            else:
+                                tasa = producto_info["tasa_base"]
+                            
                             interes = calcular_interes_compuesto(monto_inicial, tasa, periodo_simulacion * 30)
                             monto_final = monto_inicial + interes
                             nombre = inv_data["sofipo"]
