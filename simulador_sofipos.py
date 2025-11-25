@@ -2036,8 +2036,7 @@ def main():
                             "distribucion": distribucion_final,
                             "nombre": "Estrategia desde Objetivo"
                         }
-                        st.session_state.modo_simulador = "distribucion"
-                        st.success("✅ Estrategia aplicada. Cambiando a modo Distribución...")
+                        st.session_state["modo_simulador"] = "distribucion"
                         st.rerun()
         
         st.stop()  # No mostrar el resto del flujo en modo objetivo
