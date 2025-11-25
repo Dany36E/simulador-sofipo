@@ -1595,7 +1595,7 @@ def main():
         
         #### 📖 Conceptos básicos (explicados fácil):
         
-        - **GAT (Ganancia Anual Total)**: Es el porcentaje que ganas al año. Ejemplo: Si inviertes $10,000 al 15% GAT, ganarás $1,500 en un año.
+        - **GAT (Ganancia Anual Total)**: Es el porcentaje que ganas al año. Ejemplo: Si inviertes 10,000 pesos al 15% GAT, ganarás 1,500 pesos en un año.
         - **A LA VISTA**: Puedes sacar tu dinero cuando quieras, sin esperar.
         - **PLAZO FIJO**: Tu dinero queda "guardado" por un tiempo (28, 90, 180 o 360 días), pero ganas más intereses.
         - **Interés Compuesto**: Ganas intereses sobre tus intereses (tu dinero crece más rápido).
